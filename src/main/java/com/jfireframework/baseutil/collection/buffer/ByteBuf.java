@@ -2,7 +2,6 @@ package com.jfireframework.baseutil.collection.buffer;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import com.jfireframework.baseutil.collection.ByteCache;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.verify.Verify;
 
@@ -508,29 +507,7 @@ public abstract class ByteBuf<T>
      */
     public abstract String hexString();
     
-    /**
-     * 将ByteCache的数据全部放入ByteBuf中
-     * 
-     * @param byteCache
-     * @return
-     */
-    public ByteBuf<T> putByteCache(ByteCache byteCache)
-    {
-        put(byteCache.getDirectArray(), byteCache.getReadindex(), byteCache.getWriteIndex());
-        return this;
-    }
     
-    /**
-     * 将数据读取到ByteCache中
-     * 
-     * @param byteCache
-     * @return
-     */
-    public ByteBuf<T> get(ByteCache byteCache)
-    {
-        byteCache.putByteBuffer(nioBuffer());
-        return this;
-    }
     
     public ByteBuf<T> writeIntArray(int[] array)
     {
