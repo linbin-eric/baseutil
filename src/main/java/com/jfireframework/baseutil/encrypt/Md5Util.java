@@ -8,6 +8,10 @@ import java.nio.charset.Charset;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.exception.JustThrowException;
 
@@ -143,6 +147,71 @@ public class Md5Util
     public static String md5Str(String str)
     {
         return StringUtil.toHexString(md5(str));
+    }
+    
+    /**
+     * 返回加密后的密码 格式为iterationCount:slat:hash。其中num为迭代次数
+     * 
+     * @param password
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    public static String generateStorngPasswordHash(String password)
+    {
+        try
+        {
+            int iterations = 10;
+            char[] chars = password.toCharArray();
+            byte[] salt = getSalt();
+            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            byte[] hash = skf.generateSecret(spec).getEncoded();
+            return iterations + ":" + StringUtil.toHexString(salt) + ":" + StringUtil.toHexString(hash);
+        }
+        catch (Exception e)
+        {
+            throw new JustThrowException(e);
+        }
+    }
+    
+    private static byte[] getSalt() throws NoSuchAlgorithmException
+    {
+        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
+        byte[] salt = new byte[16];
+        sr.nextBytes(salt);
+        return salt;
+    }
+    
+    /**
+     * 验证密码的正确性，密码原文的格式为iterationCount:slat:hash。其中num为迭代次数
+     * 
+     * @param originalPassword 待验证的密码
+     * @param storedPassword 存储的加密的密码
+     * @return
+     */
+    public static boolean validatePassword(String originalPassword, String storedPassword)
+    {
+        try
+        {
+            String[] parts = storedPassword.split(":");
+            int iterations = Integer.parseInt(parts[0]);
+            byte[] salt = StringUtil.hexStringToBytes(parts[1]);
+            byte[] hash = StringUtil.hexStringToBytes(parts[2]);
+            PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(), salt, iterations, hash.length * 8);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            byte[] testHash = skf.generateSecret(spec).getEncoded();
+            int diff = hash.length ^ testHash.length;
+            for (int i = 0; i < hash.length && i < testHash.length; i++)
+            {
+                diff |= hash[i] ^ testHash[i];
+            }
+            return diff == 0;
+        }
+        catch (Exception e)
+        {
+            throw new JustThrowException(e);
+        }
     }
     
     public static void main(String[] args)
