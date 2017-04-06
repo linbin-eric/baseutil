@@ -37,7 +37,7 @@ public class MPMCQueue<E> implements Queue<E>
     
     private static class Node<E>
     {
-        //经过JMH测试，在E是volatile的时候，并且有clear操作的情况下测试性能最高。无法解释为什么操作少了反而性能下降。
+        // 经过JMH测试，在E是volatile的时候，并且有clear操作的情况下测试性能最高。无法解释为什么操作少了反而性能下降。
         private volatile E        value;
         private volatile Node<E>  next;
         private static final long valueOffset = ReflectUtil.getFieldOffset("value", Node.class);
@@ -213,7 +213,7 @@ public class MPMCQueue<E> implements Queue<E>
     
     private E fairTake(long time, TimeUnit unit)
     {
-        if (sync.isThreadOnWaiting() == false)
+        if (sync.hasWaiters() == false)
         {
             E result = poll();
             if (result == null)

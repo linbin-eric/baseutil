@@ -131,13 +131,6 @@ public class SpscQueue<E> extends Tail_spsc implements Queue<E>
     }
     
     @Override
-    public int size()
-    {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-    
-    @Override
     public boolean isEmpty()
     {
         return head.next == null;
@@ -146,99 +139,128 @@ public class SpscQueue<E> extends Tail_spsc implements Queue<E>
     @Override
     public boolean contains(Object o)
     {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public Iterator<E> iterator()
     {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public Object[] toArray()
     {
-        // TODO Auto-generated method stub
-        return null;
+        Object[] array = new Object[size()];
+        Node h = head;
+        for (int i = 0; i < array.length; i++)
+        {
+            h = h.next;
+            array[i] = h.item;
+        }
+        return array;
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T[] toArray(T[] a)
     {
-        // TODO Auto-generated method stub
-        return null;
+        int size = size();
+        size = size > a.length ? a.length : size;
+        Node h = head;
+        for (int i = 0; i < a.length; i++)
+        {
+            h = h.next;
+            a[i] = (T) h.item;
+        }
+        return a;
     }
     
     @Override
     public boolean remove(Object o)
     {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public boolean containsAll(Collection<?> c)
     {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public boolean addAll(Collection<? extends E> c)
     {
-        // TODO Auto-generated method stub
-        return false;
+        for (E e : c)
+        {
+            offer(e);
+        }
+        return true;
     }
     
     @Override
     public boolean removeAll(Collection<?> c)
     {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public boolean retainAll(Collection<?> c)
     {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public void clear()
     {
-        // TODO Auto-generated method stub
-        
+        Node h = head, t = tail, hn;
+        while ((hn = h.next) != t)
+        {
+            h = hn;
+        }
+        h.forgetNext();
+        t.forgetItem();
+        head = t;
     }
     
     @Override
     public boolean add(E e)
     {
-        // TODO Auto-generated method stub
-        return false;
+        return offer(e);
     }
     
     @Override
     public E remove()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return poll();
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public E element()
     {
-        // TODO Auto-generated method stub
-        return null;
+        Node hn = head.next;
+        return (E) (hn == null ? null : hn.item);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public E peek()
     {
-        // TODO Auto-generated method stub
-        return null;
+        Node hn = head.next;
+        return (E) (hn == null ? null : hn.item);
+    }
+    
+    @Override
+    public int size()
+    {
+        int i = 0;
+        Node h = head;
+        while ((h = h.next) != null)
+        {
+            i += 1;
+        }
+        return i;
     }
     
 }

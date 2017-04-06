@@ -10,14 +10,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import com.jfireframework.baseutil.concurrent.MPSCQueue;
-import com.jfireframework.baseutil.concurrent.SpscQueue;
 
 public class MpScTest
 {
     Set<String>                           set       = new HashSet<String>();
     int                                   count     = 100000;
     private ConcurrentLinkedQueue<String> source    = new ConcurrentLinkedQueue<String>();
-    int                                   threadNum = 3;
+    int                                   threadNum = 8;
     AtomicInteger                         sum       = new AtomicInteger(0);
     CountDownLatch                        latch     = new CountDownLatch(1);
     Queue<String>                         testQueue = new MPSCQueue<String>();

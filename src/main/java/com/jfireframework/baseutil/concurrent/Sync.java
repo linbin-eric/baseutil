@@ -7,90 +7,77 @@ import sun.misc.Unsafe;
 
 public abstract class Sync<E>
 {
-    private static final Unsafe unsafe           = ReflectUtil.getUnsafe();
-    private volatile Waiter     headWaiter;
-    private volatile Waiter     tailWaiter;
-    private static final long   headWaiterOffset = ReflectUtil.getFieldOffset("headWaiter", Sync.class);
-    private static final long   tailWaiterOffset = ReflectUtil.getFieldOffset("tailWaiter", Sync.class);
+    private volatile Node       head;
+    private volatile Node       tail;
+    private static final long   tailOffset = ReflectUtil.getFieldOffset("tail", Sync.class);
+    private static final int    WAITING    = 1;
+    private static final int    CANCELED   = 2;
+    private static final Unsafe unsafe     = ReflectUtil.getUnsafe();
     
-    static class Waiter
+    static class Node
     {
-        private final Thread      thread;
-        private volatile Waiter   next;
+        private Node              prev;
+        private volatile Thread   successor;
         private volatile int      status;
-        private static final long statusOffset = ReflectUtil.getFieldOffset("status", Waiter.class);
-        private static final long nextOffset   = ReflectUtil.getFieldOffset("next", Waiter.class);
-        private static final int  WAITING      = 1;
-        private static final int  CANCELED     = 2;
+        private static final long statusOffset    = ReflectUtil.getFieldOffset("status", Node.class);
+        private static final long successorOffset = ReflectUtil.getFieldOffset("successor", Node.class);
         
-        public Waiter(Thread thread)
+        public Node()
         {
             unsafe.putInt(this, statusOffset, WAITING);
-            this.thread = thread;
         }
         
-        public void orderSetNext(Waiter waiter)
+        public void relaxSetSuccessor(Thread next)
         {
-            unsafe.putOrderedObject(this, nextOffset, waiter);
+            unsafe.putOrderedObject(this, successorOffset, next);
+        }
+        
+        public void clean()
+        {
+            prev = null;
+            unsafe.putObject(this, successorOffset, null);
         }
     }
     
     public Sync()
     {
-        headWaiter = tailWaiter = new Waiter(null);
+        head = tail = new Node();
     }
     
-    private Waiter enqueue()
+    public boolean hasWaiters()
     {
-        Waiter newTail = new Waiter(Thread.currentThread());
-        Waiter oldTail = tailWaiter;
-        if (unsafe.compareAndSwapObject(this, tailWaiterOffset, oldTail, newTail))
+        return head != tail;
+    }
+    
+    private Node enqueue()
+    {
+        Thread t = Thread.currentThread();
+        Node insert = new Node();
+        Node pred = tail;
+        insert.prev = pred;
+        if (unsafe.compareAndSwapObject(this, tailOffset, pred, insert))
         {
-            oldTail.orderSetNext(newTail);
-            return newTail;
+            // pred.nextWaiter = t;
+            pred.relaxSetSuccessor(t);
+            return insert;
         }
         for (;;)
         {
-            oldTail = tailWaiter;
-            if (unsafe.compareAndSwapObject(this, tailWaiterOffset, oldTail, newTail))
+            pred = tail;
+            insert.prev = pred;
+            if (unsafe.compareAndSwapObject(this, tailOffset, pred, insert))
             {
-                oldTail.orderSetNext(newTail);
-                return newTail;
+                pred.relaxSetSuccessor(t);
+                // pred.nextWaiter = t;
+                return insert;
             }
         }
     }
     
-    public boolean isThreadOnWaiting()
-    {
-        return headWaiter != tailWaiter;
-    }
-    
-    private Waiter findNextWaiter(Waiter waiter)
-    {
-        if (waiter == tailWaiter)
-        {
-            return null;
-        }
-        Waiter next = waiter.next;
-        if (next != null)
-        {
-            return next;
-        }
-        while ((next = waiter.next) == null)
-        {
-            ;
-        }
-        return next;
-    }
-    
     public void signal()
     {
-        Waiter h = headWaiter;
-        Waiter next = findNextWaiter(h);
-        if (next != null)
-        {
-            LockSupport.unpark(next.thread);
-        }
+        Node h = head;
+        unparkSuccessor(h);
     }
     
     /**
@@ -103,13 +90,14 @@ public abstract class Sync<E>
     public E take(long time, TimeUnit unit)
     {
         E result;
-        Waiter self = enqueue();
+        Node self = enqueue();
+        Node pred = self.prev;
+        Node h;
         long nanos = unit.toNanos(time);
         long t0 = System.nanoTime();
         do
         {
-            // head之后的next是本线程设置的，所以这里直接获取。可以读取到就意味着确实是head节点的后继节点
-            if (self == headWaiter.next)
+            if (pred == (h = head))
             {
                 result = get();
                 if (result == null)
@@ -128,15 +116,15 @@ public abstract class Sync<E>
                     nanos -= System.nanoTime() - t0;
                     if (nanos < 0)
                     {
-                        cancelWaiter(self);
+                        cancel(self);
                         return null;
                     }
                     t0 = System.nanoTime();
                 }
                 else
                 {
-                    headWaiter = self;
-                    unparkHeadNext(self);
+                    head = self;
+                    unparkSuccessor(self);
                     return result;
                 }
             }
@@ -156,25 +144,32 @@ public abstract class Sync<E>
                 nanos -= System.nanoTime() - t0;
                 if (nanos < 0)
                 {
-                    cancelWaiter(self);
+                    cancel(self);
                     return null;
                 }
                 t0 = System.nanoTime();
             }
             if (Thread.currentThread().isInterrupted())
             {
-                cancelWaiter(self);
+                cancel(self);
                 return null;
+            }
+            if (pred.status == CANCELED)
+            {
+                while (pred != h && (pred = pred.prev).status == CANCELED)
+                    ;
             }
         } while (true);
     }
     
     public E take()
     {
-        Waiter self = enqueue();
+        Node self = enqueue();
+        Node pred = self.prev;
+        Node h;
         do
         {
-            if (self == headWaiter.next)
+            if (pred == (h = head))
             {
                 E result = get();
                 if (result == null)
@@ -183,10 +178,16 @@ public abstract class Sync<E>
                 }
                 else
                 {
-                    headWaiter = self;
-                    unparkHeadNext(self);
+                    head = self;
+                    unparkSuccessor(self);
                     return result;
                 }
+            }
+            else if (pred.status == CANCELED)
+            {
+                // 寻找到非取消节点的最靠近的head的节点作为新的前置节点
+                while (pred != h && (pred = pred.prev).status == CANCELED)
+                    ;
             }
             else
             {
@@ -194,87 +195,38 @@ public abstract class Sync<E>
             }
             if (Thread.currentThread().isInterrupted())
             {
-                cancelWaiter(self);
+                cancel(self);
                 return null;
             }
         } while (true);
     }
     
     /**
-     * 唤醒后续节点。注意，这里的入口head节点就是当前的headWaiter
+     * 唤醒后续节点。
      * 
-     * @param head
+     * @param node
      */
-    private void unparkHeadNext(Waiter head)
+    private void unparkSuccessor(Node node)
     {
-        Waiter next = findNextWaiter(head);
-        if (next == null)
+        Thread nextWaiter = node.successor;
+        if (node != tail)
         {
-            return;
-        }
-        // 如果后续节点状态此时是等待，则直接唤醒
-        else if (next.status == Waiter.WAITING)
-        {
-            LockSupport.unpark(next.thread);
-            return;
-        }
-        else
-        {
-            do
+            if (nextWaiter == null)
             {
-                Waiter pred;
-                do
-                {
-                    pred = next;
-                    next = findNextWaiter(pred);
-                } while (next != null && next.status == Waiter.CANCELED && head == headWaiter);
-                /**
-                 * 在头结点未变化的情况下，找到距离头节点最近的一个非cancel状态节点。
-                 */
-                /**
-                 * 如果头节点发生了变化，意味着其他线程取得了控制权，则后续行为由其他线程完成。本线程可以退出了
-                 */
-                if (head == headWaiter && casHead(head, pred))
-                {
-                    /**
-                     * 如果成功的设置了新的头结点。则尝试唤醒头结点的后继节点
-                     */
-                    head = pred;
-                    next = findNextWaiter(pred);
-                    if (next == null)
-                    {
-                        return;
-                    }
-                    else if (next.status == Waiter.WAITING)
-                    {
-                        LockSupport.unpark(next.thread);
-                        return;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            } while (true);
+                while ((nextWaiter = node.successor) == null)
+                    ;
+            }
+            LockSupport.unpark(nextWaiter);
         }
     }
     
-    private void cancelWaiter(Waiter waiter)
+    private void cancel(Node node)
     {
-        waiter.status = Waiter.CANCELED;
-        Waiter h = headWaiter;
-        if (h.next == waiter && casHead(h, waiter))
-        {
-            unparkHeadNext(waiter);
-        }
+        node.status = CANCELED;
+        Node pred = node.prev;
+        // 防止前面的节点的唤醒浪费
+        pred.successor = null;
+        unparkSuccessor(node);
     }
     
-    private boolean casHead(Waiter origin, Waiter newHead)
-    {
-        return unsafe.compareAndSwapObject(this, headWaiterOffset, origin, newHead);
-    }
 }
