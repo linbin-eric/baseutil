@@ -1,7 +1,6 @@
 package com.jfireframework.baseutil.test;
 
 import org.junit.Test;
-
 import com.jfireframework.baseutil.Timelog;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.simplelog.ConsoleLogFactory;

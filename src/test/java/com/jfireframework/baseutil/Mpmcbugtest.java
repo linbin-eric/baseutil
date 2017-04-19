@@ -14,100 +14,92 @@ public class Mpmcbugtest
         final int time = 5;
         final int count = 10;
         final CountDownLatch latch = new CountDownLatch(count * time * 2);
-        new Thread(
-                new Runnable() {
-                    @Override
-                    public void run()
+        new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                for (int i = 0; i < time; i++)
+                {
+                    for (int j = 0; j < count; j++)
                     {
-                        for (int i = 0; i < time; i++)
-                        {
-                            for (int j = 0; j < count; j++)
-                            {
-                                queue.offerAndSignal("1");
-                            }
-                            try
-                            {
-                                Thread.sleep(1000);
-                            }
-                            catch (InterruptedException e)
-                            {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        }
+                        queue.offerAndSignal("1");
                     }
-                }, "give1"
-        ).start();
-        new Thread(
-                new Runnable() {
-                    @Override
-                    public void run()
+                    try
                     {
-                        for (int i = 0; i < time; i++)
-                        {
-                            for (int j = 0; j < count; j++)
-                            {
-                                queue.offerAndSignal("1");
-                            }
-                            try
-                            {
-                                Thread.sleep(1000);
-                            }
-                            catch (InterruptedException e)
-                            {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }
-                        }
+                        Thread.sleep(1000);
                     }
-                }, "give2"
-        ).start();
+                    catch (InterruptedException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, "give1").start();
+        new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                for (int i = 0; i < time; i++)
+                {
+                    for (int j = 0; j < count; j++)
+                    {
+                        queue.offerAndSignal("1");
+                    }
+                    try
+                    {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, "give2").start();
         Thread[] takes = new Thread[5];
         for (int i = 0; i < 5; i++)
         {
             if (i < 10)
             {
-                takes[i] = new Thread(
-                        new Runnable() {
-                            @Override
-                            public void run()
+                takes[i] = new Thread(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        while (true)
+                        {
+                            if (queue.take(10000, TimeUnit.MILLISECONDS) != null)
                             {
-                                while (true)
-                                {
-                                    if (queue.take(10000, TimeUnit.MILLISECONDS) != null)
-                                    {
-                                        latch.countDown();
-                                    }
-                                    else
-                                    {
-                                    }
-                                }
+                                latch.countDown();
                             }
-                        }, "take-" + i
-                );
+                            else
+                            {
+                            }
+                        }
+                    }
+                }, "take-" + i);
             }
             else
             {
                 
-                takes[i] = new Thread(
-                        new Runnable() {
-                            @Override
-                            public void run()
+                takes[i] = new Thread(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        while (true)
+                        {
+                            if (queue.take() != null)
                             {
-                                while (true)
-                                {
-                                    if (queue.take() != null)
-                                    {
-                                        latch.countDown();
-                                    }
-                                    else
-                                    {
-                                        System.err.println("异常");
-                                    }
-                                }
+                                latch.countDown();
                             }
-                        }, "take-" + i
-                );
+                            else
+                            {
+                                System.err.println("异常");
+                            }
+                        }
+                    }
+                }, "take-" + i);
             }
         }
         for (Thread each : takes)

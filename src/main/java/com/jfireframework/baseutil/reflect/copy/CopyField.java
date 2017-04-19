@@ -1,9 +1,7 @@
 package com.jfireframework.baseutil.reflect.copy;
 
 import java.lang.reflect.Field;
-
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-
 import sun.misc.Unsafe;
 
 public abstract class CopyField

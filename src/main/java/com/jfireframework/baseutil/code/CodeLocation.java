@@ -33,16 +33,14 @@ public class CodeLocation
     {
         System.out.println("sdasd");
         ExecutorService poo = Executors.newCachedThreadPool();
-        poo.submit(
-                new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        System.out.println(CodeLocation.getCodeLocation());
-                        
-                    }
-                }
-        );
+        poo.submit(new Runnable() {
+            @Override
+            public void run()
+            {
+                System.out.println(CodeLocation.getCodeLocation());
+                
+            }
+        });
         poo.shutdown();
         poo.awaitTermination(50, TimeUnit.SECONDS);
     }

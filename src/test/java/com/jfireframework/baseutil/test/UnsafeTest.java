@@ -1,11 +1,8 @@
 package com.jfireframework.baseutil.test;
 
 import java.lang.reflect.Array;
-
 import org.junit.Test;
-
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-
 import sun.misc.Unsafe;
 
 @SuppressWarnings("restriction")

@@ -39,7 +39,7 @@ public class MPMCQueueTest
             }, "take-" + i);
             countThread.start();
         }
-        for ( int i = 0; i < countThreadSum; i++)
+        for (int i = 0; i < countThreadSum; i++)
         {
             final String name = "thread" + i;
             Thread thread = new Thread(new Runnable() {

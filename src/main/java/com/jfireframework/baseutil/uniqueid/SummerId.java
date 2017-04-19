@@ -64,12 +64,8 @@ public class SummerId implements Uid
     }
     
     /**
-     * 使用64个bit进行id生成
-     * 第一个bit不使用，默认为0
-     * 2-40bit是为毫秒是时间戳。足够使用17年
-     * 41-48bit是workerid的值
-     * 49-64bit为序号，最大长度为0x0000ffff。
-     * 该算法可以在1毫秒内产生0x0000ffff个id。
+     * 使用64个bit进行id生成 第一个bit不使用，默认为0 2-40bit是为毫秒是时间戳。足够使用17年 41-48bit是workerid的值
+     * 49-64bit为序号，最大长度为0x0000ffff。 该算法可以在1毫秒内产生0x0000ffff个id。
      * 注意：该算法未进行超时保护。如果机器的能力超过了1毫秒0x0000ffff的id，则id会出现重复。但是这个数字已经十分大。基本不太可能。
      */
     @Override

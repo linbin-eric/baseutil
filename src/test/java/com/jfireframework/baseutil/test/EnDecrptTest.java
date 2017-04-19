@@ -2,10 +2,8 @@ package com.jfireframework.baseutil.test;
 
 import java.nio.charset.Charset;
 import java.util.Random;
-
 import org.junit.Assert;
 import org.junit.Test;
-
 import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.encrypt.AesUtil;
 import com.jfireframework.baseutil.encrypt.DesUtil;

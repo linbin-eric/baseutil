@@ -1,7 +1,6 @@
 package com.jfireframework.baseutil.simplelog;
 
 import java.util.Arrays;
-
 import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.code.CodeLocation;
 

@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import com.jfireframework.baseutil.aliasanno.AliasFor;
 import com.jfireframework.baseutil.aliasanno.AnnotationUtil;
-import com.jfireframework.baseutil.aliasanno.ExtendsFor;
 
 public class AnnoTest
 {
@@ -20,6 +19,7 @@ public class AnnoTest
     
     @testAnno
     @level2value(value = "levle2", a = "3")
+    @level2nest
     public static class innrtest
     {
         
@@ -33,6 +33,13 @@ public class AnnoTest
         public String[] array() default {};
     }
     
+    @level2value(value = "levle2-nest", a = "3")
+    @Retention(RUNTIME)
+    public static @interface level2nest
+    {
+        
+    }
+    
     @Retention(RUNTIME)
     @level1value(value = "level1", array = { "1", "2" })
     public static @interface level2value
@@ -40,16 +47,22 @@ public class AnnoTest
         @AliasFor(value = "value", annotation = level1value.class)
         public String value();
         
-        @ExtendsFor(value = "array", annotation = level1value.class)
+        @AliasFor(value = "array", annotation = level1value.class, isExtends = true)
         public String[] a() default {};
     }
     
     @Test
     public void test()
     {
+        AnnotationUtil annotationUtil = new AnnotationUtil();
         Assert.assertTrue(innrtest.class.isAnnotationPresent(testAnno.class));
-        Assert.assertTrue(AnnotationUtil.isPresent(testAnno.class, innrtest.class));
-        Assert.assertEquals("levle2", AnnotationUtil.getAnnotation(level1value.class, innrtest.class).value());
-        Assert.assertArrayEquals(new String[] { "1", "2", "3" }, AnnotationUtil.getAnnotation(level1value.class, innrtest.class).array());
+        Assert.assertTrue(annotationUtil.isPresent(testAnno.class, innrtest.class));
+        Assert.assertTrue(annotationUtil.isPresent(level2nest.class, innrtest.class));
+        Assert.assertTrue(annotationUtil.isPresent(level2value.class, innrtest.class));
+        level1value[] array = annotationUtil.getAnnotations(level1value.class, innrtest.class);
+        Assert.assertTrue(array[1].value().equals("levle2-nest") || array[1].value().equals("levle2"));
+        Assert.assertTrue(array[0].value().equals("levle2-nest") || array[0].value().equals("levle2"));
+        Assert.assertNotEquals(array[0].value(), array[1].value());
+        Assert.assertArrayEquals(new String[] { "1", "2", "3" }, annotationUtil.getAnnotation(level1value.class, innrtest.class).array());
     }
 }

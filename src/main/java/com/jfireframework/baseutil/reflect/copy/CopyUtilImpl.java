@@ -23,11 +23,9 @@ public class CopyUtilImpl<S, D> implements CopyUtil<S, D>
         List<CopyField> copyFields = new ArrayList<CopyField>();
         for (Field desField : desFields)
         {
-            if (
-                Modifier.isStatic(desField.getModifiers()) //
-                        || Modifier.isFinal(desField.getModifiers()) //
-                        || desField.isAnnotationPresent(CopyIgnore.class)
-            )
+            if (Modifier.isStatic(desField.getModifiers()) //
+                    || Modifier.isFinal(desField.getModifiers()) //
+                    || desField.isAnnotationPresent(CopyIgnore.class))
             {
                 continue;
             }

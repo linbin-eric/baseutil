@@ -9,245 +9,300 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.exception.JustThrowException;
 import com.jfireframework.baseutil.exception.UnSupportException;
+import com.jfireframework.baseutil.verify.Verify;
 
 public class AnnotationUtil
 {
-    private static final Map<Annotation, AnnoContext> aliasMap = new ConcurrentHashMap<Annotation, AnnoContext>(256);
+    private final Map<Annotation, AnnotationTree> treeMap = new ConcurrentHashMap<Annotation, AnnotationTree>(256);
     
-    public static boolean isPresent(Class<? extends Annotation> annoType, Field field)
+    public void clear()
+    {
+        treeMap.clear();
+    }
+    
+    public boolean isPresent(Class<? extends Annotation> annoType, Field field)
     {
         if (field.isAnnotationPresent(annoType))
         {
             return true;
         }
-        return getAnnotation(annoType, field) != null;
+        if (field.getAnnotation(annoType) != null)
+        {
+            return true;
+        }
+        return isPresent(annoType, field.getAnnotations());
     }
     
-    public static boolean isPresent(Class<? extends Annotation> annoType, Class<?> target)
+    private boolean isPresent(Class<? extends Annotation> annoType, Annotation[] annotations)
+    {
+        for (Annotation each : annotations)
+        {
+            AnnotationTree annotationTree = treeMap.get(each);
+            if (annotationTree == null)
+            {
+                annotationTree = new AnnotationTreeImpl(each);
+                treeMap.put(each, annotationTree);
+            }
+            if (annotationTree.isPresent(annoType))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isPresent(Class<? extends Annotation> annoType, Class<?> target)
     {
         if (target.isAnnotationPresent(annoType) && target.isAnnotation() == false)
         {
             return true;
         }
-        return getAnnotation(annoType, target) != null;
+        return isPresent(annoType, target.getAnnotations());
     }
     
-    public static boolean isPresent(Class<? extends Annotation> annoType, Method method)
+    public boolean isPresent(Class<? extends Annotation> annoType, Method method)
     {
         if (method.isAnnotationPresent(annoType))
         {
             return true;
         }
-        return getAnnotation(annoType, method) != null;
+        return isPresent(annoType, method.getAnnotations());
     }
     
-    public static <T extends Annotation> T getAnnotation(Class<T> annoType, Method method)
+    public <T extends Annotation> T getAnnotation(Class<T> annoType, Method method)
     {
-        T anno = null;
-        anno = method.getAnnotation(annoType);
-        if (anno != null)
+        T result = method.getAnnotation(annoType);
+        if (result != null)
         {
-            return anno;
+            return result;
         }
         return getAnnotation(annoType, method.getAnnotations());
     }
     
-    public static <T extends Annotation> T getAnnotation(Class<T> annoType, Field field)
+    public <T extends Annotation> T getAnnotation(Class<T> annoType, Field field)
     {
-        T anno = null;
-        anno = field.getAnnotation(annoType);
-        if (anno != null)
+        T result = field.getAnnotation(annoType);
+        if (result != null)
         {
-            return anno;
+            return result;
         }
         return getAnnotation(annoType, field.getAnnotations());
     }
     
-    private static <T extends Annotation> T getAnnotation(Class<T> annoType, Annotation[] annotations)
+    private <T extends Annotation> T getAnnotation(Class<T> annoType, Annotation[] annotations)
     {
         for (Annotation each : annotations)
         {
-            AnnoContext annoContext = aliasMap.get(each);
-            if (annoContext == null)
+            AnnotationTree annotationTree = treeMap.get(each);
+            if (annotationTree == null)
             {
-                annoContext = new AnnoContext(each);
-                aliasMap.put(each, annoContext);
+                annotationTree = new AnnotationTreeImpl(each);
+                treeMap.put(each, annotationTree);
             }
-            if (annoContext.isPresent(annoType))
+            if (annotationTree.isPresent(annoType))
             {
-                return annoContext.getAnno(annoType);
+                return annotationTree.getAnnotation(annoType);
             }
         }
         return null;
     }
     
-    public static <T extends Annotation> T getAnnotation(Class<T> annotationType, Class<?> target)
+    public <T extends Annotation> T[] getAnnotations(Class<T> annoType, Field field)
+    {
+        return getAnnotations(annoType, field.getAnnotations());
+    }
+    
+    public <T extends Annotation> T[] getAnnotations(Class<T> annoType, Method method)
+    {
+        return getAnnotations(annoType, method.getAnnotations());
+    }
+    
+    public <T extends Annotation> T[] getAnnotations(Class<T> annoType, Class<?> ckass)
+    {
+        return getAnnotations(annoType, ckass.getAnnotations());
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T extends Annotation> T[] getAnnotations(Class<T> annoType, Annotation[] annotations)
+    {
+        List<T> contexts = new ArrayList<T>();
+        for (Annotation each : annotations)
+        {
+            AnnotationTree annotationTree = treeMap.get(each);
+            if (annotationTree == null)
+            {
+                annotationTree = new AnnotationTreeImpl(each);
+                treeMap.put(each, annotationTree);
+            }
+            if (annotationTree.isPresent(annoType))
+            {
+                for (T annotation : annotationTree.getAnnotations(annoType))
+                {
+                    contexts.add(annotation);
+                }
+            }
+        }
+        T[] array = (T[]) Array.newInstance(annoType, contexts.size());
+        return contexts.toArray(array);
+    }
+    
+    public <T extends Annotation> T getAnnotation(Class<T> annotationType, Class<?> target)
     {
         if (target.isAnnotation())
         {
             return null;
         }
-        T anno;
-        anno = target.getAnnotation(annotationType);
-        if (anno != null)
+        T result = target.getAnnotation(annotationType);
+        if (result != null)
         {
-            return anno;
+            return result;
         }
         return getAnnotation(annotationType, target.getAnnotations());
     }
     
-    static class AnnoContext
+    /**
+     * 注解树。代表着一个根注解所展开的整个树信息
+     * 
+     * @author 林斌
+     *
+     */
+    interface AnnotationTree
     {
-        private final Map<String, ValueProxy>          valueMap = new HashMap<String, ValueProxy>();
-        private final Set<Class<? extends Annotation>> types    = new HashSet<Class<? extends Annotation>>();
-        private final ClassLoader                      classLoader;
+        boolean isPresent(Class<? extends Annotation> type);
         
-        enum schema
-        {
-            alias, extendsfor, origin
-        }
+        <T extends Annotation> T getAnnotation(Class<T> type);
         
-        class ValueProxy
-        {
-            private final Object value;
-            private final schema schema;
-            
-            public ValueProxy(Object value, schema schema)
-            {
-                this.value = value;
-                this.schema = schema;
-            }
-        }
+        <T extends Annotation> T[] getAnnotations(Class<T> type);
+    }
+    
+    class AnnotationTreeImpl implements AnnotationTree
+    {
+        private Set<Class<? extends Annotation>>     types       = new HashSet<Class<? extends Annotation>>();
+        private Map<String, Object>                  aliasValue  = new HashMap<String, Object>();
+        private Map<String, Object>                  extendValue = new HashMap<String, Object>();
+        private Set<Annotation>                      annotations = new HashSet<Annotation>();
+        private Map<Class<Annotation>, Annotation[]> resultMap   = new HashMap<Class<Annotation>, Annotation[]>();
+        private ClassLoader                          classLoader;
         
-        public AnnoContext(Annotation annotation)
+        @SuppressWarnings("unchecked")
+        public AnnotationTreeImpl(Annotation annotation)
         {
             classLoader = annotation.annotationType().getClassLoader();
             resolveAliasValues(annotation);
+            List<Annotation> tmp = new ArrayList<Annotation>();
+            for (Class<?> annotationType : types)
+            {
+                tmp.clear();
+                for (Annotation instance : annotations)
+                {
+                    if (instance.annotationType() == annotationType)
+                    {
+                        tmp.add(instance);
+                    }
+                }
+                resultMap.put((Class<Annotation>) annotationType, tmp.toArray(new Annotation[tmp.size()]));
+            }
         }
         
         private void resolveAliasValues(Annotation annotation)
         {
             types.add(annotation.annotationType());
+            Map<String, Object> valueMap = new HashMap<String, Object>();
             for (Method each : annotation.annotationType().getMethods())
             {
-                if (each.getParameterTypes().length != 0 || each.getDeclaringClass() == Annotation.class)
+                try
                 {
-                    continue;
-                }
-                String name = null;
-                Object value = null;
-                ValueProxy valueProxy;
-                if (each.isAnnotationPresent(AliasFor.class))
-                {
-                    AliasFor aliasFor = each.getAnnotation(AliasFor.class);
-                    try
+                    if (each.getParameterTypes().length != 0 //
+                            || each.getDeclaringClass() == Annotation.class//
+                            || Modifier.isPublic(each.getModifiers()) == false)
                     {
-                        name = aliasFor.annotation().getName() + "." + aliasFor.annotation().getMethod(aliasFor.value()).getName();
+                        continue;
                     }
-                    catch (Exception e)
+                    String name = each.getDeclaringClass().getName() + "." + each.getName();
+                    if (aliasValue.containsKey(name))
                     {
-                        throw new UnSupportException(StringUtil.format("别名注解的属性不存在，请检查{}.{}中的别名是否拼写错误", each.getDeclaringClass().getName(), each.getName()), e);
+                        valueMap.put(name, aliasValue.get(name));
+                        continue;
                     }
-                    try
+                    else if (extendValue.containsKey(name))
                     {
-                        value = each.invoke(annotation);
+                        Object value = each.invoke(annotation);
+                        Object extend = extendValue.get(name);
+                        int valueLength = Array.getLength(value);
+                        int extendLength = Array.getLength(extend);
+                        Object newArray = Array.newInstance(value.getClass().getComponentType(), valueLength + extendLength);
+                        System.arraycopy(value, 0, newArray, 0, valueLength);
+                        System.arraycopy(extend, 0, newArray, valueLength, extendLength);
+                        valueMap.put(name, newArray);
+                        continue;
                     }
-                    catch (Exception e)
+                    valueMap.put(name, each.invoke(annotation));
+                    if (each.isAnnotationPresent(AliasFor.class))
                     {
-                        throw new JustThrowException(e);
-                    }
-                    valueProxy = new ValueProxy(value, schema.alias);
-                }
-                else if (each.isAnnotationPresent(ExtendsFor.class))
-                {
-                    ExtendsFor extendsFor = each.getAnnotation(ExtendsFor.class);
-                    try
-                    {
-                        if (each.getReturnType() != extendsFor.annotation().getMethod(extendsFor.value()).getReturnType())
+                        AliasFor aliasFor = each.getAnnotation(AliasFor.class);
+                        Verify.True(annotation.annotationType().isAnnotationPresent(aliasFor.annotation()), "注解别名只能针对直接注解在本注解上的注解生效，请检查{}的属性:{}", annotation.annotationType().getName(), each.getName());
+                        Method originAnnoMethod;
+                        try
                         {
-                            throw new UnSupportException(StringUtil.format("需要继承的属性与本注解属性不一致，请检查{}.{}", each.getDeclaringClass().getName(), each.getName()));
+                            originAnnoMethod = aliasFor.annotation().getMethod(aliasFor.value());
                         }
-                        if (each.getReturnType().isArray() == false)
+                        catch (Exception e)
                         {
-                            throw new UnSupportException(StringUtil.format("只有数组才能继承，请检查{}.{}", each.getDeclaringClass().getName(), each.getName()));
+                            throw new UnSupportException(StringUtil.format("别名注解的属性不存在，请检查{}.{}中的别名是否拼写错误", each.getDeclaringClass().getName(), each.getName()), e);
                         }
-                        name = extendsFor.annotation().getName() + "." + extendsFor.annotation().getMethod(extendsFor.value()).getName();
+                        name = aliasFor.annotation().getName() + "." + aliasFor.value();
+                        if (aliasFor.isExtends() == false)
+                        {
+                            try
+                            {
+                                aliasValue.put(name, each.invoke(annotation));
+                            }
+                            catch (Exception e)
+                            {
+                                throw new JustThrowException(e);
+                            }
+                        }
+                        else
+                        {
+                            if (each.getReturnType() != originAnnoMethod.getReturnType())
+                            {
+                                throw new UnSupportException(StringUtil.format("需要继承的属性与本注解属性不一致，请检查{}.{}", each.getDeclaringClass().getName(), each.getName()));
+                            }
+                            if (each.getReturnType().isArray() == false)
+                            {
+                                throw new UnSupportException(StringUtil.format("只有数组才能继承，请检查{}.{}", each.getDeclaringClass().getName(), each.getName()));
+                            }
+                            try
+                            {
+                                extendValue.put(name, each.invoke(annotation));
+                            }
+                            catch (Exception e)
+                            {
+                                throw new JustThrowException(e);
+                            }
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        throw new UnSupportException(StringUtil.format("别名注解的属性不存在，请检查{}.{}中的别名是否拼写错误", each.getDeclaringClass().getName(), each.getName()), e);
-                    }
-                    try
-                    {
-                        value = each.invoke(annotation);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new JustThrowException(e);
-                    }
-                    valueProxy = new ValueProxy(value, schema.extendsfor);
                 }
-                else
+                catch (Exception e)
                 {
-                    name = each.getDeclaringClass().getName() + '.' + each.getName();
-                    try
-                    {
-                        value = each.invoke(annotation);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                        throw new JustThrowException(e);
-                    }
-                    valueProxy = new ValueProxy(value, schema.origin);
+                    e.printStackTrace();
+                    throw new JustThrowException(e);
                 }
-                String originName = each.getDeclaringClass().getName() + '.' + each.getName();
-                // if判断为真，意味着该属性的值被更上层的注解指定过
-                if (valueMap.containsKey(originName))
-                {
-                    ValueProxy pred = valueMap.get(originName);
-                    switch (pred.schema)
-                    {
-                        case origin:
-                            // 在属性值已经被上层注解注定的情况下，上层的注解的类型肯定不是origin
-                            throw new UnSupportException("程序逻辑异常，代码不应该可以走到这个地方");
-                        case alias:
-                            valueProxy = new ValueProxy(pred.value, valueProxy.schema);
-                            valueMap.put(name, valueProxy);
-                            break;
-                        case extendsfor:
-                            Class<?> predType = pred.value.getClass();
-                            int predArrayLength = Array.getLength(pred.value);
-                            int arrayLength = Array.getLength(valueProxy.value);
-                            Object newArray = Array.newInstance(predType.getComponentType(), predArrayLength + arrayLength);
-                            System.arraycopy(valueProxy.value, 0, newArray, 0, arrayLength);
-                            System.arraycopy(pred.value, 0, newArray, arrayLength, predArrayLength);
-                            valueProxy = new ValueProxy(newArray, schema.origin);
-                            valueMap.put(name, valueProxy);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                // 出现这种情况意味着本属性要指定的值已经被上层的注解指定，此时应该忽略
-                else if (valueMap.containsKey(name))
-                {
-                }
-                else
-                {
-                    valueMap.put(name, valueProxy);
-                }
-                
             }
+            Annotation result = (Annotation) Proxy.newProxyInstance(classLoader, new Class<?>[] { annotation.annotationType() }, new aliasInvocationHandler(valueMap, annotation));
+            annotations.add(result);
             for (Annotation anno : annotation.annotationType().getDeclaredAnnotations())
             {
                 if (anno instanceof Documented || anno instanceof Target || anno instanceof Retention || anno instanceof Inherited)
@@ -258,27 +313,54 @@ public class AnnotationUtil
             }
         }
         
+        class aliasInvocationHandler implements InvocationHandler
+        {
+            private final Map<String, Object> valueMap;
+            private final Annotation          host;
+            
+            public aliasInvocationHandler(Map<String, Object> valueMap, Annotation host)
+            {
+                this.valueMap = valueMap;
+                this.host = host;
+            }
+            
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+            {
+                String name = method.getDeclaringClass().getName() + '.' + method.getName();
+                Object value = valueMap.get(name);
+                return value == null ? method.invoke(host, args) : value;
+            }
+        }
+        
         public boolean isPresent(Class<? extends Annotation> type)
         {
             return types.contains(type);
         }
         
         @SuppressWarnings("unchecked")
-        public <T extends Annotation> T getAnno(Class<T> type)
+        @Override
+        public <T extends Annotation> T getAnnotation(Class<T> type)
         {
-            return (T) Proxy.newProxyInstance(classLoader, new Class<?>[] { type }, new aliasInvocationHandler());
+            Annotation[] annotations = resultMap.get(type);
+            return (T) (annotations != null ? annotations[0] : null);
         }
         
-        class aliasInvocationHandler implements InvocationHandler
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T extends Annotation> T[] getAnnotations(Class<T> type)
         {
-            
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+            Annotation[] annotations = resultMap.get(type);
+            if (annotations == null)
             {
-                String name = method.getDeclaringClass().getName() + '.' + method.getName();
-                return valueMap.get(name).value;
+                return null;
+            }
+            else
+            {
+                T[] array = (T[]) Array.newInstance(type, annotations.length);
+                System.arraycopy(annotations, 0, array, 0, annotations.length);
+                return array;
             }
         }
     }
-    
 }

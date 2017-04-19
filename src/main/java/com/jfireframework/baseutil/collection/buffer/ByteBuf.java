@@ -479,7 +479,8 @@ public abstract class ByteBuf<T>
     public int indexOf(byte[] src)
     {
         int length = src.length;
-        next: for (int i = readIndex; i < writeIndex; i++)
+        next:
+        for (int i = readIndex; i < writeIndex; i++)
         {
             if (get(i) == src[0] && i + length < writeIndex)
             {
@@ -506,8 +507,6 @@ public abstract class ByteBuf<T>
      * @return
      */
     public abstract String hexString();
-    
-    
     
     public ByteBuf<T> writeIntArray(int[] array)
     {
