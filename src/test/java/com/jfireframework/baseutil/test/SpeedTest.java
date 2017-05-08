@@ -1,14 +1,14 @@
 package com.jfireframework.baseutil.test;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.jfireframework.baseutil.Timelog;
 import com.jfireframework.baseutil.collection.StringCache;
-import com.jfireframework.baseutil.simplelog.ConsoleLogFactory;
-import com.jfireframework.baseutil.simplelog.Logger;
 
 public class SpeedTest
 {
-    private Logger logger = ConsoleLogFactory.getLogger(ConsoleLogFactory.DEBUG);
+    private Logger logger = LoggerFactory.getLogger(SpeedTest.class);
     
     @Test
     public void StringBuilderAndStringCache()

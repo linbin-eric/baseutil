@@ -282,7 +282,11 @@ public class MPSCQueue<E> extends Tail implements Queue<E>
     @Override
     public boolean addAll(Collection<? extends E> c)
     {
-        throw new UnsupportedOperationException();
+        for (E e : c)
+        {
+            offer(e);
+        }
+        return true;
     }
     
     @Override

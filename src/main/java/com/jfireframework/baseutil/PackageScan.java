@@ -128,10 +128,7 @@ public class PackageScan
         {
             String className = packageName + packageFile.getName().replace(".class", "");
             className = className.replaceAll("/", ".");
-            if (!className.contains("$"))
-            {
-                classNames.add(className);
-            }
+            classNames.add(className);
         }
         else
         {

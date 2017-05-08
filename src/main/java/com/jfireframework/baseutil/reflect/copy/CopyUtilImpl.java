@@ -49,6 +49,10 @@ public class CopyUtilImpl<S, D> implements CopyUtil<S, D>
     @Override
     public D copy(S src, D desc)
     {
+        if (src == null)
+        {
+            return desc;
+        }
         for (CopyField each : copyFields)
         {
             each.copy(src, desc);
