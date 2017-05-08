@@ -26,7 +26,7 @@ public class MethodModel
         {
             cache.append("\t\t").append(each).append("\r\n");
         }
-        cache.append("\r\n\t}\r\n");
+        cache.append("\t}\r\n");
         return cache.toString();
     }
     

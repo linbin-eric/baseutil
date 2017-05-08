@@ -94,21 +94,7 @@ public class CompilerModel
             cache.append('\t').append(each.toString());
         }
         cache.append("}");
-        addLineNo(cache);
         return cache.toString();
-    }
-    
-    private void addLineNo(StringCache cache)
-    {
-        String source = cache.toString();
-        int lineNo = 1;
-        String[] tmp = source.split("\r\n");
-        cache.clear();
-        for (String each : tmp)
-        {
-            cache.append(each).append("          //line:").append(lineNo).append("\r\n");
-            lineNo += 1;
-        }
     }
     
 }
