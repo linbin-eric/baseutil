@@ -82,6 +82,11 @@ public class MethodModel
         }
     }
     
+    /**
+     * 获取方法调用的源码表达
+     * 
+     * @return
+     */
     public String getInvokeInfo()
     {
         StringCache cache = new StringCache();

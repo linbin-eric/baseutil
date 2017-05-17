@@ -73,7 +73,7 @@ public class JavaStringCompiler
                 logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", modle.toString());
                 throw new RuntimeException("Compilation failed.");
             }
-            return loadClass("com.jfireframe.smc.output." + modle.className(), manager.getClassBytes(), classLoader);
+            return loadClass("com.jfireframe.smc.output." + modle.className(), manager.getClassBytes(), classLoader == null ? Thread.currentThread().getContextClassLoader() : classLoader);
         }
         finally
         {

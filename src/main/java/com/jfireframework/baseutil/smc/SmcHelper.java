@@ -192,6 +192,12 @@ public class SmcHelper
         }
     }
     
+    /**
+     * 获得类型的全限定名表达。其中对数组可以转化为源码的标准形式，以及内部类的源码形式
+     * 
+     * @param type
+     * @return
+     */
     public static String getTypeName(Class<?> type)
     {
         if (type.isArray() == false)
