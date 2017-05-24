@@ -1,5 +1,7 @@
 package com.jfireframework.baseutil.smc.model;
 
+import com.jfireframework.baseutil.smc.SmcHelper;
+
 public class FieldModel
 {
     private final String   name;
@@ -12,7 +14,7 @@ public class FieldModel
         this.name = name;
         this.type = type;
         StringBuilder builder = new StringBuilder();
-        builder.append("public ").append(type.getName()).append(" ").append(name).append(";\r\n");
+        builder.append("public ").append(SmcHelper.getTypeName(type)).append(" ").append(name).append(";\r\n");
         outSource = builder.toString();
     }
     
@@ -21,7 +23,7 @@ public class FieldModel
         this.name = name;
         this.type = type;
         StringBuilder builder = new StringBuilder();
-        builder.append("public ").append(type.getName()).append(" ").append(name).append(" = ").append(initStr).append(";\r\n");
+        builder.append("public ").append(SmcHelper.getTypeName(type)).append(" ").append(name).append(" = ").append(initStr).append(";\r\n");
         outSource = builder.toString();
     }
     
