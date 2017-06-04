@@ -14,10 +14,10 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.exception.JustThrowException;
 import com.jfireframework.baseutil.exception.UnSupportException;
@@ -25,12 +25,7 @@ import com.jfireframework.baseutil.verify.Verify;
 
 public class AnnotationUtil
 {
-    private final Map<Annotation, AnnotationTree> treeMap = new ConcurrentHashMap<Annotation, AnnotationTree>(256);
-    
-    public void clear()
-    {
-        treeMap.clear();
-    }
+    private final IdentityHashMap<Annotation, AnnotationTree> treeMap = new IdentityHashMap<Annotation, AnnotationTree>(256);
     
     public boolean isPresent(Class<? extends Annotation> annoType, Field field)
     {
@@ -45,7 +40,7 @@ public class AnnotationUtil
         return isPresent(annoType, field.getAnnotations());
     }
     
-    private boolean isPresent(Class<? extends Annotation> annoType, Annotation[] annotations)
+    public boolean isPresent(Class<? extends Annotation> annoType, Annotation... annotations)
     {
         for (Annotation each : annotations)
         {
@@ -101,7 +96,7 @@ public class AnnotationUtil
         return getAnnotation(annoType, field.getAnnotations());
     }
     
-    private <T extends Annotation> T getAnnotation(Class<T> annoType, Annotation[] annotations)
+    public <T extends Annotation> T getAnnotation(Class<T> annoType, Annotation[] annotations)
     {
         for (Annotation each : annotations)
         {
@@ -135,7 +130,7 @@ public class AnnotationUtil
     }
     
     @SuppressWarnings("unchecked")
-    private <T extends Annotation> T[] getAnnotations(Class<T> annoType, Annotation[] annotations)
+    public <T extends Annotation> T[] getAnnotations(Class<T> annoType, Annotation[] annotations)
     {
         List<T> contexts = new ArrayList<T>();
         for (Annotation each : annotations)
@@ -173,6 +168,30 @@ public class AnnotationUtil
     }
     
     /**
+     * 从annotations及其注解这些注解的所有注解中，寻找被annotation所注解的注解实例
+     * 
+     * @param <T>
+     * 
+     * @param annotation
+     * @param annotations
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getAnnotatedAnnotation(Annotation annotation, Annotation... annotations)
+    {
+        for (Annotation each : annotations)
+        {
+            AnnotationTree candidate = treeMap.get(each);
+            T t = (T) candidate.getAnnotatedAnnotation(annotation);
+            if (t != null)
+            {
+                return t;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * 注解树。代表着一个根注解所展开的整个树信息
      * 
      * @author 林斌
@@ -185,16 +204,28 @@ public class AnnotationUtil
         <T extends Annotation> T getAnnotation(Class<T> type);
         
         <T extends Annotation> T[] getAnnotations(Class<T> type);
+        
+        /**
+         * 返回被入参注解所注解的注解
+         * 
+         * @param annotation
+         * @return
+         */
+        Annotation getAnnotatedAnnotation(Annotation annotation);
     }
     
     class AnnotationTreeImpl implements AnnotationTree
     {
-        private Set<Class<? extends Annotation>>     types       = new HashSet<Class<? extends Annotation>>();
-        private Map<String, Object>                  aliasValue  = new HashMap<String, Object>();
-        private Map<String, Object>                  extendValue = new HashMap<String, Object>();
-        private Set<Annotation>                      annotations = new HashSet<Annotation>();
-        private Map<Class<Annotation>, Annotation[]> resultMap   = new HashMap<Class<Annotation>, Annotation[]>();
-        private ClassLoader                          classLoader;
+        /**
+         * V 是被Annotation K 注解的Annotation
+         */
+        private IdentityHashMap<Annotation, Annotation> annotatedAnnotation = new IdentityHashMap<Annotation, Annotation>();
+        private Set<Class<? extends Annotation>>        types               = new HashSet<Class<? extends Annotation>>();
+        private Map<String, Object>                     aliasValue          = new HashMap<String, Object>();
+        private Map<String, Object>                     extendValue         = new HashMap<String, Object>();
+        private Set<Annotation>                         annotations         = new HashSet<Annotation>();
+        private Map<Class<Annotation>, Annotation[]>    resultMap           = new HashMap<Class<Annotation>, Annotation[]>();
+        private ClassLoader                             classLoader;
         
         @SuppressWarnings("unchecked")
         public AnnotationTreeImpl(Annotation annotation)
@@ -216,7 +247,7 @@ public class AnnotationUtil
             }
         }
         
-        private void resolveAliasValues(Annotation annotation)
+        private Annotation resolveAliasValues(Annotation annotation)
         {
             types.add(annotation.annotationType());
             Map<String, Object> valueMap = new HashMap<String, Object>();
@@ -309,8 +340,9 @@ public class AnnotationUtil
                 {
                     continue;
                 }
-                resolveAliasValues(anno);
+                annotatedAnnotation.put(resolveAliasValues(anno), result);
             }
+            return result;
         }
         
         class aliasInvocationHandler implements InvocationHandler
@@ -362,5 +394,12 @@ public class AnnotationUtil
                 return array;
             }
         }
+        
+        @Override
+        public Annotation getAnnotatedAnnotation(Annotation annotation)
+        {
+            return annotatedAnnotation.get(annotation);
+        }
+        
     }
 }
