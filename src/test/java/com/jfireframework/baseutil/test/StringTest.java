@@ -1,5 +1,7 @@
 package com.jfireframework.baseutil.test;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import com.jfireframework.baseutil.StringUtil;
@@ -15,5 +17,11 @@ public class StringTest
         pattern = "这是一个很大的问题，问题是{},zenm{},21asda{}";
         result = StringUtil.format(pattern, "嘿嘿", 1);
         Assert.assertEquals("这是一个很大的问题，问题是嘿嘿,zenm1,21asda{}", result);
+        pattern = "这是一个很大的问题，问题是{question},zenm {name}";
+        Map<String, String> values = new HashMap<String, String>();
+        values.put("question", "1");
+        values.put("name", "lb");
+        result = StringUtil.format(pattern, values);
+        Assert.assertEquals("这是一个很大的问题，问题是1,zenm lb", result);
     }
 }

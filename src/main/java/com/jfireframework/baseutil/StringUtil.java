@@ -3,6 +3,7 @@ package com.jfireframework.baseutil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Map;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.exception.JustThrowException;
 import com.jfireframework.baseutil.exception.UnSupportException;
@@ -196,6 +197,53 @@ public class StringUtil
         }
         cache.appendCharArray(value, pre, value.length - pre);
         return cache.toString();
+    }
+    
+    public static String format(String messageTemplate, Map<String, String> values)
+    {
+        StringCache cache = cacheLocal.get();
+        cache.clear();
+        char[] charArray = messageTemplate.toCharArray();
+        int start;
+        int end = 0;
+        while (true)
+        {
+            start = indexOf('{', end, charArray);
+            if (start != -1)
+            {
+                cache.appendCharArray(charArray, end, start - end);
+                end = indexOf('}', start, charArray);
+                if (end != -1)
+                {
+                    String name = messageTemplate.substring(start + 1, end);
+                    cache.append(values.get(name));
+                    end += 1;
+                }
+                else
+                {
+                    cache.appendCharArray(charArray, end, charArray.length - end);
+                    break;
+                }
+            }
+            else
+            {
+                cache.appendCharArray(charArray, end, charArray.length - end);
+                break;
+            }
+        }
+        return cache.toString();
+    }
+    
+    private static int indexOf(char c, int index, char[] array)
+    {
+        for (int i = index; i < array.length; i++)
+        {
+            if (array[i] == c)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
     
     /**
