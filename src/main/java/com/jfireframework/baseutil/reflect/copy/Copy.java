@@ -1,6 +1,7 @@
 package com.jfireframework.baseutil.reflect.copy;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.Map;
 
 public abstract class Copy<S, D> implements CopyUtil<S, D>
 {
@@ -15,6 +16,15 @@ public abstract class Copy<S, D> implements CopyUtil<S, D>
         source = (Class<S>) tmp.getActualTypeArguments()[0];
         destination = (Class<D>) tmp.getActualTypeArguments()[1];
         util = new CopyUtilImpl<S, D>(source, destination);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Copy(Map<String, String> nameMap)
+    {
+        ParameterizedType tmp = (ParameterizedType) (this.getClass().getGenericSuperclass());
+        source = (Class<S>) tmp.getActualTypeArguments()[0];
+        destination = (Class<D>) tmp.getActualTypeArguments()[1];
+        util = new CopyUtilImpl<S, D>(source, destination, nameMap);
     }
     
     @Override

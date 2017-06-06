@@ -7,8 +7,8 @@ import javax.annotation.Resource;
 import org.junit.Assert;
 import org.junit.Test;
 import com.jfireframework.baseutil.AnnoTest.level2value.list;
-import com.jfireframework.baseutil.aliasanno.AliasFor;
-import com.jfireframework.baseutil.aliasanno.AnnotationUtil;
+import com.jfireframework.baseutil.anno.AliasFor;
+import com.jfireframework.baseutil.anno.AnnotationUtil;
 
 public class AnnoTest
 {
@@ -74,14 +74,14 @@ public class AnnoTest
         Assert.assertNotEquals(array[0].value(), array[1].value());
         Assert.assertArrayEquals(new String[] { "1", "2", "3" }, annotationUtil.getAnnotation(level1value.class, innrtest.class).array());
         level1value l1 = annotationUtil.getAnnotation(level1value.class, innrtest.class);
-        Annotation annotation = annotationUtil.getAnnotatedAnnotation(l1, innrtest.class.getAnnotations());
+        Annotation annotation = annotationUtil.getMetaAnnotation(l1, innrtest.class.getAnnotations());
         Assert.assertEquals(level2value.class, annotation.annotationType());
         list list = innrtest.class.getAnnotation(level2value.list.class);
         level1value[] l1_2 = annotationUtil.getAnnotations(level1value.class, list.value());
         for (level1value each : l1_2)
         {
             System.out.println(each.value());
-            level2value l2 = annotationUtil.getAnnotatedAnnotation(each, list.value());
+            level2value l2 = annotationUtil.getMetaAnnotation(each, list.value());
             System.out.println(l2.value());
         }
     }

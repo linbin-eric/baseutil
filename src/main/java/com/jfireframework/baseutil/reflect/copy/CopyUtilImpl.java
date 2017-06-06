@@ -5,6 +5,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public class CopyUtilImpl<S, D> implements CopyUtil<S, D>
@@ -13,34 +15,57 @@ public class CopyUtilImpl<S, D> implements CopyUtil<S, D>
     
     public CopyUtilImpl(Class<S> src, Class<D> des)
     {
-        Field[] srcFields = ReflectUtil.getAllFields(src);
-        Field[] desFields = ReflectUtil.getAllFields(des);
-        HashMap<String, Field> fieldMap = new HashMap<String, Field>();
-        for (Field each : srcFields)
-        {
-            fieldMap.put(each.getName(), each);
-        }
         List<CopyField> copyFields = new ArrayList<CopyField>();
-        for (Field desField : desFields)
+        Map<String, Field> srcMap = generate(src);
+        Map<String, Field> descMap = generate(des);
+        for (Entry<String, Field> each : srcMap.entrySet())
         {
-            if (Modifier.isStatic(desField.getModifiers()) //
-                    || Modifier.isFinal(desField.getModifiers()) //
-                    || desField.isAnnotationPresent(CopyIgnore.class))
+            if (descMap.containsKey(each.getKey()))
+            {
+                Field descField = descMap.get(each.getKey());
+                if (each.getValue().getType() == descField.getType())
+                {
+                    copyFields.add(CopyField.build(each.getValue(), descField));
+                }
+            }
+        }
+        this.copyFields = copyFields.toArray(new CopyField[0]);
+    }
+    
+    private Map<String, Field> generate(Class<?> type)
+    {
+        Map<String, Field> map = new HashMap<String, Field>();
+        for (Field each : ReflectUtil.getAllFields(type))
+        {
+            if (Modifier.isStatic(each.getModifiers()) //
+                    || Modifier.isFinal(each.getModifiers()))
             {
                 continue;
             }
-            String copyName = desField.getName();
-            if (desField.isAnnotationPresent(CopyName.class))
+            map.put(each.getName(), each);
+        }
+        return map;
+    }
+    
+    public CopyUtilImpl(Class<S> src, Class<D> des, Map<String, String> nameMap)
+    {
+        List<CopyField> copyFields = new ArrayList<CopyField>();
+        Map<String, Field> srcMap = generate(src);
+        Map<String, Field> descMap = generate(des);
+        for (Entry<String, Field> each : srcMap.entrySet())
+        {
+            Field descField = null;
+            if (descMap.containsKey(each.getKey()))
             {
-                copyName = desField.getAnnotation(CopyName.class).value();
+                descField = descMap.get(each.getKey());
             }
-            if (fieldMap.containsKey(copyName))
+            else if (descMap.containsKey(nameMap.get(each.getKey())))
             {
-                Field srcField = fieldMap.get(copyName);
-                if (srcField.getType() == desField.getType())
-                {
-                    copyFields.add(CopyField.build(srcField, desField));
-                }
+                descField = descMap.get(nameMap.get(each.getKey()));
+            }
+            if (descField != null && each.getValue().getType() == descField.getType())
+            {
+                copyFields.add(CopyField.build(each.getValue(), descField));
             }
         }
         this.copyFields = copyFields.toArray(new CopyField[0]);

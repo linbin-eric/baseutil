@@ -1,4 +1,4 @@
-package com.jfireframework.baseutil.aliasanno;
+package com.jfireframework.baseutil.anno;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -177,12 +177,12 @@ public class AnnotationUtil
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> T getAnnotatedAnnotation(Annotation annotation, Annotation... annotations)
+    public <T> T getMetaAnnotation(Annotation annotation, Annotation... annotations)
     {
         for (Annotation each : annotations)
         {
             AnnotationTree candidate = treeMap.get(each);
-            T t = (T) candidate.getAnnotatedAnnotation(annotation);
+            T t = (T) candidate.getMetaAnnotation(annotation);
             if (t != null)
             {
                 return t;
@@ -211,7 +211,7 @@ public class AnnotationUtil
          * @param annotation
          * @return
          */
-        Annotation getAnnotatedAnnotation(Annotation annotation);
+        Annotation getMetaAnnotation(Annotation annotation);
     }
     
     class AnnotationTreeImpl implements AnnotationTree
@@ -219,7 +219,7 @@ public class AnnotationUtil
         /**
          * V 是被Annotation K 注解的Annotation
          */
-        private IdentityHashMap<Annotation, Annotation> annotatedAnnotation = new IdentityHashMap<Annotation, Annotation>();
+        private IdentityHashMap<Annotation, Annotation> metaAnnotation = new IdentityHashMap<Annotation, Annotation>();
         private Set<Class<? extends Annotation>>        types               = new HashSet<Class<? extends Annotation>>();
         private Map<String, Object>                     aliasValue          = new HashMap<String, Object>();
         private Map<String, Object>                     extendValue         = new HashMap<String, Object>();
@@ -340,7 +340,7 @@ public class AnnotationUtil
                 {
                     continue;
                 }
-                annotatedAnnotation.put(resolveAliasValues(anno), result);
+                metaAnnotation.put(resolveAliasValues(anno), result);
             }
             return result;
         }
@@ -396,9 +396,9 @@ public class AnnotationUtil
         }
         
         @Override
-        public Annotation getAnnotatedAnnotation(Annotation annotation)
+        public Annotation getMetaAnnotation(Annotation annotation)
         {
-            return annotatedAnnotation.get(annotation);
+            return metaAnnotation.get(annotation);
         }
         
     }
