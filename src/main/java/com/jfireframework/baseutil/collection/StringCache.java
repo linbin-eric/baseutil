@@ -48,6 +48,12 @@ public class StringCache
         return this;
     }
     
+    public StringCache count(int count)
+    {
+        this.count = count;
+        return this;
+    }
+    
     public StringCache(int length)
     {
         cache = new char[length];
@@ -91,6 +97,29 @@ public class StringCache
         ensureCapacity(newCount);
         str.getChars(0, length, cache, count);
         count = newCount;
+        return this;
+    }
+    
+    /**
+     * 向字符串中的指定位置放入一个字符串
+     * 
+     * @param str
+     * @param pos 放入的位置
+     * @return
+     */
+    public StringCache append(String str, int pos)
+    {
+        if (str == null)
+        {
+            int newCount = pos + 4;
+            ensureCapacity(newCount);
+            "null".getChars(0, 4, cache, pos);
+            return this;
+        }
+        int length = str.length();
+        int newCount = pos + length;
+        ensureCapacity(newCount);
+        str.getChars(0, length, cache, pos);
         return this;
     }
     

@@ -3,10 +3,7 @@ package com.jfireframework.baseutil.uniqueid;
 import java.lang.management.ManagementFactory;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import com.jfireframework.baseutil.collection.StringCache;
 
 public class WinterId implements Uid
@@ -14,40 +11,115 @@ public class WinterId implements Uid
     
     class Sequencer
     {
-        String                 date;
-        int                    sequence;
-        long                   dateDeadline;
-        long                   lastTime;
-        final StringCache      cache        = new StringCache();
-        final DecimalFormat    numberFormat = new DecimalFormat("0000");
-        final String           pattern      = "yyyyMMddHHmmssSSS_";
-        final SimpleDateFormat format;
+        String            date;
+        int               sequence;
+        long              dateDeadline;
+        long              lastTime;
+        final StringCache cache = new StringCache();
+        int               pidLength;
+        Calendar          now   = Calendar.getInstance();
+        SequenceFormat    sequenceFormat;
+        
+        class SequenceFormat
+        {
+            int posOfYear;
+            int posOfMonth;
+            int posOfDay;
+            int posOfHour;
+            int posOfMinute;
+            int posOfSecond;
+            int posOfMillSecond;
+            int posOfSequence;
+            
+            public SequenceFormat()
+            {
+                posOfYear = pidLength;
+                posOfMonth = posOfYear + 4;
+                posOfDay = posOfMonth + 2;
+                posOfHour = posOfDay + 2;
+                posOfMinute = posOfHour + 2;
+                posOfSecond = posOfHour + 2;
+                posOfMillSecond = posOfSecond + 2;
+                posOfSequence = posOfMillSecond + 4;
+            }
+            
+            void format(StringCache cache, Calendar now, int sequence)
+            {
+                int year = now.get(Calendar.YEAR);
+                cache.append(String.valueOf(year), posOfYear);
+                int month = now.get(Calendar.MONTH) + 1;
+                if (month >= 10)
+                {
+                    cache.append(String.valueOf(month), posOfMonth);
+                }
+                else
+                {
+                    cache.append("0", posOfMonth).append(String.valueOf(month), posOfMonth + 1);
+                }
+                int dayInMonth = now.get(Calendar.DAY_OF_MONTH);
+                if (dayInMonth >= 10)
+                {
+                    cache.append(String.valueOf(dayInMonth), posOfDay);
+                }
+                else
+                {
+                    cache.append("0", posOfDay).append(String.valueOf(dayInMonth), posOfDay + 1);
+                }
+                int hour = now.get(Calendar.HOUR_OF_DAY);
+                if (hour >= 10)
+                {
+                    cache.append(String.valueOf(hour), posOfHour);
+                }
+                else
+                {
+                    cache.append("0", posOfHour).append(String.valueOf(hour), posOfHour + 1);
+                }
+                int minute = now.get(Calendar.MINUTE);
+                if (minute >= 10)
+                {
+                    cache.append(String.valueOf(minute), posOfMinute);
+                }
+                else
+                {
+                    cache.append("0", posOfMinute).append(String.valueOf(minute), posOfMinute + 1);
+                }
+                int seconds = now.get(Calendar.SECOND);
+                if (seconds >= 10)
+                {
+                    cache.append(String.valueOf(seconds), posOfSecond);
+                }
+                else
+                {
+                    cache.append("0", posOfSecond).append(String.valueOf(seconds), posOfSecond + 1);
+                }
+                int millSeconds = now.get(Calendar.MILLISECOND);
+                if (millSeconds >= 100)
+                {
+                    cache.append(String.valueOf(millSeconds), posOfMillSecond);
+                }
+                else if (millSeconds >= 10)
+                {
+                    cache.append("0", posOfMillSecond).append(String.valueOf(millSeconds), posOfMillSecond + 1);
+                }
+                else
+                {
+                    cache.append("00", posOfMillSecond).append(String.valueOf(millSeconds), posOfMillSecond + 2);
+                }
+                cache.count(posOfMillSecond + 3);
+                cache.append('_').append(sequence);
+            }
+        }
         
         public Sequencer()
         {
-            fetchDateDeadline();
-            format = new SimpleDateFormat(pattern);
-        }
-        
-        void fetchDateDeadline()
-        {
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.DAY_OF_YEAR, 1);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            dateDeadline = calendar.getTimeInMillis();
+            cache.appendCharArray(pid, 0, pid.length);
+            pidLength = pid.length;
+            sequenceFormat = new SequenceFormat();
         }
         
         synchronized String next()
         {
             long time = System.currentTimeMillis();
-            if (time >= dateDeadline)
-            {
-                sequence = 0;
-                fetchDateDeadline();
-            }
             if (time > lastTime)
             {
                 sequence = 0;
@@ -57,13 +129,14 @@ public class WinterId implements Uid
             {
                 sequence += 1;
             }
-            cache.clear().append(pid).append(format.format(new Date(time))).append(numberFormat.format(sequence));
+            now.setTimeInMillis(time);
+            sequenceFormat.format(cache, now, sequence);
             return cache.toString();
         }
         
     }
     
-    private static final String      pid;
+    private static final char[]      pid;
     private static volatile WinterId INSTANCE;
     private Sequencer                sequencer;
     
@@ -91,7 +164,7 @@ public class WinterId implements Uid
     
     static
     {
-        pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0] + "_";
+        pid = (ManagementFactory.getRuntimeMXBean().getName().split("@")[0] + "_").toCharArray();
     }
     
     @Override
@@ -121,9 +194,14 @@ public class WinterId implements Uid
     public static void main(String[] args) throws SocketException, UnknownHostException
     {
         WinterId id = WinterId.instance();
-        for (int i = 0; i < 100; i++)
+        String[] array = new String[1000];
+        for (int i = 0; i < 1000; i++)
         {
-            System.out.println(id.generate());
+            array[i] = id.generate();
+        }
+        for (String each : array)
+        {
+            System.out.println(each);
         }
     }
 }
