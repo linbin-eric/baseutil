@@ -258,6 +258,7 @@ public class AnnotationUtil
                     {
                         continue;
                     }
+                    each.setAccessible(true);
                     String name = each.getDeclaringClass().getName() + "." + each.getName();
                     if (aliasValue.containsKey(name))
                     {
