@@ -28,7 +28,7 @@ public class Base64Tool
                 int base = ((src[hign] & 0xff) << 8) | ((src[middle] & 0xff));
                 cache.append(alphabet[(base >> 10) & 0x3f]);
                 cache.append(alphabet[(base >> 4) & 0x3f]);
-                cache.append(alphabet[(base) & 0x0f]);
+                cache.append(alphabet[((base) & 0x0f) << 2]);
                 cache.append('=');
                 return cache.toString();
             }
@@ -36,7 +36,7 @@ public class Base64Tool
             {
                 int base = (src[hign] & 0xff);
                 cache.append(alphabet[(base >> 2) & 0x3f]);
-                cache.append(alphabet[(base) & 0x03]);
+                cache.append(alphabet[((base) & 0x03) << 4]);
                 cache.append('=');
                 cache.append('=');
                 return cache.toString();
@@ -62,14 +62,14 @@ public class Base64Tool
             int h4 = h3 + 1;
             if (charArray[h3] == '=')
             {
-                byte a = (byte) (((toByte(charArray[h1]) & 0x3f) << 2) | toByte(charArray[h2]) & 0x03);
+                byte a = (byte) (((toByte(charArray[h1]) & 0x3f) << 2) | (toByte(charArray[h2]) & 0x3f) >> 4);
                 result[j] = a;
                 return result;
             }
             else if (charArray[h4] == '=')
             {
                 byte a = (byte) (((toByte(charArray[h1]) & 0xff) << 2) | ((toByte(charArray[h2]) & 0x3f) >> 4));
-                byte b = (byte) (((toByte(charArray[h2]) & 0x0f) << 4) | ((toByte(charArray[h3]) & 0x0f)));
+                byte b = (byte) (((toByte(charArray[h2]) & 0x0f) << 4) | ((toByte(charArray[h3]) & 0x3f) >> 2));
                 result[j++] = a;
                 result[j++] = b;
                 return result;
@@ -78,7 +78,7 @@ public class Base64Tool
             {
                 byte a = (byte) (((toByte(charArray[h1]) & 0x3f) << 2) | ((toByte(charArray[h2]) & 0x3f) >> 4));
                 byte b = (byte) (((toByte(charArray[h2]) & 0x0f) << 4) | ((toByte(charArray[h3]) & 0x3f)) >> 2);
-                byte c = (byte) (((toByte(charArray[h3]) & 0x03) << 6) | ((toByte(charArray[h4]) & 0xff)));
+                byte c = (byte) (((toByte(charArray[h3]) & 0x03) << 6) | ((toByte(charArray[h4]) & 0x3f)));
                 result[j++] = a;
                 result[j++] = b;
                 result[j++] = c;

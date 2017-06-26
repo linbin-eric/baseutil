@@ -1,7 +1,15 @@
 package com.jfireframework.baseutil.encrypt;
 
 import java.io.IOException;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
@@ -18,14 +26,19 @@ import com.jfireframework.baseutil.exception.UnSupportException;
 public class RSAUtil implements EnDecrpt
 {
     
-    private static final String SIGN_ALGORITHMS = "NONEwithRSA";
+    private final String algorithms;
     
-    private PublicKey           publicKey;
-    private PrivateKey          privateKey;
-    private Cipher              decryptCipher;
-    private Cipher              encrptCipher;
-    private Signature           sign;
-    private Signature           check;
+    private PublicKey    publicKey;
+    private PrivateKey   privateKey;
+    private Cipher       decryptCipher;
+    private Cipher       encrptCipher;
+    private Signature    sign;
+    private Signature    check;
+    
+    public RSAUtil(String algorithms)
+    {
+        this.algorithms = algorithms;
+    }
     
     /**
      * 设置rsa加密所需要的公钥
@@ -41,7 +54,7 @@ public class RSAUtil implements EnDecrpt
             publicKey = keyFactory.generatePublic(x509KeySpec);
             encrptCipher = Cipher.getInstance("rsa");
             encrptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            check = Signature.getInstance(SIGN_ALGORITHMS);
+            check = Signature.getInstance(algorithms);
             check.initVerify(publicKey);
         }
         catch (Exception e)
@@ -64,7 +77,7 @@ public class RSAUtil implements EnDecrpt
             privateKey = keyFactory.generatePrivate(pkcs8KeySpec);
             decryptCipher = Cipher.getInstance("rsa");
             decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
-            sign = Signature.getInstance(SIGN_ALGORITHMS);
+            sign = Signature.getInstance(algorithms);
             sign.initSign(privateKey);
         }
         catch (Exception e)
@@ -129,7 +142,7 @@ public class RSAUtil implements EnDecrpt
         }
         catch (SignatureException e)
         {
-            return false;
+            throw new JustThrowException(e);
         }
     }
     
@@ -153,6 +166,6 @@ public class RSAUtil implements EnDecrpt
     
     public static void main(String[] args) throws IOException
     {
-        new RSAUtil().buildKey();
+        new RSAUtil("SHA1WithRSA").buildKey();
     }
 }
