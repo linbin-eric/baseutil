@@ -13,7 +13,6 @@ import java.security.SignatureException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
-import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.exception.JustThrowException;
 import com.jfireframework.baseutil.exception.UnSupportException;
 
@@ -150,13 +149,13 @@ public class RSAUtil implements EnDecrpt
     {
         try
         {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithms);
             keyPairGenerator.initialize(1024);
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
             Key publicKey = keyPair.getPublic();
             Key privateKey = keyPair.getPrivate();
-            System.out.println("公钥是：" + StringUtil.toHexString(publicKey.getEncoded()));
-            System.out.println("私钥是：" + StringUtil.toHexString(privateKey.getEncoded()));
+            System.out.println("公钥是：" + Base64Tool.encode(publicKey.getEncoded()));
+            System.out.println("私钥是：" + Base64Tool.encode(privateKey.getEncoded()));
         }
         catch (NoSuchAlgorithmException e)
         {
