@@ -145,21 +145,22 @@ public class RSAUtil implements EnDecrpt
         }
     }
     
-    public void buildKey() throws IOException
+    public KeyPair buildKey() throws IOException
     {
         try
         {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithms);
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("rsa");
             keyPairGenerator.initialize(1024);
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
             Key publicKey = keyPair.getPublic();
             Key privateKey = keyPair.getPrivate();
             System.out.println("公钥是：" + Base64Tool.encode(publicKey.getEncoded()));
             System.out.println("私钥是：" + Base64Tool.encode(privateKey.getEncoded()));
+            return keyPair;
         }
         catch (NoSuchAlgorithmException e)
         {
-            e.printStackTrace();
+            throw new JustThrowException(e);
         }
     }
     
