@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import com.jfireframework.baseutil.exception.JustThrowException;
 
 public class IniReader
@@ -13,6 +14,8 @@ public class IniReader
         Section getSection(String name);
         
         String getValue(String property);
+        
+        Set<String> keySet();
     }
     
     interface Section
@@ -20,6 +23,8 @@ public class IniReader
         String name();
         
         String getValue(String property);
+        
+        Set<String> keySet();
     }
     
     static class IniFileImpl implements IniFile
@@ -48,6 +53,12 @@ public class IniReader
         {
             sections.put(section.name(), section);
         }
+        
+        @Override
+        public Set<String> keySet()
+        {
+            return properties.keySet();
+        }
     }
     
     static class SectionImpl implements Section
@@ -75,6 +86,12 @@ public class IniReader
         void putProperty(String property, String value)
         {
             properties.put(property, value);
+        }
+        
+        @Override
+        public Set<String> keySet()
+        {
+            return properties.keySet();
         }
     }
     
