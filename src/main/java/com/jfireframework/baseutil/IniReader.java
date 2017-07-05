@@ -9,7 +9,7 @@ import com.jfireframework.baseutil.exception.JustThrowException;
 
 public class IniReader
 {
-    interface IniFile
+    public interface IniFile
     {
         Section getSection(String name);
         
@@ -18,7 +18,7 @@ public class IniReader
         Set<String> keySet();
     }
     
-    interface Section
+    public interface Section
     {
         String name();
         
@@ -165,14 +165,17 @@ public class IniReader
                 }
                 else
                 {
-                    // 属性节点
-                    String[] kv = value.split("=");
-                    String k = kv[0].trim();
-                    String v = kv[1].trim();
-                    iniFileImpl.putProperty(k, v);
-                    if (preSection != null)
+                    int splitIndex = value.indexOf('=');
+                    if (splitIndex > 0 && splitIndex < src.length)
                     {
-                        preSection.putProperty(k, v);
+                        // 属性节点
+                        String k = value.substring(0, splitIndex);
+                        String v = value.substring(splitIndex + 1);
+                        iniFileImpl.putProperty(k, v);
+                        if (preSection != null)
+                        {
+                            preSection.putProperty(k, v);
+                        }
                     }
                 }
                 index = end + skip;
