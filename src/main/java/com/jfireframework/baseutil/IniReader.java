@@ -169,8 +169,8 @@ public class IniReader
                     if (splitIndex > 0 && splitIndex < src.length)
                     {
                         // 属性节点
-                        String k = value.substring(0, splitIndex);
-                        String v = value.substring(splitIndex + 1);
+                        String k = value.substring(0, splitIndex).trim();
+                        String v = value.substring(splitIndex + 1).trim();
                         iniFileImpl.putProperty(k, v);
                         if (preSection != null)
                         {
