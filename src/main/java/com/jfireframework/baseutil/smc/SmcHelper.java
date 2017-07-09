@@ -102,24 +102,44 @@ public class SmcHelper
                     i++;
                 }
             }
+            cache.append("$").append(i);
             String invokeName;
-            try
+            Class<?> type = types[i];
+            int index = 1;
+            Method method;
+            while (index < tmp.length)
             {
-                invokeName = types[i].getDeclaredMethod("get" + Character.toUpperCase(tmp[1].charAt(0)) + tmp[1].substring(1)).getName() + "()";
-            }
-            catch (Exception e)
-            {
+                String name = tmp[index];
+                
                 try
                 {
-                    invokeName = types[i].getDeclaredMethod("is" + Character.toUpperCase(tmp[1].charAt(0)) + tmp[1].substring(1)).getName() + "()";
+                    if (name.endsWith("()"))
+                    {
+                        String methodName = name.substring(0, name.length() - 2);
+                        method = type.getMethod(methodName);
+                    }
+                    else
+                    {
+                        method = type.getMethod("get" + Character.toUpperCase(tmp[index].charAt(0)) + tmp[index].substring(1));
+                    }
                 }
-                catch (Exception e1)
+                catch (Exception e)
                 {
-                    e1.printStackTrace();
-                    throw new JustThrowException(e);
+                    try
+                    {
+                        method = types[i].getMethod("is" + Character.toUpperCase(tmp[index].charAt(0)) + tmp[index].substring(1));
+                    }
+                    catch (Exception e1)
+                    {
+                        throw new JustThrowException(e1);
+                    }
                 }
+                invokeName = method.getName() + "()";
+                cache.append(".").append(invokeName);
+                type = method.getReturnType();
+                index += 1;
             }
-            cache.append("$").append(i).append(".").append(invokeName);
+            
         }
         return cache.toString();
     }
