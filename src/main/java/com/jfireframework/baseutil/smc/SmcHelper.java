@@ -60,7 +60,8 @@ public class SmcHelper
     
     /**
      * 根据表达式生成在java语言下的调用方式。<br/>
-     * 比如user.age就会被转化为user.getAge(),或者user.boy 被转化为user.isBoy();
+     * 比如user.age就会被转化为user.getAge(),或者user.boy 被转化为user.isBoy();<br/>
+     * 如果遇到方法调用的，也可以识别。比如home.getUser().name就可以被转化为home.getUser().getName()
      * 
      * @param content
      * @param paramNames
