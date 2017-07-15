@@ -14,6 +14,7 @@ public class MethodModel
     private final String argsInfo;
     private final int    sumOfarg;
     private final String throwableInfo;
+    private final Method method;
     
     @Override
     public String toString()
@@ -32,6 +33,7 @@ public class MethodModel
     
     public MethodModel(Method method)
     {
+        this.method = method;
         sumOfarg = method.getParameterTypes().length;
         if (Modifier.isPublic(method.getModifiers()))
         {
@@ -143,4 +145,8 @@ public class MethodModel
         return modifier;
     }
     
+    public Method getMethod()
+    {
+        return method;
+    }
 }

@@ -9,7 +9,7 @@
 		<version>1.0.1</version>
 	</parent>
 	<artifactId>baseutil</artifactId>
-	<version>1.1</version>
+	<version>1.2-SNAPSHOT</version>
 	<name>baseutil</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

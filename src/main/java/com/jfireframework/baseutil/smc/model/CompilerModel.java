@@ -106,6 +106,11 @@ public class CompilerModel
         methodStore.put(key, value);
     }
     
+    public void putMethod(MethodModel methodModel)
+    {
+        methodStore.put(methodModel.getMethod(), methodModel);
+    }
+    
     public Collection<Method> methods()
     {
         return methodStore.keySet();
@@ -159,4 +164,5 @@ public class CompilerModel
         }
         return cache.toString();
     }
+    
 }
