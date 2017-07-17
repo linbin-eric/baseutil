@@ -13,12 +13,12 @@ import com.jfireframework.baseutil.smc.compiler.JavaStringCompiler;
 import com.jfireframework.baseutil.smc.model.CompilerModel;
 import com.jfireframework.baseutil.smc.model.MethodModel;
 
-public abstract class CodeCopy<S, D> implements CopyUtil<S, D>
+public abstract class CodeCopy<S, D> implements Copy<S, D>
 {
     static final AtomicInteger   count = new AtomicInteger(1);
     private Class<S>             source;
     private Class<D>             destination;
-    private final CopyUtil<S, D> util;
+    private final Copy<S, D> util;
     
     @SuppressWarnings("unchecked")
     public CodeCopy()
@@ -59,7 +59,7 @@ public abstract class CodeCopy<S, D> implements CopyUtil<S, D>
         return util.copy(src, desc);
     }
     
-    class CodeCopyUtilImpl implements CopyUtil<S, D>
+    class CodeCopyUtilImpl implements Copy<S, D>
     {
         private final Processor<S, D> processor;
         

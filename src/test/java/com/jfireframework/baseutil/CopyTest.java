@@ -3,15 +3,15 @@ package com.jfireframework.baseutil;
 import org.junit.Assert;
 import org.junit.Test;
 import com.jfireframework.baseutil.reflect.copy.CodeCopy;
+import com.jfireframework.baseutil.reflect.copy.ReflectCopy;
 import com.jfireframework.baseutil.reflect.copy.Copy;
-import com.jfireframework.baseutil.reflect.copy.CopyUtil;
 
 public class CopyTest
 {
     @Test
     public void test()
     {
-        CopyUtil<Person, Person> util = new CodeCopy<CopyTest.Person, CopyTest.Person>() {};
+        Copy<Person, Person> util = new CodeCopy<CopyTest.Person, CopyTest.Person>() {};
         Person src = new Person();
         src.setAge(13);
         src.setSex(true);
@@ -37,7 +37,7 @@ public class CopyTest
     @Test
     public void test_3()
     {
-        CopyUtil<Person, Person> util = new Copy<CopyTest.Person, CopyTest.Person>() {};
+        Copy<Person, Person> util = new ReflectCopy<CopyTest.Person, CopyTest.Person>() {};
         Person src = new Person();
         src.setAge(13);
         src.setSex(true);
@@ -50,7 +50,7 @@ public class CopyTest
     @Test
     public void test_4()
     {
-        Copy<Person, Person2> copy = new Copy<CopyTest.Person, CopyTest.Person2>(new String[] { "sex:sex2" }) {};
+        ReflectCopy<Person, Person2> copy = new ReflectCopy<CopyTest.Person, CopyTest.Person2>(new String[] { "sex:sex2" }) {};
         Person src = new Person();
         src.setAge(13);
         src.setSex(true);
