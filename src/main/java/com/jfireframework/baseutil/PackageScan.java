@@ -106,7 +106,7 @@ public class PackageScan
             JarEntry jarEntry = entries.nextElement();
             String entryName = jarEntry.getName();
             // 将符合条件的class文件的全限定名加入到list中
-            if (entryName.endsWith("class") && !entryName.contains("$") && entryName.startsWith(packageName))
+            if (entryName.endsWith(".class") && entryName.startsWith(packageName))
             {
                 String className = entryName.substring(0, entryName.indexOf(".class"));
                 className = className.replaceAll("/", ".");
