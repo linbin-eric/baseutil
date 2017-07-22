@@ -9,28 +9,89 @@ import com.jfireframework.baseutil.exception.JustThrowException;
 
 public class IniReader
 {
-    public interface IniFile
+    interface PropertyValueStore
     {
-        Section getSection(String name);
-        
+        /**
+         * 返回该属性的第一个值
+         * 
+         * @param property
+         * @return
+         */
         String getValue(String property);
+        
+        /**
+         * 返回一个属性的所有值
+         * 
+         * @param property
+         * @return
+         */
+        String[] getValues(String property);
         
         Set<String> keySet();
     }
     
-    public interface Section
+    public static interface Section extends PropertyValueStore
     {
         String name();
         
-        String getValue(String property);
-        
-        Set<String> keySet();
     }
     
-    static class IniFileImpl implements IniFile
+    public static interface IniFile extends PropertyValueStore
     {
-        Map<String, Section> sections   = new HashMap<String, IniReader.Section>();
-        Map<String, String>  properties = new HashMap<String, String>();
+        Section getSection(String name);
+        
+    }
+    
+    static class PropertyValueStoreImpl implements PropertyValueStore
+    {
+        Map<String, String[]> store = new HashMap<String, String[]>();
+        
+        @Override
+        public String getValue(String property)
+        {
+            String[] result = store.get(property);
+            if (result != null)
+            {
+                return result[0];
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        public void putProperty(String property, String value)
+        {
+            if (store.containsKey(property))
+            {
+                String[] pred = store.get(property);
+                String[] now = new String[pred.length + 1];
+                System.arraycopy(pred, 0, now, 0, pred.length);
+                now[pred.length] = value;
+                store.put(property, now);
+            }
+            else
+            {
+                store.put(property, new String[] { value });
+            }
+        }
+        
+        @Override
+        public Set<String> keySet()
+        {
+            return store.keySet();
+        }
+        
+        @Override
+        public String[] getValues(String property)
+        {
+            return store.get(property);
+        }
+    }
+    
+    static class IniFileImpl extends PropertyValueStoreImpl implements IniFile
+    {
+        Map<String, Section> sections = new HashMap<String, IniReader.Section>();
         
         @Override
         public Section getSection(String name)
@@ -38,33 +99,17 @@ public class IniReader
             return sections.get(name);
         }
         
-        @Override
-        public String getValue(String property)
-        {
-            return properties.get(property);
-        }
-        
-        void putProperty(String property, String value)
-        {
-            properties.put(property, value);
-        }
-        
         void addSection(Section section)
         {
             sections.put(section.name(), section);
         }
         
-        @Override
-        public Set<String> keySet()
-        {
-            return properties.keySet();
-        }
     }
     
-    static class SectionImpl implements Section
+    static class SectionImpl extends PropertyValueStoreImpl implements Section
     {
-        final String                name;
-        private Map<String, String> properties = new HashMap<String, String>();
+        final String                    name;
+        protected Map<String, String[]> store = new HashMap<String, String[]>();
         
         public SectionImpl(String name)
         {
@@ -77,22 +122,6 @@ public class IniReader
             return name;
         }
         
-        @Override
-        public String getValue(String property)
-        {
-            return properties.get(property);
-        }
-        
-        void putProperty(String property, String value)
-        {
-            properties.put(property, value);
-        }
-        
-        @Override
-        public Set<String> keySet()
-        {
-            return properties.keySet();
-        }
     }
     
     public static IniFile read(InputStream inputStream, Charset charset)
@@ -136,6 +165,15 @@ public class IniReader
             while (true)
             {
                 int end = helper.currentLine(src, index);
+                if (index > end)
+                {
+                    break;
+                }
+                else if (end == index)
+                {
+                    index += 1;
+                    continue;
+                }
                 int skip = -1;
                 if (src[end] == '\r')
                 {
@@ -188,7 +226,6 @@ public class IniReader
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             throw new JustThrowException(e);
         }
     }
