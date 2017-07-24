@@ -15,10 +15,10 @@ import com.jfireframework.baseutil.smc.model.MethodModel;
 
 public abstract class CodeCopy<S, D> implements Copy<S, D>
 {
-    static final AtomicInteger   count = new AtomicInteger(1);
-    private Class<S>             source;
-    private Class<D>             destination;
-    private final Copy<S, D> util;
+    static final AtomicInteger count = new AtomicInteger(1);
+    private Class<S>           source;
+    private Class<D>           destination;
+    private final Copy<S, D>   util;
     
     @SuppressWarnings("unchecked")
     public CodeCopy()
@@ -213,6 +213,10 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
         @Override
         public D copy(S src, D desc)
         {
+            if (src == null)
+            {
+                return desc;
+            }
             processor.exec(src, desc);
             return desc;
         }
