@@ -152,21 +152,23 @@ public final class ReflectUtil
         {
             for (Method each : entityClass.getDeclaredMethods())
             {
-                boolean match = true;
+                boolean match = false;
                 for (Method exist : methods)
                 {
                     if (each.getName().equals(exist.getName()) && each.getParameterTypes().length == exist.getParameterTypes().length)
                     {
                         Class<?>[] p1 = each.getParameterTypes();
                         Class<?>[] p2 = exist.getParameterTypes();
+                        boolean allHit = true;
                         for (int i = 0; i < p1.length; i++)
                         {
                             if (p1[i] != p2[i])
                             {
-                                match = false;
+                                allHit = false;
                                 break;
                             }
                         }
+                        match = allHit;
                     }
                 }
                 if (match == false)
