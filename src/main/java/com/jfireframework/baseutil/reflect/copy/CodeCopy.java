@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.reflect.copy;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -74,19 +75,29 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
             List<Entry> list = new ArrayList<Entry>();
             for (Method getMethod : src.getMethods())
             {
+                if (getMethod.isAnnotationPresent(CopyIgnore.class))
+                {
+                    continue;
+                }
                 String name = getMethod.getName();
                 if ((name.startsWith("get") || name.startsWith("is"))//
                         && getMethod.getReturnType() != void.class && getMethod.getParameterTypes().length == 0)
                 {
-                    String desName;
+                    String srcName;
                     if (name.startsWith("get"))
                     {
-                        desName = "set" + name.substring(3);
+                        srcName = name.substring(3);
                     }
                     else
                     {
-                        desName = "set" + name.substring(2);
+                        srcName = name.substring(2);
                     }
+                    Field field = findField(srcName.substring(0, 1).toLowerCase() + srcName.substring(1), src);
+                    if (field != null && field.isAnnotationPresent(CopyIgnore.class))
+                    {
+                        continue;
+                    }
+                    String desName = "set" + srcName;
                     try
                     {
                         Method method = des.getMethod(desName, getMethod.getReturnType());
@@ -128,6 +139,31 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
                 throw new JustThrowException(e);
             }
             
+        }
+        
+        private Field findField(String name, Class<?> ckass)
+        {
+            do
+            {
+                
+                if (ckass != Object.class)
+                {
+                    try
+                    {
+                        Field field = ckass.getDeclaredField(name);
+                        return field;
+                    }
+                    catch (Exception e)
+                    {
+                        ckass = ckass.getSuperclass();
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            } while (true);
+            return null;
         }
         
         @SuppressWarnings("unchecked")

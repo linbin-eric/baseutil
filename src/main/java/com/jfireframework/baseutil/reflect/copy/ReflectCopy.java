@@ -13,8 +13,8 @@ import sun.misc.Unsafe;
 
 public abstract class ReflectCopy<S, D> implements Copy<S, D>
 {
-    private Class<S>             source;
-    private Class<D>             destination;
+    private Class<S>         source;
+    private Class<D>         destination;
     private final Copy<S, D> util;
     
     @SuppressWarnings("unchecked")
@@ -67,6 +67,10 @@ public abstract class ReflectCopy<S, D> implements Copy<S, D>
             Map<String, Field> descMap = generate(des);
             for (Entry<String, Field> each : srcMap.entrySet())
             {
+                if (each.getValue().isAnnotationPresent(CopyIgnore.class))
+                {
+                    continue;
+                }
                 if (descMap.containsKey(each.getKey()))
                 {
                     Field descField = descMap.get(each.getKey());

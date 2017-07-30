@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -138,32 +139,6 @@ public final class ReflectUtil
         
     }
     
-    private final static Comparator<Method> METHOD_COMPARATOR = new Comparator<Method>() {
-        // 只希望去重。并且希望子类的method在数组中排在前面，所以这里都返回1
-        @Override
-        public int compare(Method o1, Method o2)
-        {
-            if (o1.getName().equals(o2.getName()) == false)
-            {
-                return 1;
-            }
-            Class<?>[] paramTypes1 = o1.getParameterTypes();
-            Class<?>[] paramTypes2 = o2.getParameterTypes();
-            if (paramTypes1.length != paramTypes2.length)
-            {
-                return 1;
-            }
-            for (int i = 0, n = paramTypes1.length; i < n; i++)
-            {
-                if (paramTypes1[i] != paramTypes2[i])
-                {
-                    return 1;
-                }
-            }
-            return 0;
-        }
-    };
-    
     /**
      * 获取该类所有方法,包含父类的方法.如果子类重载了父类的方法,则该集合中只有子类的方法
      * 
@@ -172,16 +147,36 @@ public final class ReflectUtil
      */
     public static Method[] getAllMehtods(Class<?> entityClass)
     {
-        Set<Method> set = new TreeSet<Method>(METHOD_COMPARATOR);
+        List<Method> methods = new ArrayList<Method>();
         while (entityClass != Object.class && entityClass != null)
         {
             for (Method each : entityClass.getDeclaredMethods())
             {
-                set.add(each);
+                boolean match = true;
+                for (Method exist : methods)
+                {
+                    if (each.getName().equals(exist.getName()) && each.getParameterTypes().length == exist.getParameterTypes().length)
+                    {
+                        Class<?>[] p1 = each.getParameterTypes();
+                        Class<?>[] p2 = exist.getParameterTypes();
+                        for (int i = 0; i < p1.length; i++)
+                        {
+                            if (p1[i] != p2[i])
+                            {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (match == false)
+                {
+                    methods.add(each);
+                }
             }
             entityClass = entityClass.getSuperclass();
         }
-        return set.toArray(new Method[set.size()]);
+        return methods.toArray(new Method[methods.size()]);
     }
     
     /**
