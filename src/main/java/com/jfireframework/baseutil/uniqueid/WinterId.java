@@ -38,7 +38,7 @@ public class WinterId implements Uid
                 posOfDay = posOfMonth + 2;
                 posOfHour = posOfDay + 2;
                 posOfMinute = posOfHour + 2;
-                posOfSecond = posOfHour + 2;
+                posOfSecond = posOfMinute + 2;
                 posOfMillSecond = posOfSecond + 2;
                 posOfSequence = posOfMillSecond + 4;
             }
