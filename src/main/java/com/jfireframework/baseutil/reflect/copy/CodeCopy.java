@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.jfireframework.baseutil.exception.JustThrowException;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.smc.SmcHelper;
 import com.jfireframework.baseutil.smc.compiler.JavaStringCompiler;
 import com.jfireframework.baseutil.smc.model.CompilerModel;
@@ -71,8 +73,13 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
 	{
 		private final Processor<S, D> processor;
 		
-		@SuppressWarnings("unchecked")
 		public CodeCopyUtilImpl(Class<S> src, Class<D> des)
+		{
+			this(src, des, new HashMap<String, String>());
+		}
+		
+		@SuppressWarnings("unchecked")
+		public CodeCopyUtilImpl(Class<S> src, Class<D> des, Map<String, String> mappedName)
 		{
 			class Entry
 			{
@@ -80,42 +87,32 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
 				Method	des;
 			}
 			List<Entry> list = new ArrayList<Entry>();
-			for (Method getMethod : src.getMethods())
+			for (Method getOrIsMethod : src.getMethods())
 			{
-				if (getMethod.isAnnotationPresent(CopyIgnore.class))
+				if (isGetOrIsMethod(getOrIsMethod) && isIgnoreMethod(getOrIsMethod) == false)
 				{
-					continue;
-				}
-				String name = getMethod.getName();
-				if ((name.startsWith("get") || name.startsWith("is"))//
-				        && getMethod.getReturnType() != void.class && getMethod.getParameterTypes().length == 0)
-				{
-					String srcName;
-					if (name.startsWith("get"))
-					{
-						srcName = name.substring(3);
-					}
-					else
-					{
-						srcName = name.substring(2);
-					}
-					Field field = findField(srcName.substring(0, 1).toLowerCase() + srcName.substring(1), src);
-					if (field != null && field.isAnnotationPresent(CopyIgnore.class))
-					{
-						continue;
-					}
-					String desName = "set" + srcName;
+					String setMethodName = findSetMethodName(mappedName, getOrIsMethod);
 					try
 					{
-						Method method = des.getMethod(desName, getMethod.getReturnType());
-						Entry entry = new Entry();
-						entry.src = getMethod;
-						entry.des = method;
-						list.add(entry);
-					}
-					catch (NoSuchMethodException e)
-					{
-						continue;
+						Method setMethod = findSetMethod(des, setMethodName);
+						if (setMethod == null)
+						{
+							continue;
+						}
+						if (isEnumCopy(getOrIsMethod.getReturnType(), setMethod.getParameterTypes()[0]))
+						{
+							Entry entry = new Entry();
+							entry.src = getOrIsMethod;
+							entry.des = setMethod;
+							list.add(entry);
+						}
+						else if (getOrIsMethod.getReturnType() == setMethod.getParameterTypes()[0])
+						{
+							Entry entry = new Entry();
+							entry.src = getOrIsMethod;
+							entry.des = setMethod;
+							list.add(entry);
+						}
 					}
 					catch (Exception e)
 					{
@@ -132,7 +129,16 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
 				        + SmcHelper.getTypeName(des) + " des = (" + SmcHelper.getTypeName(des) + ")$1;\r\n";
 				for (Entry each : list)
 				{
-					body += "des." + each.des.getName() + "(src." + each.src.getName() + "());\r\n";
+					if (Enum.class.isAssignableFrom(each.src.getReturnType()))
+					{
+						body += "if(src." + each.src.getName() + "()!=null){\r\n";
+						body += "des." + each.des.getName() + "(java.lang.Enum.valueOf(" + each.des.getParameterTypes()[0].getName() + ".class,src." + each.src.getName() + "().name()));\r\n";
+						body += "}\r\n";
+					}
+					else
+					{
+						body += "des." + each.des.getName() + "(src." + each.src.getName() + "());\r\n";
+					}
 				}
 				body += "}";
 				methodModel.setBody(body);
@@ -146,6 +152,56 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
 				throw new JustThrowException(e);
 			}
 			
+		}
+		
+		protected boolean isIgnoreMethod(Method method)
+		{
+			if (method.isAnnotationPresent(CopyIgnore.class))
+			{
+				return true;
+			}
+			String srcName = method.getName().startsWith("get") ? method.getName().substring(3) : method.getName().substring(2);
+			Field field = findField(srcName.substring(0, 1).toLowerCase() + srcName.substring(1), method.getDeclaringClass());
+			if (field != null && field.isAnnotationPresent(CopyIgnore.class))
+			{
+				return true;
+			}
+			return false;
+		}
+		
+		protected boolean isGetOrIsMethod(Method method)
+		{
+			String name = method.getName();
+			return (name.startsWith("get") || name.startsWith("is"))//
+			        && method.getReturnType() != void.class && method.getParameterTypes().length == 0;
+		}
+		
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		private boolean isEnumCopy(Class<?> srcType, Class<?> desType)
+		{
+			if (Enum.class.isAssignableFrom(srcType) == false || Enum.class.isAssignableFrom(desType) == false)
+			{
+				return false;
+			}
+			Map<String, ? extends Enum<?>> allEnumInstances = ReflectUtil.getAllEnumInstances((Class<? extends Enum<?>>) srcType);
+			boolean miss = false;
+			for (Entry<String, ? extends Enum<?>> entry : allEnumInstances.entrySet())
+			{
+				try
+				{
+					Enum.valueOf((Class<Enum>) desType, entry.getKey());
+				}
+				catch (Exception e)
+				{
+					miss = true;
+					break;
+				}
+			}
+			if (miss)
+			{
+				return false;
+			}
+			return true;
 		}
 		
 		private Field findField(String name, Class<?> ckass)
@@ -173,84 +229,31 @@ public abstract class CodeCopy<S, D> implements Copy<S, D>
 			return null;
 		}
 		
-		@SuppressWarnings("unchecked")
-		public CodeCopyUtilImpl(Class<S> src, Class<D> des, Map<String, String> nameMap)
+		private Method findSetMethod(Class<?> type, String methodName)
 		{
-			class Entry
+			Method[] declaredMethods = type.getMethods();
+			for (Method each : declaredMethods)
 			{
-				Method	src;
-				Method	des;
-			}
-			List<Entry> list = new ArrayList<Entry>();
-			for (Method getMethod : src.getMethods())
-			{
-				String name = getMethod.getName();
-				if ((name.startsWith("get") || name.startsWith("is"))//
-				        && getMethod.getReturnType() != void.class && getMethod.getParameterTypes().length == 0)
+				if (each.getName().equals(methodName) && each.getParameterTypes().length == 1)
 				{
-					String origin;
-					if (name.startsWith("get"))
-					{
-						origin = name.substring(3);
-					}
-					else
-					{
-						origin = name.substring(2);
-					}
-					String desName;
-					String key = origin.substring(0, 1).toLowerCase() + origin.substring(1);
-					if (nameMap.containsKey(key))
-					{
-						
-						String mapName = nameMap.get(key);
-						mapName = mapName.substring(0, 1).toUpperCase() + mapName.substring(1);
-						desName = "set" + mapName;
-					}
-					else
-					{
-						desName = "set" + origin;
-					}
-					try
-					{
-						Method method = des.getMethod(desName, getMethod.getReturnType());
-						Entry entry = new Entry();
-						entry.src = getMethod;
-						entry.des = method;
-						list.add(entry);
-					}
-					catch (NoSuchMethodException e)
-					{
-						continue;
-					}
-					catch (Exception e)
-					{
-						throw new JustThrowException(e);
-					}
+					return each;
 				}
 			}
-			CompilerModel compilerModel = new CompilerModel("Copy$" + count.getAndIncrement(), Object.class, Processor.class);
-			try
+			return null;
+		}
+		
+		protected String findSetMethodName(Map<String, String> mappedName, Method getOrIsMethod)
+		{
+			String srcName = getOrIsMethod.getName().startsWith("get") ? getOrIsMethod.getName().substring(3) : getOrIsMethod.getName().substring(2);
+			String tmp = srcName.substring(0, 1).toLowerCase() + srcName.substring(1);
+			if (mappedName.containsKey(tmp))
 			{
-				MethodModel methodModel = new MethodModel(Processor.class.getMethod("exec", Object.class, Object.class));
-				String body = "{\r\n"//
-				        + SmcHelper.getTypeName(src) + " src = (" + SmcHelper.getTypeName(src) + ")$0;\r\n"//
-				        + SmcHelper.getTypeName(des) + " des = (" + SmcHelper.getTypeName(des) + ")$1;\r\n";
-				for (Entry each : list)
-				{
-					body += "des." + each.des.getName() + "(src." + each.src.getName() + "());\r\n";
-				}
-				body += "}";
-				methodModel.setBody(body);
-				compilerModel.putMethod(methodModel);
-				JavaStringCompiler compiler = new JavaStringCompiler();
-				Class<? extends Processor<?, ?>> type = (Class<? extends Processor<?, ?>>) compiler.compile(compilerModel, src.getClassLoader());
-				processor = (Processor<S, D>) type.newInstance();
+				String mapName = mappedName.get(tmp);
+				mapName = mapName.substring(0, 1).toUpperCase() + mapName.substring(1);
+				srcName = mapName;
 			}
-			catch (Exception e)
-			{
-				throw new JustThrowException(e);
-			}
-			
+			String setMethodName = "set" + srcName;
+			return setMethodName;
 		}
 		
 		@Override

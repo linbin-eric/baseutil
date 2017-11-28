@@ -81,13 +81,45 @@ public abstract class ReflectCopy<S, D> implements Copy<S, D>
 				if (descMap.containsKey(each.getKey()))
 				{
 					Field descField = descMap.get(each.getKey());
-					if (each.getValue().getType() == descField.getType())
+					if (isEnumCopy(each.getValue().getType(), descField.getType()))
+					{
+						copyFields.add(CopyField.build(each.getValue(), descField));
+					}
+					else if (each.getValue().getType() == descField.getType())
 					{
 						copyFields.add(CopyField.build(each.getValue(), descField));
 					}
 				}
 			}
 			this.copyFields = copyFields.toArray(new CopyField[0]);
+		}
+		
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		private boolean isEnumCopy(Class<?> srcType, Class<?> desType)
+		{
+			if (Enum.class.isAssignableFrom(srcType) == false || Enum.class.isAssignableFrom(desType) == false)
+			{
+				return false;
+			}
+			Map<String, ? extends Enum<?>> allEnumInstances = ReflectUtil.getAllEnumInstances((Class<? extends Enum<?>>) srcType);
+			boolean miss = false;
+			for (Entry<String, ? extends Enum<?>> entry : allEnumInstances.entrySet())
+			{
+				try
+				{
+					Enum.valueOf((Class<Enum>) desType, entry.getKey());
+				}
+				catch (Exception e)
+				{
+					miss = true;
+					break;
+				}
+			}
+			if (miss)
+			{
+				return false;
+			}
+			return true;
 		}
 		
 		private Map<String, Field> generate(Class<?> type)
@@ -112,21 +144,36 @@ public abstract class ReflectCopy<S, D> implements Copy<S, D>
 			Map<String, Field> descMap = generate(des);
 			for (Entry<String, Field> each : srcMap.entrySet())
 			{
-				Field descField = null;
-				if (descMap.containsKey(each.getKey()))
+				Field desField = findDesField(nameMap, descMap, each);
+				if (desField == null)
 				{
-					descField = descMap.get(each.getKey());
+					continue;
 				}
-				else if (descMap.containsKey(nameMap.get(each.getKey())))
+				Field srcField = each.getValue();
+				if (isEnumCopy(srcField.getType(), desField.getType()))
 				{
-					descField = descMap.get(nameMap.get(each.getKey()));
+					copyFields.add(CopyField.build(srcField, desField));
 				}
-				if (descField != null && each.getValue().getType() == descField.getType())
+				else if (srcField.getType() == desField.getType())
 				{
-					copyFields.add(CopyField.build(each.getValue(), descField));
+					copyFields.add(CopyField.build(srcField, desField));
 				}
 			}
 			this.copyFields = copyFields.toArray(new CopyField[0]);
+		}
+		
+		protected Field findDesField(Map<String, String> nameMap, Map<String, Field> descMap, Entry<String, Field> each)
+		{
+			Field descField = null;
+			if (descMap.containsKey(each.getKey()))
+			{
+				descField = descMap.get(each.getKey());
+			}
+			else if (descMap.containsKey(nameMap.get(each.getKey())))
+			{
+				descField = descMap.get(nameMap.get(each.getKey()));
+			}
+			return descField;
 		}
 		
 		@Override
@@ -196,11 +243,14 @@ abstract class CopyField
 		{
 			return new CharField(srcField, desField);
 		}
+		else if (Enum.class.isAssignableFrom(srcField.getType()))
+		{
+			return new EnumField(srcField, desField);
+		}
 		else
 		{
 			return new ObjectField(srcField, desField);
 		}
-		
 	}
 	
 	static class IntField extends CopyField
@@ -328,6 +378,30 @@ abstract class CopyField
 			unsafe.putDouble(des, desOff, unsafe.getDouble(src, srcOff));
 		}
 		
+	}
+	
+	static class EnumField extends CopyField
+	{
+		private final Class<?> desEnumType;
+		
+		public EnumField(Field srcField, Field desField)
+		{
+			super(srcField, desField);
+			desEnumType = desField.getType();
+		}
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@Override
+		public void copy(Object src, Object des)
+		{
+			Enum<?> instance = (Enum<?>) unsafe.getObject(src, srcOff);
+			if (instance == null)
+			{
+				return;
+			}
+			Enum desEnumInstance = Enum.valueOf((Class<Enum>) desEnumType, instance.name());
+			unsafe.putObject(des, desOff, desEnumInstance);
+		}
 	}
 	
 	static class ObjectField extends CopyField
