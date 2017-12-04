@@ -105,7 +105,6 @@ public class DirectByteBuf extends ByteBuf<ByteBuffer>
         changeToReadState();
         byte[] tmp = new byte[remainRead()];
         memory.get(tmp);
-        readIndex = writeIndex;
         return tmp;
     }
     
