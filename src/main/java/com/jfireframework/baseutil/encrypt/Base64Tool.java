@@ -240,7 +240,7 @@ public class Base64Tool
 			case '/':
 				return 63;
 			default:
-				throw new UnsupportedOperationException();
+				throw new UnsupportedOperationException("非标准base64字符:" + c);
 				
 		}
 	}
