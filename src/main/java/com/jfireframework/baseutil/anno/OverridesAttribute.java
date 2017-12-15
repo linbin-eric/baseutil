@@ -10,17 +10,20 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-public @interface AliasFor
+public @interface OverridesAttribute
 {
-    public String value();
-    
     /**
-     * 该属性是否用于继承。<br/>
-     * 注意，只有数组属性才支持继承
+     * 需要覆盖的注解
      * 
      * @return
      */
-    public boolean isExtends() default false;
-    
     Class<? extends Annotation> annotation();
+    
+    /**
+     * 需要覆盖的属性名称
+     * 
+     * @return
+     */
+    String name();
+    
 }
