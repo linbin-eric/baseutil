@@ -28,12 +28,24 @@ public class CopyInstance<S, D> implements Copy<S, D>
 			{
 				continue;
 			}
-			String sourceProperty;
-			if (toField.isAnnotationPresent(CopyFrom.class) && toField.getAnnotation(CopyFrom.class).from() == source)
+			String sourceProperty = null;
+			if (toField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyFrom.List.class))
+			{
+				com.jfireframework.baseutil.reflect.copy.CopyFrom.List copyFroms = toField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyFrom.List.class);
+				for (CopyFrom copyFrom : copyFroms.value())
+				{
+					if (copyFrom.from() == sources)
+					{
+						sourceProperty = copyFrom.name();
+						break;
+					}
+				}
+			}
+			else if (toField.isAnnotationPresent(CopyFrom.class) && toField.getAnnotation(CopyFrom.class).from() == source)
 			{
 				sourceProperty = toField.getAnnotation(CopyFrom.class).name();
 			}
-			else
+			else if (sourceProperty == null)
 			{
 				sourceProperty = toField.getName();
 			}
@@ -56,6 +68,17 @@ public class CopyInstance<S, D> implements Copy<S, D>
 			if (fromField.isAnnotationPresent(CopyIgnore.class))
 			{
 				continue;
+			}
+			if (fromField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyTo.List.class))
+			{
+				com.jfireframework.baseutil.reflect.copy.CopyTo.List copyTos = fromField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyTo.List.class);
+				for (CopyTo copyTo : copyTos.value())
+				{
+					if (copyTo.to() == des)
+					{
+						map.put(copyTo.name(), fromField);
+					}
+				}
 			}
 			if (fromField.isAnnotationPresent(CopyTo.class) && fromField.getAnnotation(CopyTo.class).to() == des)
 			{

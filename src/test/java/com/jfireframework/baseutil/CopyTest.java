@@ -61,6 +61,40 @@ public class CopyTest
 		Assert.assertTrue(result.getSex2());
 	}
 	
+	@Test
+	public void test_5()
+	{
+		Copy<Person, Person3> copy = new FastCopy<CopyTest.Person, CopyTest.Person3>() {};
+		Person person = new Person();
+		person.setSex(true);
+		Person3 person3 = copy.copy(person, new Person3());
+		Assert.assertTrue(person3.getSex3());
+		Copy<Person2, Person3> copy2 = new FastCopy<CopyTest.Person2, CopyTest.Person3>() {};
+		Person2 person2 = new Person2();
+		person2.setSex2(true);
+		person3 = copy2.copy(person2, new Person3());
+		Assert.assertTrue(person3.getSex3());
+	}
+	
+	public static class Person3
+	{
+		@CopyFrom.List({ //
+		        @CopyFrom(name = "sex2", from = Person2.class), @CopyFrom(name = "sex", from = Person.class)
+		})
+		private Boolean sex3;
+		
+		public Boolean getSex3()
+		{
+			return sex3;
+		}
+		
+		public void setSex3(Boolean sex3)
+		{
+			this.sex3 = sex3;
+		}
+		
+	}
+	
 	public static class Person2
 	{
 		@CopyFrom(name = "sex", from = Person.class)
