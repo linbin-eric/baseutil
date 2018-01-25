@@ -18,8 +18,44 @@ public class ReflectPropertyCopyDescriptorFactory implements PropertyCopyDescrip
 	@Override
 	public <S, D> PropertyCopyDescriptor<S, D> getInstance(Class<S> s, Class<D> d, final Field fromProperty, final Field toProperty)
 	{
+		boolean hasTransfer = false;
+		if (fromProperty.getType().isPrimitive())
+		{
+			if (fromProperty.getType() == int.class && toProperty.getType() == Integer.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == boolean.class && toProperty.getType() == Boolean.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == char.class && toProperty.getType() == Character.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == byte.class && toProperty.getType() == Byte.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == short.class && toProperty.getType() == Short.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == long.class && toProperty.getType() == Long.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == float.class && toProperty.getType() == Float.class)
+			{
+				hasTransfer = true;
+			}
+			else if (fromProperty.getType() == Double.class && toProperty.getType() == Double.class)
+			{
+				hasTransfer = true;
+			}
+		}
 		boolean isEnum = false;
-		if (fromProperty.getType() != toProperty.getType())
+		if (hasTransfer == false && fromProperty.getType() != toProperty.getType())
 		{
 			if (isEnumCopy(fromProperty.getType(), toProperty.getType()) == false)
 			{
@@ -81,7 +117,6 @@ public class ReflectPropertyCopyDescriptorFactory implements PropertyCopyDescrip
 		}
 		else
 		{
-			
 			return new PropertyCopyDescriptor<S, D>() {
 				
 				@Override
