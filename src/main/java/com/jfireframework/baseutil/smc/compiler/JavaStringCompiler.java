@@ -84,7 +84,6 @@ public class JavaStringCompiler
             MemoryClassLoader memoryClassLoader = new MemoryClassLoader(classLoader == null ? Thread.currentThread().getContextClassLoader() : classLoader);
             memoryClassLoader.addClassBytes(manager.getClassBytes());
             Class<?> type = memoryClassLoader.loadClass("com.jfireframe.smc.output." + modle.className());
-            memoryClassLoader.close();
             return type;
         }
         finally
