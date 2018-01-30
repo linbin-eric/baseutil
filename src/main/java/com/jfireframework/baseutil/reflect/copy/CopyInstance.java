@@ -19,14 +19,35 @@ public class CopyInstance<S, D> implements Copy<S, D>
 	{
 		this.source = sources;
 		this.des = des;
-		Field[] allDesFields = ReflectUtil.getAllFields(des);
-		Map<String, Field> allOriginFields = toFieldMap(ReflectUtil.getAllFields(source));
+		Field[] desFields = ReflectUtil.getAllFields(des);
+		Map<String, Field> sourceFields = generateSourceFields();
 		List<PropertyCopyDescriptor<S, D>> list = new ArrayList<PropertyCopyDescriptor<S, D>>();
-		for (Field toField : allDesFields)
+		for (Field toField : desFields)
 		{
 			if (toField.isAnnotationPresent(CopyIgnore.class))
 			{
-				continue;
+				CopyIgnore copyIgnore = toField.getAnnotation(CopyIgnore.class);
+				if (copyIgnore.from() == Object.class || copyIgnore.from() == sources)
+				{
+					continue;
+				}
+			}
+			if (toField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class))
+			{
+				com.jfireframework.baseutil.reflect.copy.CopyIgnore.List copyIgnoreList = toField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class);
+				boolean ignore = false;
+				for (CopyIgnore copyIgnore : copyIgnoreList.value())
+				{
+					if (copyIgnore.from() == Object.class || copyIgnore.from() == sources)
+					{
+						ignore = true;
+						break;
+					}
+				}
+				if (ignore)
+				{
+					continue;
+				}
 			}
 			String sourceProperty = null;
 			if (toField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyFrom.List.class))
@@ -49,7 +70,7 @@ public class CopyInstance<S, D> implements Copy<S, D>
 			{
 				sourceProperty = toField.getName();
 			}
-			Field fromField = allOriginFields.get(sourceProperty);
+			Field fromField = sourceFields.get(sourceProperty);
 			if (fromField == null)
 			{
 				continue;
@@ -60,14 +81,36 @@ public class CopyInstance<S, D> implements Copy<S, D>
 		copyDescriptors = list.toArray(new PropertyCopyDescriptor[list.size()]);
 	}
 	
-	private Map<String, Field> toFieldMap(Field[] fields)
+	private Map<String, Field> generateSourceFields()
 	{
+		Field[] fields = ReflectUtil.getAllFields(source);
 		Map<String, Field> map = new HashMap<String, Field>();
 		for (Field fromField : fields)
 		{
 			if (fromField.isAnnotationPresent(CopyIgnore.class))
 			{
-				continue;
+				CopyIgnore copyIgnore = fromField.getAnnotation(CopyIgnore.class);
+				if (copyIgnore.to() == Object.class || copyIgnore.to() == des)
+				{
+					continue;
+				}
+			}
+			if (fromField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class))
+			{
+				com.jfireframework.baseutil.reflect.copy.CopyIgnore.List copyIgnoreList = fromField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class);
+				boolean ignore = false;
+				for (CopyIgnore copyIgnore : copyIgnoreList.value())
+				{
+					if (copyIgnore.to() == Object.class || copyIgnore.to() == source)
+					{
+						ignore = true;
+						break;
+					}
+				}
+				if (ignore)
+				{
+					continue;
+				}
 			}
 			if (fromField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyTo.List.class))
 			{
