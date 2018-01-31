@@ -1,6 +1,7 @@
 package com.jfireframework.baseutil.reflect.copy;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,10 @@ public class CopyInstance<S, D> implements Copy<S, D>
 		List<PropertyCopyDescriptor<S, D>> list = new ArrayList<PropertyCopyDescriptor<S, D>>();
 		for (Field toField : desFields)
 		{
+			if (Modifier.isFinal(toField.getModifiers()) || Modifier.isStatic(toField.getModifiers()))
+			{
+				continue;
+			}
 			if (toField.isAnnotationPresent(CopyIgnore.class))
 			{
 				CopyIgnore copyIgnore = toField.getAnnotation(CopyIgnore.class);
@@ -87,6 +92,10 @@ public class CopyInstance<S, D> implements Copy<S, D>
 		Map<String, Field> map = new HashMap<String, Field>();
 		for (Field fromField : fields)
 		{
+			if (Modifier.isFinal(fromField.getModifiers()) || Modifier.isStatic(fromField.getModifiers()))
+			{
+				continue;
+			}
 			if (fromField.isAnnotationPresent(CopyIgnore.class))
 			{
 				CopyIgnore copyIgnore = fromField.getAnnotation(CopyIgnore.class);
