@@ -71,7 +71,7 @@ public class CopyInstance<S, D> implements Copy<S, D>
 			{
 				sourceProperty = toField.getAnnotation(CopyFrom.class).name();
 			}
-			else if (sourceProperty == null)
+			if (sourceProperty == null)
 			{
 				sourceProperty = toField.getName();
 			}
