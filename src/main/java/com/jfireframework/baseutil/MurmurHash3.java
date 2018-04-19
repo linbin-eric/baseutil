@@ -21,7 +21,7 @@ package com.jfireframework.baseutil;
  */
 public final class MurmurHash3
 {
-	public static final int seed = 0x1234ABCD;
+	public static final int SEED = 0x1234ABCD;
 	
 	/** 128 bits of state */
 	public static final class LongPair
