@@ -1,6 +1,5 @@
 package com.jfireframework.baseutil.smc.model;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,21 +7,31 @@ import java.util.Map;
 import java.util.Set;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.smc.SmcHelper;
+import com.jfireframework.baseutil.smc.model.MethodModel.MethodModelKey;
 
-public class CompilerModel
+public class ClassModel
 {
-    private final String             packageName  = "com.jfireframe.smc.output";
-    private final String             className;
-    private final String             classDefinition;
-    private Map<String, FieldModel>  fieldStore   = new HashMap<String, FieldModel>();
-    private Map<Method, MethodModel> methodStore  = new HashMap<Method, MethodModel>();
-    private Set<MethodModel>         shadowMethod = new HashSet<MethodModel>();
-    private Set<String>              constructors = new HashSet<String>();
-    private Set<String>              imports      = new HashSet<String>();
+    private final String                     packageName  = "com.jfireframe.smc.output";
+    private final String                     className;
+    private Map<String, FieldModel>          fieldStore   = new HashMap<String, FieldModel>();
+    private Map<MethodModelKey, MethodModel> methodStore  = new HashMap<MethodModelKey, MethodModel>();
+    private Set<String>                      constructors = new HashSet<String>();
+    private Set<Class<?>>                    imports      = new HashSet<Class<?>>();
+    private Set<Class<?>>                    interfaces   = new HashSet<Class<?>>();
+    private Class<?>                         parentClass;
     
-    public CompilerModel(String className, Class<?> parentClass, Class<?>... interCc)
+    public ClassModel(String className, Class<?> parentClass, Class<?>... interCc)
     {
         this.className = className;
+        this.parentClass = parentClass;
+        for (Class<?> each : interCc)
+        {
+            interfaces.add(each);
+        }
+    }
+    
+    private String buildClassDefinition()
+    {
         StringCache cache = new StringCache();
         if (parentClass == Object.class)
         {
@@ -32,10 +41,10 @@ public class CompilerModel
         {
             cache.append("public class ").append(className).append(" extends ").append(SmcHelper.getTypeName(parentClass));
         }
-        if (interCc != null && interCc.length != 0)
+        if (interfaces.isEmpty() == false)
         {
             cache.append(" implements ");//
-            for (Class<?> each : interCc)
+            for (Class<?> each : interfaces)
             {
                 cache.append(SmcHelper.getTypeName(each)).appendComma();
             }
@@ -45,14 +54,19 @@ public class CompilerModel
             }
         }
         cache.append(" \r\n{\r\n");
-        classDefinition = cache.toString();
+        return cache.toString();
+    }
+    
+    public void addInterface(Class<?> intercc)
+    {
+        interfaces.add(intercc);
     }
     
     public void addImport(Class<?>... ckasses)
     {
         for (Class<?> each : ckasses)
         {
-            imports.add("import " + SmcHelper.getTypeName(each) + ";\r\n");
+            imports.add(each);
         }
     }
     
@@ -78,9 +92,19 @@ public class CompilerModel
         constructors.add(cache.toString());
     }
     
-    public MethodModel getMethodModel(Method method)
+    public void putMethodModel(MethodModel methodModel)
     {
-        return methodStore.get(method);
+        methodStore.put(methodModel.generateKey(), methodModel);
+    }
+    
+    public MethodModel getMethodModel(MethodModelKey key)
+    {
+        return methodStore.get(key);
+    }
+    
+    public MethodModel removeMethodModel(MethodModelKey key)
+    {
+        return methodStore.remove(key);
     }
     
     public String fileName()
@@ -101,24 +125,9 @@ public class CompilerModel
         }
     }
     
-    public void putMethod(Method key, MethodModel value)
-    {
-        methodStore.put(key, value);
-    }
-    
-    public void putMethod(MethodModel methodModel)
-    {
-        methodStore.put(methodModel.getMethod(), methodModel);
-    }
-    
-    public Collection<Method> methods()
+    public Collection<MethodModelKey> methods()
     {
         return methodStore.keySet();
-    }
-    
-    public void putShadowMethodModel(MethodModel methodModel)
-    {
-        shadowMethod.add(methodModel);
     }
     
     @Override
@@ -126,11 +135,11 @@ public class CompilerModel
     {
         StringCache cache = new StringCache();
         cache.append("package ").append(packageName).append(';').append("\r\n");
-        for (String each : imports)
+        for (Class<?> each : imports)
         {
-            cache.append(each);
+            cache.append("import ").append(SmcHelper.getTypeName(each)).append(";\r\n");
         }
-        cache.append(classDefinition);
+        cache.append(buildClassDefinition());
         for (String constructor : constructors)
         {
             cache.append('\t').append(constructor);
@@ -140,10 +149,6 @@ public class CompilerModel
             cache.append('\t').append(each.toString());
         }
         for (MethodModel each : methodStore.values())
-        {
-            cache.append('\t').append(each.toString());
-        }
-        for (MethodModel each : shadowMethod)
         {
             cache.append('\t').append(each.toString());
         }
@@ -159,7 +164,7 @@ public class CompilerModel
         int no = 1;
         for (String each : tmp)
         {
-            cache.append(each).append("     //line:").append(no).append("\r\n");
+            cache.append("/*").append(no).append("*/").append(each).append("\r\n");
             no += 1;
         }
         return cache.toString();

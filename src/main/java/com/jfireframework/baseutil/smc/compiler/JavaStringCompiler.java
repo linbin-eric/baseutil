@@ -10,7 +10,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.jfireframework.baseutil.smc.model.CompilerModel;
+import com.jfireframework.baseutil.smc.model.ClassModel;
 
 /**
  * In-memory compile Java source code as String.
@@ -68,7 +68,7 @@ public class JavaStringCompiler
         }
     }
     
-    public Class<?> compile(CompilerModel modle, ClassLoader classLoader) throws IOException, ClassNotFoundException
+    public Class<?> compile(ClassModel modle, ClassLoader classLoader) throws IOException, ClassNotFoundException
     {
         MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
         try
@@ -92,7 +92,7 @@ public class JavaStringCompiler
         }
     }
     
-    public Class<?> compile(CompilerModel modle) throws IOException, ClassNotFoundException
+    public Class<?> compile(ClassModel modle) throws IOException, ClassNotFoundException
     {
         MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
         try
