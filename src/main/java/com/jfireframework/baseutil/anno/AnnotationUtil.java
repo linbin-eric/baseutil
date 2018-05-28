@@ -45,7 +45,7 @@ public class AnnotationUtil
     
     private boolean isPresent(Class<? extends Annotation> annoType, CompositionAnnotation compositionAnnotation)
     {
-        if (compositionAnnotation.getAnnotation().annotationType().isAnnotationPresent(annoType))
+        if (compositionAnnotation.getAnnotation().annotationType() == annoType)
         {
             return true;
         }
