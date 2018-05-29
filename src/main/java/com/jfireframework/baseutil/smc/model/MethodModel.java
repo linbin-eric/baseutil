@@ -229,11 +229,11 @@ public class MethodModel
 		@Override
 		public boolean equals(Object o)
 		{
-			if (o instanceof MethodModel == false)
+			if (o instanceof MethodModelKey == false)
 			{
 				return false;
 			}
-			MethodModel target = (MethodModel) o;
+			MethodModelKey target = (MethodModelKey) o;
 			if (accessLevel != target.accessLevel)
 			{
 				return false;
