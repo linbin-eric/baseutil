@@ -102,7 +102,7 @@ public class JavaStringCompiler
             Boolean result = task.call();
             if (result == null || !result.booleanValue())
             {
-                logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", modle.toString());
+                logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", modle.toStringWithLineNo());
                 throw new RuntimeException("Compilation failed.");
             }
             memoryClassLoader.addClassBytes(manager.getClassBytes());
