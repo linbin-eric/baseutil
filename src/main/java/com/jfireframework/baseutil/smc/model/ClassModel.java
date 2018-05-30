@@ -12,14 +12,18 @@ import com.jfireframework.baseutil.smc.model.MethodModel.MethodModelKey;
 
 public class ClassModel
 {
-	private final String						packageName		= "com.jfireframe.smc.output";
-	private final String						className;
+	private String								packageName		= "com.jfireframe.smc.output";
+	private String								className;
 	private Map<String, FieldModel>				fieldStore		= new HashMap<String, FieldModel>();
 	private Map<MethodModelKey, MethodModel>	methodStore		= new HashMap<MethodModelKey, MethodModel>();
 	private Set<String>							constructors	= new HashSet<String>();
 	private Set<Class<?>>						imports			= new HashSet<Class<?>>();
 	private Set<Class<?>>						interfaces		= new HashSet<Class<?>>();
 	private Class<?>							parentClass;
+	
+	public ClassModel()
+	{
+	}
 	
 	public ClassModel(String className, Class<?> parentClass, Class<?>... interCc)
 	{
@@ -34,7 +38,7 @@ public class ClassModel
 	private String buildClassDefinition()
 	{
 		StringCache cache = new StringCache();
-		if (parentClass == Object.class)
+		if (parentClass == null || parentClass == Object.class)
 		{
 			cache.append("public class ").append(className);
 		}
