@@ -8,7 +8,7 @@ package com.jfireframework.baseutil.collection;
  */
 public class StringCache
 {
-    private char[]      cache       = new char[512];
+    private char[]      cache       = new char[32];
     private static char COMMA       = ',';
     private int         count       = 0;
     private int         cacheLength = cache.length;
