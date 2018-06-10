@@ -434,6 +434,48 @@ public class StringCache
     }
     
     /**
+     * 最后一个有意义的值是否逗号。也就是该逗号之后允许存在回车，换行，以及空格。<br/>
+     * 如果存在，则返回该逗号坐标，否则返回-1
+     * 
+     * @return
+     */
+    public int isCommaMeaningfulLast()
+    {
+        if (count == 0)
+        {
+            return -1;
+        }
+        for (int i = count - 1; i > -1; i--)
+        {
+            char c = cache[i];
+            if (c == '\r' || c == '\n' || c == ' ')
+            {
+                continue;
+            }
+            else if (c != ',')
+            {
+                return -1;
+            }
+            else
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    public StringCache delete(int index)
+    {
+        if (index < 0 || index >= count)
+        {
+            throw new IllegalArgumentException();
+        }
+        System.arraycopy(cache, index + 1, cache, index, count - index - 1);
+        count--;
+        return this;
+    }
+    
+    /**
      * 返回该缓存对象所对应的字符串
      */
     @Override
