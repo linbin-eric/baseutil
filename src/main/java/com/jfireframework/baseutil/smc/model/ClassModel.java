@@ -1,6 +1,5 @@
 package com.jfireframework.baseutil.smc.model;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +18,7 @@ public class ClassModel
 	private Set<String>							constructors	= new HashSet<String>();
 	private Set<Class<?>>						imports			= new HashSet<Class<?>>();
 	private Set<Class<?>>						interfaces		= new HashSet<Class<?>>();
+	private Set<String>							classSimpleName	= new HashSet<String>();
 	private Class<?>							parentClass;
 	
 	public ClassModel()
@@ -64,31 +64,27 @@ public class ClassModel
 	
 	public void addInterface(Class<?> intercc)
 	{
-		imports.add(intercc);
+		addImport(intercc);
 		interfaces.add(intercc);
 	}
 	
-	public void addImport(Class<?>... ckasses)
+	/**
+	 * 添加类型到类的导入列表。如果返回false意味着导入不成功，则后续不可以使用类的简单名称
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public boolean addImport(Class<?> type)
 	{
-		for (Class<?> each : ckasses)
+		// 如果是已经存在的，则等同于添加成功
+		if (imports.contains(type))
 		{
-			for (Method method : each.getMethods())
-			{
-				addImportFilterArrayAndPrimitive(method.getReturnType());
-				for (Class<?> ckass : method.getParameterTypes())
-				{
-					addImportFilterArrayAndPrimitive(ckass);
-				}
-			}
-			addImportFilterArrayAndPrimitive(each);
+			return true;
 		}
-	}
-	
-	private void addImportFilterArrayAndPrimitive(Class<?> type)
-	{
+		// 原始类型无需添加引用即可直接使用
 		if (type.isPrimitive())
 		{
-			return;
+			return true;
 		}
 		if (type.isArray())
 		{
@@ -96,15 +92,17 @@ public class ClassModel
 			{
 				type = type.getComponentType();
 			}
-			if (type.isPrimitive() == false)
+			if (type.isPrimitive())
 			{
-				imports.add(type);
+				return true;
 			}
 		}
-		else
+		if (classSimpleName.add(type.getSimpleName()) == false)
 		{
-			imports.add(type);
+			return false;
 		}
+		imports.add(type);
+		return true;
 	}
 	
 	public void addConstructor(String initStr, Class<?>... params)
@@ -120,7 +118,7 @@ public class ClassModel
 			cache.append("(");
 			for (int i = 0; i < params.length; i++)
 			{
-				cache.append(SmcHelper.getTypeName(params[i])).append(" ");
+				cache.append(SmcHelper.getReferenceName(params[i], this)).append(" ");
 				cache.append("$").append(i).append(",");
 			}
 			cache.deleteLast().append(")\r\n{");

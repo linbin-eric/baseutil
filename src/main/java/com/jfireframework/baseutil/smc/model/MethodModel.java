@@ -20,13 +20,16 @@ public class MethodModel
 	private Class<?>[]	throwables;
 	private String		methodName;
 	private String		body;
+	private ClassModel	classModel;
 	
-	public MethodModel()
+	public MethodModel(ClassModel classModel)
 	{
+		this.classModel = classModel;
 	}
 	
-	public MethodModel(Method method)
+	public MethodModel(Method method, ClassModel classModel)
 	{
+		this.classModel = classModel;
 		int modifiers = method.getModifiers();
 		if (Modifier.isPublic(modifiers))
 		{
@@ -74,7 +77,7 @@ public class MethodModel
 				cache.append("public ");
 				break;
 		}
-		cache.append(SmcHelper.getTypeName(returnType)).append(' ')//
+		cache.append(SmcHelper.getReferenceName(returnType, classModel)).append(' ')//
 		        .append(methodName).append('(');
 		if (paramterTypes != null && paramterTypes.length > 0)
 		{
