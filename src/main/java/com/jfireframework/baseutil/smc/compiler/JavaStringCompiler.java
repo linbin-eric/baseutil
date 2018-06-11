@@ -68,22 +68,24 @@ public class JavaStringCompiler
 		}
 	}
 	
-	public Class<?> compile(ClassModel modle, ClassLoader classLoader) throws IOException, ClassNotFoundException
+	public Class<?> compile(ClassModel classModel, ClassLoader classLoader) throws IOException, ClassNotFoundException
 	{
 		MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
 		try
 		{
-			JavaFileObject javaFileObject = manager.makeStringSource(modle.fileName(), modle.toString());
+			String source = classModel.toStringWithLineNo();
+			JavaFileObject javaFileObject = manager.makeStringSource(classModel.fileName(), source);
 			CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
 			Boolean result = task.call();
 			if (result == null || !result.booleanValue())
 			{
-				logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", modle.toStringWithLineNo());
+				logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", source);
 				throw new RuntimeException("Compilation failed.");
 			}
+			logger.debug("编译的源代码是:\r\n{}\r\n", source);
 			MemoryClassLoader memoryClassLoader = new MemoryClassLoader(classLoader == null ? Thread.currentThread().getContextClassLoader() : classLoader);
 			memoryClassLoader.addClassBytes(manager.getClassBytes());
-			Class<?> type = memoryClassLoader.loadClass("com.jfireframe.smc.output." + modle.className());
+			Class<?> type = memoryClassLoader.loadClass("com.jfireframe.smc.output." + classModel.className());
 			return type;
 		}
 		finally
@@ -92,21 +94,23 @@ public class JavaStringCompiler
 		}
 	}
 	
-	public Class<?> compile(ClassModel modle) throws IOException, ClassNotFoundException
+	public Class<?> compile(ClassModel classModel) throws IOException, ClassNotFoundException
 	{
 		MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
 		try
 		{
-			JavaFileObject javaFileObject = manager.makeStringSource(modle.fileName(), modle.toString());
+			String source = classModel.toStringWithLineNo();
+			JavaFileObject javaFileObject = manager.makeStringSource(classModel.fileName(), source);
 			CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
 			Boolean result = task.call();
 			if (result == null || !result.booleanValue())
 			{
-				logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", modle.toStringWithLineNo());
+				logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", source);
 				throw new RuntimeException("Compilation failed.");
 			}
+			logger.debug("编译的源代码是:\r\n{}\r\n", source);
 			memoryClassLoader.addClassBytes(manager.getClassBytes());
-			return memoryClassLoader.loadClass("com.jfireframe.smc.output." + modle.className());
+			return memoryClassLoader.loadClass("com.jfireframe.smc.output." + classModel.className());
 		}
 		finally
 		{

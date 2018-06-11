@@ -200,7 +200,23 @@ public class ClassModel
 		int no = 1;
 		for (String each : tmp)
 		{
-			cache.append("/*").append(no).append("*/").append(each).append("\r\n");
+			if (no < 10)
+			{
+				cache.append("/*   ").append(no).append(" */  ");
+			}
+			else if (no < 100)
+			{
+				cache.append("/*  ").append(no).append(" */  ");
+			}
+			else if (no < 1000)
+			{
+				cache.append("/* ").append(no).append(" */  ");
+			}
+			else
+			{
+				cache.append("/*").append(no).append(" */  ");
+			}
+			cache.append(each).append("\r\n");
 			no += 1;
 		}
 		return cache.toString();
