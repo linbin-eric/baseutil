@@ -3,10 +3,12 @@ package com.jfireframework.baseutil.reflect.copy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.jfireframework.baseutil.exception.JustThrowException;
+import java.util.Set;
+import java.util.TreeSet;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public class CopyInstance<S, D> implements Copy<S, D>
@@ -20,7 +22,7 @@ public class CopyInstance<S, D> implements Copy<S, D>
 	{
 		this.source = sources;
 		this.des = des;
-		Field[] desFields = ReflectUtil.getAllFields(des);
+		Field[] desFields = getAllFields(des);
 		Map<String, Field> sourceFields = generateSourceFields();
 		List<PropertyCopyDescriptor<S, D>> list = new ArrayList<PropertyCopyDescriptor<S, D>>();
 		for (Field toField : desFields)
@@ -88,7 +90,7 @@ public class CopyInstance<S, D> implements Copy<S, D>
 	
 	private Map<String, Field> generateSourceFields()
 	{
-		Field[] fields = ReflectUtil.getAllFields(source);
+		Field[] fields = getAllFields(source);
 		Map<String, Field> map = new HashMap<String, Field>();
 		for (Field fromField : fields)
 		{
@@ -157,9 +159,44 @@ public class CopyInstance<S, D> implements Copy<S, D>
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 		return desc;
+	}
+	
+	/**
+	 * 获取该类的所有field对象，如果子类重写了父类的field，则只包含子类的field
+	 * 
+	 * @param entityClass
+	 * @return
+	 */
+	Field[] getAllFields(Class<?> entityClass)
+	{
+		Set<Field> set = new TreeSet<Field>(new Comparator<Field>() {
+			// 只需要去重，并且希望父类的field在返回数组中排在后面，所以比较全部返回1
+			@Override
+			public int compare(Field o1, Field o2)
+			{
+				if (o1.getName().equals(o2.getName()))
+				{
+					return 0;
+				}
+				else
+				{
+					return 1;
+				}
+			}
+		});
+		while (entityClass != Object.class && entityClass != null)
+		{
+			for (Field each : entityClass.getDeclaredFields())
+			{
+				set.add(each);
+			}
+			entityClass = entityClass.getSuperclass();
+		}
+		return set.toArray(new Field[set.size()]);
 	}
 	
 }

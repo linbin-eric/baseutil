@@ -3,7 +3,7 @@ package com.jfireframework.baseutil.reflect.copy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
-import com.jfireframework.baseutil.exception.JustThrowException;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.smc.SmcHelper;
 import com.jfireframework.baseutil.smc.compiler.JavaStringCompiler;
 import com.jfireframework.baseutil.smc.model.ClassModel;
@@ -42,7 +42,8 @@ public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescri
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 		
 	}
@@ -82,7 +83,8 @@ public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescri
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 	}
 	

@@ -5,7 +5,6 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -13,8 +12,8 @@ import java.security.SignatureException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
-import com.jfireframework.baseutil.exception.JustThrowException;
 import com.jfireframework.baseutil.exception.UnSupportException;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 /**
  * rsa加解密工具类，注意，该类是非线程安全的
@@ -58,7 +57,7 @@ public class RSAUtil implements EnDecrpt
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
 		}
 	}
 	
@@ -81,7 +80,7 @@ public class RSAUtil implements EnDecrpt
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
 		}
 	}
 	
@@ -100,7 +99,8 @@ public class RSAUtil implements EnDecrpt
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 	}
 	
@@ -113,7 +113,8 @@ public class RSAUtil implements EnDecrpt
 		}
 		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 	}
 	
@@ -127,7 +128,8 @@ public class RSAUtil implements EnDecrpt
 		}
 		catch (SignatureException e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 	}
 	
@@ -141,11 +143,12 @@ public class RSAUtil implements EnDecrpt
 		}
 		catch (SignatureException e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return false;
 		}
 	}
 	
-	public KeyPair buildKey() throws IOException
+	public KeyPair buildKey()
 	{
 		try
 		{
@@ -158,28 +161,26 @@ public class RSAUtil implements EnDecrpt
 			System.out.println("私钥是：" + Base64Tool.encode(privateKey.getEncoded()));
 			return keyPair;
 		}
-		catch (NoSuchAlgorithmException e)
+		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 	}
 	
-	public KeyPair buildKey(int length) throws IOException
+	public KeyPair buildKey(int length)
 	{
 		try
 		{
 			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("rsa");
 			keyPairGenerator.initialize(length);
 			KeyPair keyPair = keyPairGenerator.generateKeyPair();
-			Key publicKey = keyPair.getPublic();
-			Key privateKey = keyPair.getPrivate();
-			System.out.println("公钥是：" + Base64Tool.encode(publicKey.getEncoded()));
-			System.out.println("私钥是：" + Base64Tool.encode(privateKey.getEncoded()));
 			return keyPair;
 		}
-		catch (NoSuchAlgorithmException e)
+		catch (Exception e)
 		{
-			throw new JustThrowException(e);
+			ReflectUtil.throwException(e);
+			return null;
 		}
 	}
 	
