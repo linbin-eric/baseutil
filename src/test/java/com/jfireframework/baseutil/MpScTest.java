@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import com.jfireframework.baseutil.concurrent.MPSCQueue;
+import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
 
 public class MpScTest
 {
@@ -19,7 +19,7 @@ public class MpScTest
     int                                   threadNum = 8;
     AtomicInteger                         sum       = new AtomicInteger(0);
     CountDownLatch                        latch     = new CountDownLatch(1);
-    Queue<String>                         testQueue = new MPSCQueue<String>();
+    Queue<String>                         testQueue = new MPSCLinkedQueue<String>();
     
     @Before
     public void before()

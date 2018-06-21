@@ -3,7 +3,7 @@ package com.jfireframework.baseutil.concurrent;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
-import com.jfireframework.baseutil.concurrent.MPSCQueue.Node;
+import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue.Node;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
 import sun.misc.Unsafe;
@@ -55,7 +55,7 @@ abstract class Tail extends HeadRightPad
 /**
  * Created by 林斌 on 2016/9/10.
  */
-public class MPSCQueue<E> extends Tail implements Queue<E>
+public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
 {
 	public volatile long p01, p02, p03, p04, p05, p06, p07;
 	
@@ -68,7 +68,7 @@ public class MPSCQueue<E> extends Tail implements Queue<E>
 	private static final long	tailOff	= UnsafeFieldAccess.getFieldOffset("tail", Tail.class);
 	private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
 	
-	public MPSCQueue()
+	public MPSCLinkedQueue()
 	{
 		tail = head = new Node(null);
 	}
