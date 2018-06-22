@@ -28,14 +28,29 @@ abstract class Pad2 extends ProducerIndex
 	public long	p11, p12, p13, p14, p15, p16, p17;
 }
 
-abstract class Core<E> extends Pad2 implements Queue<E>
+class Entry
 {
-	protected final E[]		buffer;
+	Object value;
+	
+	<E> void set(E e)
+	{
+		value = e;
+	}
+	
+	@SuppressWarnings("unchecked")
+	<E> E get()
+	{
+		return (E) value;
+	}
+}
+
+abstract class Core extends Pad2
+{
+	protected final Entry[]	buffer;
 	protected final int		mask;
 	protected final int[]	availableBuffers;
 	protected final int		indexShift;
 	
-	@SuppressWarnings("unchecked")
 	Core(int capacity)
 	{
 		int size = 1;
@@ -49,7 +64,11 @@ abstract class Core<E> extends Pad2 implements Queue<E>
 		{
 			this.indexShift = indexShift;
 			mask = size - 1;
-			buffer = (E[]) new Object[size];
+			buffer = new Entry[size];
+			for (int i = 0; i < buffer.length; i++)
+			{
+				buffer[i] = new Entry();
+			}
 			availableBuffers = new int[size];
 			Arrays.fill(availableBuffers, -1);
 		}
@@ -61,7 +80,7 @@ abstract class Core<E> extends Pad2 implements Queue<E>
 	
 }
 
-abstract class Pad3<E> extends Core<E>
+abstract class Pad3 extends Core
 {
 	long	p0, p1, p2, p3, p4, p5, p6, p7;
 	long	p11, p12, p13, p14, p15, p16, p17;
@@ -72,7 +91,7 @@ abstract class Pad3<E> extends Core<E>
 	}
 }
 
-abstract class ComsumerIndex<E> extends Pad3<E>
+abstract class ComsumerIndex extends Pad3
 {
 	long consumerIndex;
 	
@@ -83,7 +102,7 @@ abstract class ComsumerIndex<E> extends Pad3<E>
 	
 }
 
-abstract class Pad4<E> extends ComsumerIndex<E>
+abstract class Pad4 extends ComsumerIndex
 {
 	long	p0, p1, p2, p3, p4, p5, p6, p7;
 	long	p11, p12, p13, p14, p15, p16, p17;
@@ -95,7 +114,7 @@ abstract class Pad4<E> extends ComsumerIndex<E>
 	
 }
 
-abstract class ProducerIndexLimit<E> extends Pad4<E>
+abstract class ProducerIndexLimit extends Pad4
 {
 	volatile long producerIndexLimit = 0;
 	
@@ -105,7 +124,7 @@ abstract class ProducerIndexLimit<E> extends Pad4<E>
 	}
 }
 
-abstract class Pad5<E> extends ProducerIndexLimit<E>
+abstract class Pad5 extends ProducerIndexLimit
 {
 	long	p0, p1, p2, p3, p4, p5, p6, p7;
 	long	p11, p12, p13, p14, p15, p16, p17;
@@ -117,7 +136,7 @@ abstract class Pad5<E> extends ProducerIndexLimit<E>
 	
 }
 
-abstract class AccessInfo<E> extends Pad5<E>
+abstract class AccessInfo extends Pad5
 {
 	
 	static Unsafe		unsafe						= ReflectUtil.getUnsafe();
@@ -125,7 +144,7 @@ abstract class AccessInfo<E> extends Pad5<E>
 	static final long	producerIndexAddress		= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
 	static final long	producerIndexLimitAddress	= UnsafeFieldAccess.getFieldOffset("producerIndexLimit", ProducerIndexLimit.class);
 	static final long	availableBufferOffset		= unsafe.arrayBaseOffset(new int[0].getClass());
-	static final long	bufferOffset				= unsafe.arrayBaseOffset(Object[].class);
+	static final long	bufferOffset				= unsafe.arrayBaseOffset(Entry[].class);
 	static final long	availableBufferScaleShift;
 	static final long	bufferScaleShift;
 	
@@ -144,7 +163,7 @@ abstract class AccessInfo<E> extends Pad5<E>
 		{
 			throw new IllegalArgumentException();
 		}
-		int bufferScale = unsafe.arrayIndexScale(Object[].class);
+		int bufferScale = unsafe.arrayIndexScale(Entry[].class);
 		if (bufferScale == 4)
 		{
 			bufferScaleShift = 2;
@@ -167,6 +186,11 @@ abstract class AccessInfo<E> extends Pad5<E>
 	final long getConsumerIndexVolatile()
 	{
 		return unsafe.getLongVolatile(this, consumerIndexAddress);
+	}
+	
+	final void setConsumerIndexOrdered(long consumerIndex)
+	{
+		unsafe.putOrderedLong(this, consumerIndexAddress, consumerIndex);
 	}
 	
 	boolean isAvailable(long index)
@@ -248,17 +272,18 @@ abstract class AccessInfo<E> extends Pad5<E>
 		} while (true);
 	}
 	
-	@SuppressWarnings("unchecked")
-	E get(long index)
+	Entry get(long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		return (E) unsafe.getObject(buffer, address);
+		Entry entry = (Entry) unsafe.getObject(buffer, address);
+		return entry;
 	}
 	
-	void set(E value, long index)
+	<E> void set(E value, long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		unsafe.putObject(buffer, address, value);
+		Entry entry = (Entry) unsafe.getObject(buffer, address);
+		entry.set(value);
 	}
 	
 	void setProducerIndexLimit(long limit)
@@ -280,7 +305,7 @@ abstract class AccessInfo<E> extends Pad5<E>
 	}
 }
 
-public class MPSCArrayQueue<E> extends AccessInfo<E> implements Queue<E>
+public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 {
 	
 	public MPSCArrayQueue(int capacity)
@@ -316,7 +341,7 @@ public class MPSCArrayQueue<E> extends AccessInfo<E> implements Queue<E>
 		for (long i = consumerIndex; i < pIndex; i++)
 		{
 			waitUnitlAvailable(i);
-			E e = get(i);
+			E e = get(i).get();
 			if (o == null ? e == null : o.equals(e))
 			{
 				return true;
@@ -345,7 +370,7 @@ public class MPSCArrayQueue<E> extends AccessInfo<E> implements Queue<E>
 				if (hasNext())
 				{
 					waitUnitlAvailable(index);
-					return get(index);
+					return get(index).get();
 				}
 				else
 				{
@@ -499,9 +524,10 @@ public class MPSCArrayQueue<E> extends AccessInfo<E> implements Queue<E>
 				Thread.yield();
 			}
 		}
-		E e = get(cIndex);
-		set(null, cIndex);
-		this.consumerIndex = cIndex+1;
+		Entry entry = get(cIndex);
+		E e = entry.get();
+		entry.set(null);
+		setConsumerIndexOrdered(cIndex + 1);
 		return e;
 	}
 	
@@ -529,7 +555,7 @@ public class MPSCArrayQueue<E> extends AccessInfo<E> implements Queue<E>
 				Thread.yield();
 			}
 		}
-		E e = get(consumerIndex);
+		E e = get(consumerIndex).get();
 		return e;
 	}
 	
