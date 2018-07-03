@@ -28,28 +28,12 @@ abstract class Pad2 extends ProducerIndex
 	public long	p11, p12, p13, p14, p15, p16, p17;
 }
 
-class Entry
-{
-	Object value;
-	
-	<E> void set(E e)
-	{
-		value = e;
-	}
-	
-	@SuppressWarnings("unchecked")
-	<E> E get()
-	{
-		return (E) value;
-	}
-}
-
 abstract class Core extends Pad2
 {
-	protected final Entry[]	buffer;
-	protected final int		mask;
-	protected final int[]	availableBuffers;
-	protected final int		indexShift;
+	protected final Object[]	buffer;
+	protected final int			mask;
+	protected final int[]		availableBuffers;
+	protected final int			indexShift;
 	
 	Core(int capacity)
 	{
@@ -64,11 +48,7 @@ abstract class Core extends Pad2
 		{
 			this.indexShift = indexShift;
 			mask = size - 1;
-			buffer = new Entry[size];
-			for (int i = 0; i < buffer.length; i++)
-			{
-				buffer[i] = new Entry();
-			}
+			buffer = new Object[size];
 			availableBuffers = new int[size];
 			Arrays.fill(availableBuffers, -1);
 		}
@@ -144,7 +124,7 @@ abstract class AccessInfo extends Pad5
 	static final long	producerIndexAddress		= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
 	static final long	producerIndexLimitAddress	= UnsafeFieldAccess.getFieldOffset("producerIndexLimit", ProducerIndexLimit.class);
 	static final long	availableBufferOffset		= unsafe.arrayBaseOffset(new int[0].getClass());
-	static final long	bufferOffset				= unsafe.arrayBaseOffset(Entry[].class);
+	static final long	bufferOffset				= unsafe.arrayBaseOffset(Object[].class);
 	static final long	availableBufferScaleShift;
 	static final long	bufferScaleShift;
 	
@@ -163,7 +143,7 @@ abstract class AccessInfo extends Pad5
 		{
 			throw new IllegalArgumentException();
 		}
-		int bufferScale = unsafe.arrayIndexScale(Entry[].class);
+		int bufferScale = unsafe.arrayIndexScale(Object[].class);
 		if (bufferScale == 4)
 		{
 			bufferScaleShift = 2;
@@ -272,18 +252,24 @@ abstract class AccessInfo extends Pad5
 		} while (true);
 	}
 	
-	Entry get(long index)
+	Object get(long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		Entry entry = (Entry) unsafe.getObject(buffer, address);
-		return entry;
+		return unsafe.getObject(buffer, address);
 	}
 	
-	<E> void set(E value, long index)
+	void set(Object value, long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		Entry entry = (Entry) unsafe.getObject(buffer, address);
-		entry.set(value);
+		unsafe.putObject(buffer, address, value);
+	}
+	
+	Object getAndSetNull(long index)
+	{
+		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
+		Object result = unsafe.getObject(buffer, address);
+		unsafe.putObject(buffer, address, null);
+		return result;
 	}
 	
 	void setProducerIndexLimit(long limit)
@@ -341,7 +327,8 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 		for (long i = consumerIndex; i < pIndex; i++)
 		{
 			waitUnitlAvailable(i);
-			E e = get(i).get();
+			@SuppressWarnings("unchecked")
+			E e = (E) get(i);
 			if (o == null ? e == null : o.equals(e))
 			{
 				return true;
@@ -364,13 +351,14 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 				return index < pIndex;
 			}
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public E next()
 			{
 				if (hasNext())
 				{
 					waitUnitlAvailable(index);
-					return get(index).get();
+					return (E) get(index);
 				}
 				else
 				{
@@ -506,6 +494,7 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 		return poll();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public E poll()
 	{
@@ -524,9 +513,7 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 				Thread.yield();
 			}
 		}
-		Entry entry = get(cIndex);
-		E e = entry.get();
-		entry.set(null);
+		E e = (E) getAndSetNull(cIndex);
 		setConsumerIndexOrdered(cIndex + 1);
 		return e;
 	}
@@ -537,6 +524,7 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 		return peek();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public E peek()
 	{
@@ -555,7 +543,7 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 				Thread.yield();
 			}
 		}
-		E e = get(consumerIndex).get();
+		E e = (E) get(consumerIndex);
 		return e;
 	}
 	
