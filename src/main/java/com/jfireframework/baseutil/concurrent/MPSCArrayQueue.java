@@ -15,6 +15,11 @@ abstract class PadFor128Bit
 	// 128长度的缓存行，要进行填充，需要16个byte。
 	long	p0, p1, p2, p3, p4, p5, p6, p7;
 	long	p11, p12, p13, p14, p15, p16, p17;
+	
+	public static long noHuop(PadFor128Bit instance)
+	{
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+	}
 }
 
 abstract class ProducerIndex extends PadFor128Bit
@@ -26,6 +31,11 @@ abstract class Pad2 extends ProducerIndex
 {
 	public long	p0, p1, p2, p3, p4, p5, p6, p7;
 	public long	p11, p12, p13, p14, p15, p16, p17;
+	
+	public static long noHuop(Pad2 instance)
+	{
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+	}
 }
 
 abstract class Core extends Pad2
@@ -69,6 +79,11 @@ abstract class Pad3 extends Core
 	{
 		super(capacity);
 	}
+	
+	public static long noHuop(Pad3 instance)
+	{
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+	}
 }
 
 abstract class ComsumerIndex extends Pad3
@@ -92,6 +107,10 @@ abstract class Pad4 extends ComsumerIndex
 		super(capacity);
 	}
 	
+	public static long noHuop(Pad4 instance)
+	{
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+	}
 }
 
 abstract class ProducerIndexLimit extends Pad4
@@ -114,6 +133,10 @@ abstract class Pad5 extends ProducerIndexLimit
 		super(capacity);
 	}
 	
+	public static long noHuop(Pad5 instance)
+	{
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+	}
 }
 
 abstract class AccessInfo extends Pad5
