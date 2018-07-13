@@ -10,18 +10,18 @@ import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
 import sun.misc.Unsafe;
 
-abstract class PadFor128Bit
+abstract class PadFor64Bit
 {
 	// 64长度的缓存行，要进行填充，需要8个byte。
 	long p1, p2, p3, p4, p5, p6, p7;
 	
-	public static long noHuop(PadFor128Bit instance)
+	public static long noHuop(PadFor64Bit instance)
 	{
 		return instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
 	}
 }
 
-abstract class ProducerIndex extends PadFor128Bit
+abstract class ProducerIndex extends PadFor64Bit
 {
 	volatile long producerIndex;
 }
