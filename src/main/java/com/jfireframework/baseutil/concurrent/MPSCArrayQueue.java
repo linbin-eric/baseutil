@@ -153,9 +153,8 @@ abstract class Core extends Pad3
 	long nextProducerIndex()
 	{
 		int mask = this.mask;
-		long pLimit = producerIndexLimit;
 		long pIndex = producerIndex;
-		if (pIndex < pLimit)
+		if (pIndex < producerIndexLimit)
 		{
 			if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
 			{
@@ -165,7 +164,7 @@ abstract class Core extends Pad3
 		do
 		{
 			pIndex = producerIndex;
-			if (pIndex < pLimit)
+			if (pIndex < producerIndexLimit)
 			{
 				if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
 				{
@@ -174,8 +173,8 @@ abstract class Core extends Pad3
 			}
 			else
 			{
-				pLimit = producerIndexLimit = consumerIndex + mask + 1;
-				if (pIndex >= pLimit)
+				producerIndexLimit = consumerIndex + mask + 1;
+				if (pIndex >= producerIndexLimit)
 				{
 					// 队列已满
 					return -1;

@@ -118,6 +118,7 @@ public class ArrayQueueTest
 					}
 					for (int i = 0; i < sendNum; i++)
 					{
+						String value = String.valueOf(i);
 						if (baseUtilArrayQueue.offer(value) == false)
 						{
 							while (baseUtilArrayQueue.offer(value) == false)
