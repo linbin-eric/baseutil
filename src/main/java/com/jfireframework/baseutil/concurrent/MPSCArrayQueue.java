@@ -157,11 +157,6 @@ abstract class AccessInfo extends Pad5
 		super(capacity);
 	}
 	
-	final long getConsumerIndexVolatile()
-	{
-		return unsafe.getLongVolatile(this, consumerIndexAddress);
-	}
-	
 	final void setConsumerIndexOrdered(long consumerIndex)
 	{
 		unsafe.putOrderedLong(this, consumerIndexAddress, consumerIndex);
@@ -215,7 +210,7 @@ abstract class AccessInfo extends Pad5
 			}
 			else
 			{
-				pLimit = producerIndexLimit = getConsumerIndexVolatile() + mask + 1;
+				pLimit = producerIndexLimit = consumerIndex + mask + 1;
 				if (pIndex >= pLimit)
 				{
 					// 队列已满
