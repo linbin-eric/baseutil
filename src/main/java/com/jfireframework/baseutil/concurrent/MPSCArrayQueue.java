@@ -12,13 +12,12 @@ import sun.misc.Unsafe;
 
 abstract class PadFor128Bit
 {
-	// 128长度的缓存行，要进行填充，需要16个byte。
-	long	p0, p1, p2, p3, p4, p5, p6, p7;
-	long	p11, p12, p13, p14, p15, p16, p17;
+	// 64长度的缓存行，要进行填充，需要8个byte。
+	long p0, p1, p2, p3, p4, p5, p6, p7;
 	
 	public static long noHuop(PadFor128Bit instance)
 	{
-		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
 	}
 }
 
@@ -29,12 +28,11 @@ abstract class ProducerIndex extends PadFor128Bit
 
 abstract class Pad2 extends ProducerIndex
 {
-	public long	p0, p1, p2, p3, p4, p5, p6, p7;
-	public long	p11, p12, p13, p14, p15, p16, p17;
+	public long p0, p1, p2, p3, p4, p5, p6, p7;
 	
 	public static long noHuop(Pad2 instance)
 	{
-		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
 	}
 }
 
@@ -44,6 +42,8 @@ abstract class Core extends Pad2
 	protected final int			mask;
 	protected final int[]		availableBuffers;
 	protected final int			indexShift;
+	protected volatile long		consumerIndex;
+	protected long				consumerLimit;
 	
 	Core(int capacity)
 	{
@@ -70,37 +70,9 @@ abstract class Core extends Pad2
 	
 }
 
-abstract class Pad3 extends Core
+abstract class Pad4 extends Core
 {
-	long	p0, p1, p2, p3, p4, p5, p6, p7;
-	long	p11, p12, p13, p14, p15, p16, p17;
-	
-	Pad3(int capacity)
-	{
-		super(capacity);
-	}
-	
-	public static long noHuop(Pad3 instance)
-	{
-		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
-	}
-}
-
-abstract class ComsumerIndex extends Pad3
-{
-	long consumerIndex;
-	
-	ComsumerIndex(int capacity)
-	{
-		super(capacity);
-	}
-	
-}
-
-abstract class Pad4 extends ComsumerIndex
-{
-	long	p0, p1, p2, p3, p4, p5, p6, p7;
-	long	p11, p12, p13, p14, p15, p16, p17;
+	long p0, p1, p2, p3, p4, p5, p6, p7;
 	
 	Pad4(int capacity)
 	{
@@ -109,13 +81,13 @@ abstract class Pad4 extends ComsumerIndex
 	
 	public static long noHuop(Pad4 instance)
 	{
-		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
 	}
 }
 
 abstract class ProducerIndexLimit extends Pad4
 {
-	volatile long producerIndexLimit = 0;
+	long producerIndexLimit = 0;
 	
 	ProducerIndexLimit(int capacity)
 	{
@@ -125,8 +97,7 @@ abstract class ProducerIndexLimit extends Pad4
 
 abstract class Pad5 extends ProducerIndexLimit
 {
-	long	p0, p1, p2, p3, p4, p5, p6, p7;
-	long	p11, p12, p13, p14, p15, p16, p17;
+	long p0, p1, p2, p3, p4, p5, p6, p7;
 	
 	Pad5(int capacity)
 	{
@@ -135,7 +106,7 @@ abstract class Pad5 extends ProducerIndexLimit
 	
 	public static long noHuop(Pad5 instance)
 	{
-		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7 + instance.p11 + instance.p12 + instance.p13 + instance.p14 + instance.p15 + instance.p16 + instance.p17;
+		return instance.p0 + instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
 	}
 }
 
@@ -143,7 +114,7 @@ abstract class AccessInfo extends Pad5
 {
 	
 	static Unsafe		unsafe						= ReflectUtil.getUnsafe();
-	static final long	consumerIndexAddress		= UnsafeFieldAccess.getFieldOffset("consumerIndex", ComsumerIndex.class);
+	static final long	consumerIndexAddress		= UnsafeFieldAccess.getFieldOffset("consumerIndex", Core.class);
 	static final long	producerIndexAddress		= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
 	static final long	producerIndexLimitAddress	= UnsafeFieldAccess.getFieldOffset("producerIndexLimit", ProducerIndexLimit.class);
 	static final long	availableBufferOffset		= unsafe.arrayBaseOffset(new int[0].getClass());
@@ -222,7 +193,6 @@ abstract class AccessInfo extends Pad5
 	 */
 	long nextProducerIndex()
 	{
-		long producerIndexAddress = AccessInfo.producerIndexAddress;
 		int mask = this.mask;
 		long pLimit = producerIndexLimit;
 		long pIndex = producerIndex;
@@ -233,7 +203,6 @@ abstract class AccessInfo extends Pad5
 				return pIndex;
 			}
 		}
-		boolean limitChange = false;
 		do
 		{
 			pIndex = producerIndex;
@@ -241,27 +210,12 @@ abstract class AccessInfo extends Pad5
 			{
 				if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
 				{
-					if (limitChange)
-					{
-						setProducerIndexLimit(pLimit);
-					}
 					return pIndex;
-				}
-				pIndex = producerIndex;
-				if (pIndex >= pLimit)
-				{
-					pLimit = getConsumerIndexVolatile() + mask + 1;
-					limitChange = true;
-					if (pIndex >= pLimit)
-					{
-						// 队列已满
-						return -1;
-					}
 				}
 			}
 			else
 			{
-				pLimit = getConsumerIndexVolatile() + mask + 1;
+				pLimit = producerIndexLimit = getConsumerIndexVolatile() + mask + 1;
 				if (pIndex >= pLimit)
 				{
 					// 队列已满
@@ -269,7 +223,10 @@ abstract class AccessInfo extends Pad5
 				}
 				else
 				{
-					limitChange = true;
+					if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
+					{
+						return pIndex;
+					}
 				}
 			}
 		} while (true);
@@ -521,11 +478,15 @@ public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
 	@Override
 	public E poll()
 	{
-		long pIndex = producerIndex;
+		long cIndexLimit = this.consumerLimit;
 		long cIndex = this.consumerIndex;
-		if (pIndex == cIndex)
+		if (cIndex == cIndexLimit)
 		{
-			return null;
+			cIndexLimit = producerIndex;
+			if (cIndex == cIndexLimit)
+			{
+				return null;
+			}
 		}
 		int flag = (int) (cIndex >>> indexShift);
 		long address = ((cIndex & mask) << availableBufferScaleShift) + availableBufferOffset;
