@@ -36,89 +36,28 @@ abstract class Pad2 extends ProducerIndex
 	}
 }
 
-abstract class Core extends Pad2
+abstract class ComsumerIndex extends Pad2
 {
-	protected final Object[]	buffer;
-	protected final int			mask;
-	protected final int[]		availableBuffers;
-	protected final int			indexShift;
-	protected long				consumerLimit;
-	protected long				producerIndexLimit	= 0;
-	
-	Core(int capacity)
-	{
-		int size = 1;
-		int indexShift = 0;
-		while (size < capacity && size > 0)
-		{
-			size <<= 1;
-			indexShift++;
-		}
-		if (size > 0)
-		{
-			this.indexShift = indexShift;
-			mask = size - 1;
-			buffer = new Object[size];
-			availableBuffers = new int[size];
-			Arrays.fill(availableBuffers, -1);
-		}
-		else
-		{
-			throw new IllegalArgumentException("capacity 无法计算得到其最小的2次方幂");
-		}
-	}
-	
+	volatile long consumerIndex;
 }
 
-abstract class Pad4 extends Core
+abstract class Pad3 extends ComsumerIndex
 {
 	long p1, p2, p3, p4, p5, p6, p7;
 	
-	Pad4(int capacity)
-	{
-		super(capacity);
-	}
-	
-	public static long noHuop(Pad4 instance)
+	public static long noHuop(Pad3 instance)
 	{
 		return instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
 	}
 }
 
-abstract class ComsumerIndex extends Pad4
+abstract class Core extends Pad3
 {
-	protected volatile long consumerIndex;
-	
-	ComsumerIndex(int capacity)
-	{
-		super(capacity);
-	}
-}
-
-abstract class Pad5 extends ComsumerIndex
-{
-	long p1, p2, p3, p4, p5, p6, p7;
-	
-	Pad5(int capacity)
-	{
-		super(capacity);
-	}
-	
-	public static long noHuop(Pad5 instance)
-	{
-		return instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
-	}
-}
-
-abstract class AccessInfo extends Pad5
-{
-	
-	static Unsafe		unsafe						= ReflectUtil.getUnsafe();
-	static final long	consumerIndexAddress		= UnsafeFieldAccess.getFieldOffset("consumerIndex", ComsumerIndex.class);
-	static final long	producerIndexAddress		= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
-	static final long	producerIndexLimitAddress	= UnsafeFieldAccess.getFieldOffset("producerIndexLimit", Core.class);
-	static final long	availableBufferOffset		= unsafe.arrayBaseOffset(new int[0].getClass());
-	static final long	bufferOffset				= unsafe.arrayBaseOffset(Object[].class);
+	static Unsafe		unsafe					= ReflectUtil.getUnsafe();
+	static final long	consumerIndexAddress	= UnsafeFieldAccess.getFieldOffset("consumerIndex", ComsumerIndex.class);
+	static final long	producerIndexAddress	= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
+	static final long	availableBufferOffset	= unsafe.arrayBaseOffset(new int[0].getClass());
+	static final long	bufferOffset			= unsafe.arrayBaseOffset(Object[].class);
 	static final long	availableBufferScaleShift;
 	static final long	bufferScaleShift;
 	
@@ -152,9 +91,34 @@ abstract class AccessInfo extends Pad5
 		}
 	}
 	
-	AccessInfo(int capacity)
+	protected final Object[]	buffer;
+	protected final int			mask;
+	protected final int[]		availableBuffers;
+	protected final int			indexShift;
+	protected long				consumerLimit;
+	protected long				producerIndexLimit	= 0;
+	
+	Core(int capacity)
 	{
-		super(capacity);
+		int size = 1;
+		int indexShift = 0;
+		while (size < capacity && size > 0)
+		{
+			size <<= 1;
+			indexShift++;
+		}
+		if (size > 0)
+		{
+			this.indexShift = indexShift;
+			mask = size - 1;
+			buffer = new Object[size];
+			availableBuffers = new int[size];
+			Arrays.fill(availableBuffers, -1);
+		}
+		else
+		{
+			throw new IllegalArgumentException("capacity 无法计算得到其最小的2次方幂");
+		}
 	}
 	
 	final void setConsumerIndexOrdered(long consumerIndex)
@@ -247,11 +211,6 @@ abstract class AccessInfo extends Pad5
 		return result;
 	}
 	
-	void setProducerIndexLimit(long limit)
-	{
-		unsafe.putOrderedLong(this, producerIndexLimitAddress, limit);
-	}
-	
 	void waitUnitlAvailable(long index)
 	{
 		int flag = (int) (index >>> indexShift);
@@ -264,9 +223,10 @@ abstract class AccessInfo extends Pad5
 			}
 		}
 	}
+	
 }
 
-public class MPSCArrayQueue<E> extends AccessInfo implements Queue<E>
+public class MPSCArrayQueue<E> extends Core implements Queue<E>
 {
 	
 	public MPSCArrayQueue(int capacity)
