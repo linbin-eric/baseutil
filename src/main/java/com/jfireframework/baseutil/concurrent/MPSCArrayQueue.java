@@ -51,8 +51,15 @@ abstract class Pad3 extends ComsumerIndex
 	}
 }
 
-abstract class Core extends Pad3
+abstract class ProducerIndexLimit extends Pad3
 {
+	volatile long producerIndexLimit = 0;
+}
+
+abstract class Pad4 extends ProducerIndexLimit
+{
+	long				p1, p2, p3, p4, p5, p6, p7;
+	
 	static Unsafe		unsafe					= ReflectUtil.getUnsafe();
 	static final long	consumerIndexAddress	= UnsafeFieldAccess.getFieldOffset("consumerIndex", ComsumerIndex.class);
 	static final long	producerIndexAddress	= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
@@ -91,14 +98,16 @@ abstract class Core extends Pad3
 		}
 	}
 	
-	protected final Object[]	buffer;
-	protected final int			mask;
-	protected final int[]		availableBuffers;
-	protected final int			indexShift;
-	protected long				consumerLimit;
-	protected long				producerIndexLimit	= 0;
+	public static long noHuop(Pad4 instance)
+	{
+		return instance.p1 + instance.p2 + instance.p3 + instance.p4 + instance.p5 + instance.p6 + instance.p7;
+	}
+}
+
+public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
+{
 	
-	Core(int capacity)
+	public MPSCArrayQueue(int capacity)
 	{
 		int size = 1;
 		int indexShift = 0;
@@ -121,19 +130,17 @@ abstract class Core extends Pad3
 		}
 	}
 	
+	protected final Object[]	buffer;
+	protected final int			mask;
+	protected final int[]		availableBuffers;
+	protected final int			indexShift;
+	
 	final void setConsumerIndexOrdered(long consumerIndex)
 	{
 		unsafe.putOrderedLong(this, consumerIndexAddress, consumerIndex);
 	}
 	
-	boolean isAvailable(long index)
-	{
-		int flag = (int) (index >>> indexShift);
-		long address = ((index & mask) << availableBufferScaleShift) + availableBufferOffset;
-		return unsafe.getIntVolatile(availableBuffers, address) == flag;
-	}
-	
-	boolean isAvailable(long address, int flag)
+	boolean isAvailable(long address, int flag, int[] availableBuffers)
 	{
 		return unsafe.getIntVolatile(availableBuffers, address) == flag;
 	}
@@ -152,9 +159,9 @@ abstract class Core extends Pad3
 	 */
 	long nextProducerIndex()
 	{
-		int mask = this.mask;
 		long pIndex = producerIndex;
-		if (pIndex < producerIndexLimit)
+		long pLimit = producerIndexLimit;
+		if (pIndex < pLimit)
 		{
 			if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
 			{
@@ -164,7 +171,7 @@ abstract class Core extends Pad3
 		do
 		{
 			pIndex = producerIndex;
-			if (pIndex < producerIndexLimit)
+			if (pIndex < pLimit)
 			{
 				if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
 				{
@@ -173,7 +180,7 @@ abstract class Core extends Pad3
 			}
 			else
 			{
-				producerIndexLimit = consumerIndex + mask + 1;
+				pLimit = producerIndexLimit = consumerIndex + mask + 1;
 				if (pIndex >= producerIndexLimit)
 				{
 					// 队列已满
@@ -214,23 +221,14 @@ abstract class Core extends Pad3
 	{
 		int flag = (int) (index >>> indexShift);
 		long address = ((index & mask) << availableBufferScaleShift) + availableBufferOffset;
-		if (isAvailable(address, flag) == false)
+		int[] availableBuffers = this.availableBuffers;
+		if (isAvailable(address, flag, availableBuffers) == false)
 		{
-			while (isAvailable(address, flag) == false)
+			while (isAvailable(address, flag, availableBuffers) == false)
 			{
 				Thread.yield();
 			}
 		}
-	}
-	
-}
-
-public class MPSCArrayQueue<E> extends Core implements Queue<E>
-{
-	
-	public MPSCArrayQueue(int capacity)
-	{
-		super(capacity);
 	}
 	
 	@Override
@@ -432,22 +430,19 @@ public class MPSCArrayQueue<E> extends Core implements Queue<E>
 	@Override
 	public E poll()
 	{
-		long cIndexLimit = this.consumerLimit;
 		long cIndex = this.consumerIndex;
-		if (cIndex == cIndexLimit)
+		int flag = (int) (cIndex >>> indexShift);
+		long address = ((cIndex & mask) << availableBufferScaleShift) + availableBufferOffset;
+		final int[] availableBuffers = this.availableBuffers;
+		if (isAvailable(address, flag, availableBuffers) == false)
 		{
-			cIndexLimit = producerIndex;
-			if (cIndex == cIndexLimit)
+			if (cIndex == producerIndex)
 			{
 				return null;
 			}
-		}
-		int flag = (int) (cIndex >>> indexShift);
-		long address = ((cIndex & mask) << availableBufferScaleShift) + availableBufferOffset;
-		if (isAvailable(address, flag) == false)
-		{
-			while (isAvailable(address, flag) == false)
+			while (isAvailable(address, flag, availableBuffers) == false)
 			{
+				// assert cIndex < consumerLimit;
 				Thread.yield();
 			}
 		}
@@ -474,9 +469,10 @@ public class MPSCArrayQueue<E> extends Core implements Queue<E>
 		}
 		int flag = (int) (consumerIndex >>> indexShift);
 		long address = ((consumerIndex & mask) << availableBufferScaleShift) + availableBufferOffset;
-		if (isAvailable(address, flag) == false)
+		int[] availableBuffers = this.availableBuffers;
+		if (isAvailable(address, flag, availableBuffers) == false)
 		{
-			while (isAvailable(address, flag) == false)
+			while (isAvailable(address, flag, availableBuffers) == false)
 			{
 				Thread.yield();
 			}

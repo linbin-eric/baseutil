@@ -4,10 +4,10 @@ import java.util.Queue;
 import java.util.concurrent.CyclicBarrier;
 import org.jctools.queues.MpscArrayQueue;
 import org.junit.Test;
-import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
 import com.jfireframework.baseutil.time.Timewatch;
 
-public class ArrayQueueTest
+public class ArrayQueueSpeedTest
 {
 	int				capacity			= 1024;
 	int				producerThreadNum	= 12;
@@ -93,7 +93,7 @@ public class ArrayQueueTest
 	
 	public void testBastUtilArrayQueue() throws InterruptedException
 	{
-		final Queue<Object> baseUtilArrayQueue = new MPSCArrayQueue<Object>(capacity);
+		final Queue<Object> baseUtilArrayQueue = new FastMPSCArrayQueue<Object>(capacity);
 		for (int i = 0; i < 10000; i++)
 		{
 			baseUtilArrayQueue.offer(value);
