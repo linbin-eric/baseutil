@@ -9,7 +9,7 @@ import com.jfireframework.baseutil.time.Timewatch;
 
 public class ArrayQueueSpeedTest
 {
-	int				capacity			= 1024;
+	int				capacity			= 2048;
 	int				producerThreadNum	= 12;
 	final int		sendNum				= 1000000;
 	final int		total				= sendNum * producerThreadNum;
@@ -98,7 +98,6 @@ public class ArrayQueueSpeedTest
 		{
 			baseUtilArrayQueue.offer(value);
 			baseUtilArrayQueue.poll();
-			Thread.yield();
 		}
 		final CyclicBarrier barrier = new CyclicBarrier(producerThreadNum + 1);
 		for (int i = 0; i < producerThreadNum; i++)
@@ -173,5 +172,6 @@ public class ArrayQueueSpeedTest
 	public void test() throws InterruptedException
 	{
 		testBastUtilArrayQueue();
+		testJcToolArray();
 	}
 }

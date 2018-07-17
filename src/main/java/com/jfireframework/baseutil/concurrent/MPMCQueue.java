@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
+import com.jfireframework.baseutil.reflect.UNSAFE;
 import sun.misc.Unsafe;
 
 public class MPMCQueue<E> implements Queue<E>
@@ -41,8 +41,8 @@ public class MPMCQueue<E> implements Queue<E>
 		// 经过JMH测试，在E是volatile的时候，并且有clear操作的情况下测试性能最高。无法解释为什么操作少了反而性能下降。
 		private volatile E			value;
 		private volatile Node<E>	next;
-		private static final long	valueOffset	= UnsafeFieldAccess.getFieldOffset("value", Node.class);
-		private static final long	nextOffset	= UnsafeFieldAccess.getFieldOffset("next", Node.class);
+		private static final long	valueOffset	= UNSAFE.getFieldOffset("value", Node.class);
+		private static final long	nextOffset	= UNSAFE.getFieldOffset("next", Node.class);
 		
 		public Node(E value)
 		{

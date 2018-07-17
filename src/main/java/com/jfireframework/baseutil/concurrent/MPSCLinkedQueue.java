@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Queue;
 import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue.Node;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
+import com.jfireframework.baseutil.reflect.UNSAFE;
 import sun.misc.Unsafe;
 
 abstract class HeadLeftPad
@@ -64,8 +64,8 @@ public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
 		return p01 + p02 + p03 + p04 + p05 + p06 + p07;
 	}
 	
-	private static final long	headOff	= UnsafeFieldAccess.getFieldOffset("head", Head.class);
-	private static final long	tailOff	= UnsafeFieldAccess.getFieldOffset("tail", Tail.class);
+	private static final long	headOff	= UNSAFE.getFieldOffset("head", Head.class);
+	private static final long	tailOff	= UNSAFE.getFieldOffset("tail", Tail.class);
 	private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
 	
 	public MPSCLinkedQueue()
@@ -193,8 +193,8 @@ public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
 	{
 		private Object				value;
 		private volatile Node		next;
-		private static final long	nextOff		= UnsafeFieldAccess.getFieldOffset("next", Node.class);
-		private static final long	valueOff	= UnsafeFieldAccess.getFieldOffset("value", Node.class);
+		private static final long	nextOff		= UNSAFE.getFieldOffset("next", Node.class);
+		private static final long	valueOff	= UNSAFE.getFieldOffset("value", Node.class);
 		
 		public Node(Object value)
 		{

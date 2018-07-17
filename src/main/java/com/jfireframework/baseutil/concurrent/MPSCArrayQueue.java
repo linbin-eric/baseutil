@@ -6,9 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
-import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
-import sun.misc.Unsafe;
+import com.jfireframework.baseutil.reflect.UNSAFE;
 
 abstract class PadFor64Bit
 {
@@ -23,7 +21,13 @@ abstract class PadFor64Bit
 
 abstract class ProducerIndex extends PadFor64Bit
 {
-	volatile long producerIndex;
+	volatile long				producerIndex;
+	private static final long	OFFSET	= UNSAFE.getFieldOffset("producerIndex", ProducerIndex.class);
+	
+	boolean casProducerIndex(long index)
+	{
+		return UNSAFE.compareAndSwapLong(this, OFFSET, index, index + 1);
+	}
 }
 
 abstract class Pad2 extends ProducerIndex
@@ -38,7 +42,13 @@ abstract class Pad2 extends ProducerIndex
 
 abstract class ComsumerIndex extends Pad2
 {
-	volatile long consumerIndex;
+	volatile long				consumerIndex;
+	private static final long	OFFSET	= UNSAFE.getFieldOffset("consumerIndex", ComsumerIndex.class);
+	
+	void orderedSetComsumerIndex(long index)
+	{
+		UNSAFE.putOrderedLong(this, OFFSET, index);
+	}
 }
 
 abstract class Pad3 extends ComsumerIndex
@@ -53,24 +63,27 @@ abstract class Pad3 extends ComsumerIndex
 
 abstract class ProducerIndexLimit extends Pad3
 {
-	volatile long producerIndexLimit = 0;
+	volatile long				producerIndexLimit			= 0;
+	private static final long	OFFSET	= UNSAFE.getFieldOffset("producerIndexLimit", ProducerIndexLimit.class);
+	
+	void orderedSetProducerIndexLimit(long limit)
+	{
+		UNSAFE.putOrderedLong(this, OFFSET, limit);
+	}
 }
 
 abstract class Pad4 extends ProducerIndexLimit
 {
 	long				p1, p2, p3, p4, p5, p6, p7;
 	
-	static Unsafe		unsafe					= ReflectUtil.getUnsafe();
-	static final long	consumerIndexAddress	= UnsafeFieldAccess.getFieldOffset("consumerIndex", ComsumerIndex.class);
-	static final long	producerIndexAddress	= UnsafeFieldAccess.getFieldOffset("producerIndex", ProducerIndex.class);
-	static final long	availableBufferOffset	= unsafe.arrayBaseOffset(new int[0].getClass());
-	static final long	bufferOffset			= unsafe.arrayBaseOffset(Object[].class);
-	static final long	availableBufferScaleShift;
-	static final long	bufferScaleShift;
+	static final int	availableBufferOffset	= UNSAFE.arrayBaseOffset(new int[0].getClass());
+	static final int	bufferOffset			= UNSAFE.arrayBaseOffset(Object[].class);
+	static final int	availableBufferScaleShift;
+	static final int	bufferScaleShift;
 	
 	static
 	{
-		int availableBufferScale = unsafe.arrayIndexScale(new int[0].getClass());
+		int availableBufferScale = UNSAFE.arrayIndexScale(new int[0].getClass());
 		if (availableBufferScale == 4)
 		{
 			availableBufferScaleShift = 2;
@@ -83,7 +96,7 @@ abstract class Pad4 extends ProducerIndexLimit
 		{
 			throw new IllegalArgumentException();
 		}
-		int bufferScale = unsafe.arrayIndexScale(Object[].class);
+		int bufferScale = UNSAFE.arrayIndexScale(Object[].class);
 		if (bufferScale == 4)
 		{
 			bufferScaleShift = 2;
@@ -135,21 +148,16 @@ public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
 	protected final int[]		availableBuffers;
 	protected final int			indexShift;
 	
-	final void setConsumerIndexOrdered(long consumerIndex)
-	{
-		unsafe.putOrderedLong(this, consumerIndexAddress, consumerIndex);
-	}
-	
 	boolean isAvailable(long address, int flag, int[] availableBuffers)
 	{
-		return unsafe.getIntVolatile(availableBuffers, address) == flag;
+		return UNSAFE.getIntVolatile(availableBuffers, address) == flag;
 	}
 	
 	void setAvailable(long index)
 	{
 		int flag = (int) (index >>> indexShift);
 		long address = ((index & mask) << availableBufferScaleShift) + availableBufferOffset;
-		unsafe.putOrderedInt(availableBuffers, address, flag);
+		UNSAFE.putOrderedInt(availableBuffers, address, flag);
 	}
 	
 	/**
@@ -163,7 +171,7 @@ public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
 		long pLimit = producerIndexLimit;
 		if (pIndex < pLimit)
 		{
-			if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
+			if (casProducerIndex(pIndex))
 			{
 				return pIndex;
 			}
@@ -173,7 +181,7 @@ public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
 			pIndex = producerIndex;
 			if (pIndex < pLimit)
 			{
-				if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
+				if (casProducerIndex(pIndex))
 				{
 					return pIndex;
 				}
@@ -188,7 +196,7 @@ public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
 				}
 				else
 				{
-					if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
+					if (casProducerIndex(pIndex))
 					{
 						return pIndex;
 					}
@@ -200,20 +208,20 @@ public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
 	Object get(long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		return unsafe.getObject(buffer, address);
+		return UNSAFE.getObject(buffer, address);
 	}
 	
 	void set(Object value, long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		unsafe.putObject(buffer, address, value);
+		UNSAFE.putObject(buffer, address, value);
 	}
 	
 	Object getAndSetNull(long index)
 	{
 		long address = ((index & mask) << bufferScaleShift) + bufferOffset;
-		Object result = unsafe.getObject(buffer, address);
-		unsafe.putObject(buffer, address, null);
+		Object result = UNSAFE.getObject(buffer, address);
+		UNSAFE.putObject(buffer, address, null);
 		return result;
 	}
 	
@@ -447,7 +455,7 @@ public class MPSCArrayQueue<E> extends Pad4 implements Queue<E>
 			}
 		}
 		E e = (E) getAndSetNull(cIndex);
-		setConsumerIndexOrdered(cIndex + 1);
+		orderedSetComsumerIndex(cIndex + 1);
 		return e;
 	}
 	

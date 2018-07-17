@@ -3,14 +3,14 @@ package com.jfireframework.baseutil.concurrent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
+import com.jfireframework.baseutil.reflect.UNSAFE;
 import sun.misc.Unsafe;
 
 public abstract class Sync<E>
 {
 	private volatile Node		head;
 	private volatile Node		tail;
-	private static final long	tailOffset	= UnsafeFieldAccess.getFieldOffset("tail", Sync.class);
+	private static final long	tailOffset	= UNSAFE.getFieldOffset("tail", Sync.class);
 	private static final int	WAITING		= 1;
 	private static final int	CANCELED	= 2;
 	private static final Unsafe	unsafe		= ReflectUtil.getUnsafe();
@@ -20,8 +20,8 @@ public abstract class Sync<E>
 		private Node				prev;
 		private volatile Thread		successor;
 		private volatile int		status;
-		private static final long	statusOffset	= UnsafeFieldAccess.getFieldOffset("status", Node.class);
-		private static final long	successorOffset	= UnsafeFieldAccess.getFieldOffset("successor", Node.class);
+		private static final long	statusOffset	= UNSAFE.getFieldOffset("status", Node.class);
+		private static final long	successorOffset	= UNSAFE.getFieldOffset("successor", Node.class);
 		
 		public Node()
 		{

@@ -1,7 +1,7 @@
 package com.jfireframework.baseutil.concurrent;
 
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-import com.jfireframework.baseutil.reflect.UnsafeFieldAccess;
+import com.jfireframework.baseutil.reflect.UNSAFE;
 import sun.misc.Unsafe;
 
 public class CpuCachePadingInt
@@ -11,7 +11,7 @@ public class CpuCachePadingInt
 	// 前后都有7个元素填充，可以保证该核心变量独自在一个缓存行中
 	protected volatile int		value;
 	protected long				p9, p10, p11, p12, p13, p14, p15;
-	private static final long	offset	= UnsafeFieldAccess.getFieldOffset("value", CpuCachePadingInt.class);
+	private static final long	offset	= UNSAFE.getFieldOffset("value", CpuCachePadingInt.class);
 	private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
 	
 	public CpuCachePadingInt(int initValue)

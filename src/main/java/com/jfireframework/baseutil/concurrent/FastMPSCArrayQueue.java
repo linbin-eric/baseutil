@@ -3,6 +3,7 @@ package com.jfireframework.baseutil.concurrent;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
+import com.jfireframework.baseutil.reflect.UNSAFE;
 
 public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
 {
@@ -124,52 +125,30 @@ public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
 	@Override
 	public boolean offer(E e)
 	{
-		long pIndex = producerIndex;
+		long pIndex;
 		long pLimit = producerIndexLimit;
-		long mask = this.mask;
-		if (pIndex >= pLimit)
+		do
 		{
-			pLimit = consumerIndex + mask + 1;
+			pIndex = producerIndex;
 			if (pIndex >= pLimit)
 			{
-				return false;
-			}
-			else
-			{
-				producerIndexLimit = pLimit;
-			}
-		}
-		if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
-		{
-			long offset = ((pIndex & mask) << bufferScaleShift) + bufferOffset;
-			unsafe.putOrderedObject(buffer, offset, e);
-			return true;
-		}
-		else
-		{
-			do
-			{
-				pIndex = producerIndex;
+				pLimit = consumerIndex + mask + 1;
 				if (pIndex >= pLimit)
 				{
-					pLimit = consumerIndex + mask + 1;
-					if (pIndex >= pLimit)
-					{
-						return false;
-					}
-					else
-					{
-						producerIndexLimit = pLimit;
-					}
+					return false;
 				}
-				if (unsafe.compareAndSwapLong(this, producerIndexAddress, pIndex, pIndex + 1))
+				else
 				{
-					long offset = ((pIndex & mask) << bufferScaleShift) + bufferOffset;
-					unsafe.putOrderedObject(buffer, offset, e);
-					return true;
+					orderedSetProducerIndexLimit(pLimit);
 				}
-			} while (true);
-		}
+			}
+			if (casProducerIndex(pIndex))
+			{
+				long offset = ((pIndex & mask) << bufferScaleShift) + bufferOffset;
+				UNSAFE.putOrderedObject(buffer, offset, e);
+				return true;
+			}
+		} while (true);
 	}
 	
 	@Override
@@ -186,12 +165,12 @@ public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
 		long cIndex = consumerIndex;
 		long offset = ((cIndex & mask) << bufferScaleShift) + bufferOffset;
 		Object[] buffer = this.buffer;
-		Object object = unsafe.getObjectVolatile(buffer, offset);
+		Object object = UNSAFE.getObjectVolatile(buffer, offset);
 		if (null == object)
 		{
-			if (cIndex < producerIndex)
+			if (cIndex != producerIndex)
 			{
-				while ((object = unsafe.getObjectVolatile(buffer, offset)) == null)
+				while ((object = UNSAFE.getObjectVolatile(buffer, offset)) == null)
 				{
 					;
 				}
@@ -201,8 +180,8 @@ public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
 				return null;
 			}
 		}
-		unsafe.putObject(buffer, offset, null);
-		unsafe.putOrderedLong(this, consumerIndexAddress, cIndex + 1);
+		UNSAFE.putObject(buffer, offset, null);
+		orderedSetComsumerIndex(cIndex + 1);
 		return (E) object;
 	}
 	
