@@ -8,14 +8,14 @@ import com.jfireframework.baseutil.reflect.UNSAFE;
 public class XMPSCLinkQueue<E> implements Queue<E>
 {
 	
-	static final int	size						= 1024;
+	static final int	size						= 2048;
 	static final int	BUFFER_ARRAY_OFFSET			= UNSAFE.arrayBaseOffset(Object[].class);
 	static final int	BUFFER_ARRAY_SCALE_SHIFT	= UNSAFE.arrayIndexScale(Object[].class) == 8 ? 3 : 2;
 	static final long	FLAG_OFFSET					= UNSAFE.getFieldOffset("flag", XMPSCLinkQueue.class);
 	
 	static class Segment
 	{
-		Object[]			buffer;
+		final Object[]		buffer;
 		volatile Segment	next;
 		int					readPosi			= 0;
 		volatile int		writePosi			= 0;
@@ -86,7 +86,7 @@ public class XMPSCLinkQueue<E> implements Queue<E>
 			{
 				if (segment == (tail = this.tail))
 				{
-					this.tail = segment = segment.next = tail = new Segment();
+					this.tail = tail = segment = segment.next = new Segment();
 				}
 				else
 				{
@@ -113,43 +113,35 @@ public class XMPSCLinkQueue<E> implements Queue<E>
 	@SuppressWarnings("unchecked")
 	public E poll()
 	{
-		try
+		Segment head = this.head;
+		int readPosi = head.readPosi;
+		if (readPosi == size)
 		{
-			Segment head = this.head;
-			int readPosi = head.readPosi;
-			if (readPosi == size)
+			if (head.next == null)
 			{
-				if (head.next == null)
-				{
-					return null;
-				}
-				head = head.next;
-				readPosi = head.readPosi;
+				return null;
 			}
-			E e = (E) head.getVolatile(readPosi);
-			if (e == null)
+			this.head = head = head.next;
+			readPosi = head.readPosi;
+		}
+		E e = (E) head.getVolatile(readPosi);
+		if (e == null)
+		{
+			if (readPosi != head.writePosi)
 			{
-				if (readPosi != head.writePosi)
+				while ((e = (E) head.getVolatile(readPosi)) == null)
 				{
-					while ((e = (E) head.getVolatile(readPosi)) == null)
-					{
-						;
-					}
-				}
-				else
-				{
-					return null;
+					;
 				}
 			}
-			head.setNull(readPosi);
-			head.readPosi = readPosi + 1;
-			return e;
+			else
+			{
+				return null;
+			}
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return null;
-		}
+		head.setNull(readPosi);
+		head.readPosi = readPosi + 1;
+		return e;
 	}
 	
 	boolean casFlag()
@@ -172,8 +164,7 @@ public class XMPSCLinkQueue<E> implements Queue<E>
 	@Override
 	public boolean isEmpty()
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return tail.readPosi == tail.writePosi;
 	}
 	
 	@Override

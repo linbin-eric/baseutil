@@ -43,6 +43,11 @@ public class UNSAFE
 		return unsafe.compareAndSwapLong(src, offset, except, newValue);
 	}
 	
+	public static boolean compareAndSwapObject(Object src, long offset, Object except, Object newValue)
+	{
+		return unsafe.compareAndSwapObject(src, offset, except, newValue);
+	}
+	
 	public static void putOrderedLong(Object src, long offset, long value)
 	{
 		unsafe.putOrderedLong(src, offset, value);

@@ -10,13 +10,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import com.jfireframework.baseutil.concurrent.XMPSCLinkQueue;
+import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
 
 @RunWith(Parameterized.class)
 public class ArrayQueueRightTest
 {
 	private int				thraedNum	= 10;
-	private int				send		= 1000000;
+	private int				send		= 100000;
 	private Integer[]		content		= new Integer[send];
 	private int[]			result		= new int[send];
 	private Queue<Integer>	queue;
@@ -35,9 +37,9 @@ public class ArrayQueueRightTest
 	public static Collection<?> params()
 	{
 		return Arrays.asList(new Object[][] { //
-		        // { new MPSCArrayQueue<Integer>(512) }, //
-		        // { new FastMPSCArrayQueue<Integer>(512) }, //
-		        { new XMPSCLinkQueue<Integer>() },//
+		        { new MPSCArrayQueue<Integer>(512) }, //
+		        { new FastMPSCArrayQueue<Integer>(512) }, //
+		        { new MPSCLinkedQueue<Integer>() },//
 		});
 	}
 	
@@ -62,17 +64,23 @@ public class ArrayQueueRightTest
 						;
 					}
 					int j = -1;
-					while ((j = index.getAndIncrement()) < send)
+					try
 					{
-						Integer integer = content[j];
-						System.out.println(integer);
-						if (queue.offer(integer) == false)
+						while ((j = index.getAndIncrement()) < send)
 						{
-							while (queue.offer(integer) == false)
+							Integer integer = content[j];
+							if (queue.offer(integer) == false)
 							{
-								Thread.yield();
+								while (queue.offer(integer) == false)
+								{
+									Thread.yield();
+								}
 							}
 						}
+					}
+					catch (Throwable e)
+					{
+						e.printStackTrace();
 					}
 				}
 			}).start();
@@ -89,19 +97,26 @@ public class ArrayQueueRightTest
 					int send = ArrayQueueRightTest.this.send;
 					while (count < send)
 					{
-						Integer integer = queue.poll();
-						if (integer == null)
+						if (queue == null)
 						{
-							while ((integer = queue.poll()) == null)
-							{
-								Thread.yield();
-							}
+							System.err.println("异常");
 						}
-						result[integer] = integer;
-						count++;
+						else
+						{
+							Integer integer = queue.poll();
+							if (integer == null)
+							{
+								while ((integer = queue.poll()) == null)
+								{
+									Thread.yield();
+								}
+							}
+							result[integer] = integer;
+							count++;
+						}
 					}
 				}
-				catch (Exception e)
+				catch (Throwable e)
 				{
 					e.printStackTrace();
 				}

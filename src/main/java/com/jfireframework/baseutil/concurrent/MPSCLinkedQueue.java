@@ -4,35 +4,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue.Node;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
-abstract class HeadLeftPad
+abstract class Pad1
 {
-	public volatile long p1, p2, p3, p4, p5, p6, p7;
-	
-	public long sumHeadLeftPad()
-	{
-		return p1 + p2 + p3 + p4 + p5 + p6 + p7;
-	}
-}
-
-abstract class Head extends HeadLeftPad
-{
-	public volatile int	leftP;
-	protected Node		head;
-	public volatile int	rightP;
-	
-	public int sumHead()
-	{
-		return leftP + rightP;
-	}
-}
-
-abstract class HeadRightPad extends Head
-{
-	public volatile long p11, p21, p31, p41, p51, p61, p71;
+	public long p11, p21, p31, p41, p51, p61, p71;
 	
 	public long sumHeadRightPad()
 	{
@@ -40,33 +16,39 @@ abstract class HeadRightPad extends Head
 	}
 }
 
-abstract class Tail extends HeadRightPad
+abstract class Tail extends Pad1
 {
-	public volatile int		leftP1;
-	protected volatile Node	tail;
-	public volatile int		rightP1;
+	protected volatile Node		tail;
+	private static final long	tailOff	= UNSAFE.getFieldOffset("tail", Tail.class);
 	
-	public int sumTail()
+	Node casTail(Node insert)
 	{
-		return leftP1 + rightP1;
+		Node local;
+		do
+		{
+			local = tail;
+		} while (UNSAFE.compareAndSwapObject(this, tailOff, local, insert) == false);
+		return local;
+	}
+}
+
+abstract class PadTail extends Tail
+{
+	public long p01, p02, p03, p04, p05, p06, p07;
+	
+	public long fill()
+	{
+		return p01 + p02 + p03 + p04 + p05 + p06 + p07;
 	}
 }
 
 /**
  * Created by 林斌 on 2016/9/10.
  */
-public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
+public class MPSCLinkedQueue<E> extends PadTail implements Queue<E>
 {
-	public volatile long p01, p02, p03, p04, p05, p06, p07;
 	
-	public long fill()
-	{
-		return p01 + p02 + p03 + p04 + p05 + p06 + p07;
-	}
-	
-	private static final long	headOff	= UNSAFE.getFieldOffset("head", Head.class);
-	private static final long	tailOff	= UNSAFE.getFieldOffset("tail", Tail.class);
-	private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
+	protected Node head;
 	
 	public MPSCLinkedQueue()
 	{
@@ -75,33 +57,7 @@ public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
 	
 	private void slackSetHead(Node h)
 	{
-		unsafe.putObject(this, headOff, h);
-	}
-	
-	private boolean casTail(Node expect, Node now)
-	{
-		return unsafe.compareAndSwapObject(this, tailOff, expect, now);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public int drain(E[] array, int limit)
-	{
-		limit = limit > array.length ? array.length : limit;
-		Node p = head, t = tail, pn = p;
-		int i = 0;
-		for (; pn != t && i < limit; i++)
-		{
-			p = pn;
-			pn = findNext(pn);
-			array[i] = (E) pn.value;
-		}
-		if (i > 0)
-		{
-			p.forgetNext();
-			pn.forgetItem();
-			slackSetHead(pn);
-		}
-		return i;
+		head = h;
 	}
 	
 	private Node findNext(Node p)
@@ -131,90 +87,70 @@ public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
 	public E poll()
 	{
 		Node h = head;
-		if (h != tail)
+		Node hn = h.next;
+		if (hn != null)
 		{
-			Node hn = h.next;
-			if (hn != null)
-			{
-				Object e = hn.value;
-				h.forgetNext();
-				hn.forgetItem();
-				slackSetHead(hn);
-				return (E) e;
-			}
-			int spin = 0;
-			do
-			{
-				hn = h.next;
-				if (hn != null)
-				{
-					Object e = hn.value;
-					h.forgetNext();
-					hn.forgetItem();
-					slackSetHead(hn);
-					return (E) e;
-					
-				}
-				else if ((spin += 1) > 32)
-				{
-					spin = 0;
-					Thread.yield();
-				}
-			} while (true);
-			
+			Object e = hn.getValueAndNullIt();
+			h.forgetNext();
+			slackSetHead(hn);
+			return (E) e;
 		}
 		else
 		{
-			return null;
+			if (h != tail)
+			{
+				while ((hn = h.next) == null)
+				{
+					;
+				}
+				Object e = hn.getValueAndNullIt();
+				h.forgetNext();
+				slackSetHead(hn);
+				return (E) e;
+			}
+			else
+			{
+				return null;
+			}
 		}
 	}
 	
 	public boolean offer(E value)
 	{
 		Node insert = new Node(value);
-		Node t = tail;
-		if (casTail(t, insert))
-		{
-			t.slackSetNext(insert);
-			return true;
-		}
-		do
-		{
-			t = tail;
-			if (casTail(t, insert))
-			{
-				t.slackSetNext(insert);
-				return true;
-			}
-		} while (true);
+		Node pred = casTail(insert);
+		pred.slackSetNext(insert);
+		return true;
 	}
 	
 	static class Node
 	{
 		private Object				value;
 		private volatile Node		next;
-		private static final long	nextOff		= UNSAFE.getFieldOffset("next", Node.class);
-		private static final long	valueOff	= UNSAFE.getFieldOffset("value", Node.class);
+		private static final long	nextOff	= UNSAFE.getFieldOffset("next", Node.class);
 		
 		public Node(Object value)
 		{
 			this.value = value;
 		}
 		
+		public Object getValueAndNullIt()
+		{
+			Object e = value;
+			value = null;
+			return e;
+		}
+		
 		public void slackSetNext(Node n)
 		{
-			unsafe.putOrderedObject(this, nextOff, n);
+			UNSAFE.putOrderedObject(this, nextOff, n);
 		}
 		
 		public void forgetNext()
 		{
-			unsafe.putObject(this, nextOff, this);
+			UNSAFE.putObject(this, nextOff, this);
 		}
 		
-		public void forgetItem()
-		{
-			unsafe.putObject(this, valueOff, this);
-		}
 	}
 	
 	@Override
@@ -312,7 +248,7 @@ public class MPSCLinkedQueue<E> extends Tail implements Queue<E>
 			hn = findNext(hn);
 		}
 		h.forgetNext();
-		hn.forgetItem();
+		hn.getValueAndNullIt();
 		slackSetHead(hn);
 	}
 	

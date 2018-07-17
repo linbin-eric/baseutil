@@ -32,6 +32,11 @@ public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
 		}
 	}
 	
+	public FastMPSCArrayQueue()
+	{
+		this(1024);
+	}
+	
 	@Override
 	public int size()
 	{
