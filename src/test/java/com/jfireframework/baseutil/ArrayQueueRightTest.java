@@ -10,8 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
-import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.XMPSCLinkQueue;
 
 @RunWith(Parameterized.class)
 public class ArrayQueueRightTest
@@ -35,8 +34,11 @@ public class ArrayQueueRightTest
 	@Parameters
 	public static Collection<?> params()
 	{
-		return Arrays.asList(new Object[][] { { new MPSCArrayQueue<Integer>(512) }, //
-		        { new FastMPSCArrayQueue<Integer>(512) } });
+		return Arrays.asList(new Object[][] { //
+		        // { new MPSCArrayQueue<Integer>(512) }, //
+		        // { new FastMPSCArrayQueue<Integer>(512) }, //
+		        { new XMPSCLinkQueue<Integer>() },//
+		});
 	}
 	
 	@Test
@@ -63,6 +65,7 @@ public class ArrayQueueRightTest
 					while ((j = index.getAndIncrement()) < send)
 					{
 						Integer integer = content[j];
+						System.out.println(integer);
 						if (queue.offer(integer) == false)
 						{
 							while (queue.offer(integer) == false)
@@ -87,7 +90,6 @@ public class ArrayQueueRightTest
 					while (count < send)
 					{
 						Integer integer = queue.poll();
-						// System.out.println("发现" + integer);
 						if (integer == null)
 						{
 							while ((integer = queue.poll()) == null)
