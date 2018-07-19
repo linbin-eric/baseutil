@@ -1,35 +1,11 @@
 package com.jfireframework.baseutil.reflect;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import sun.misc.Unsafe;
 
 public final class ReflectUtil
 {
-	private final static Unsafe unsafe;
-	
-	static
-	{
-		try
-		{
-			// 由反编译Unsafe类获得的信息
-			Field field = Unsafe.class.getDeclaredField("theUnsafe");
-			field.setAccessible(true);
-			// 获取静态属性,Unsafe在启动JVM时随rt.jar装载
-			unsafe = (Unsafe) field.get(null);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public static Unsafe getUnsafe()
-	{
-		return unsafe;
-	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Map<String, ? extends Enum<?>> getAllEnumInstances(Class<? extends Enum<?>> type)
@@ -91,14 +67,9 @@ public final class ReflectUtil
 		}
 	}
 	
-	static boolean hasUnsafe()
-	{
-		return unsafe != null;
-	}
-	
 	public static void throwException(Throwable t)
 	{
-		if (hasUnsafe())
+		if (UNSAFE.isAvailable())
 		{
 			if (t == null)
 			{
@@ -106,7 +77,7 @@ public final class ReflectUtil
 			}
 			else
 			{
-				unsafe.throwException(t);
+				UNSAFE.throwThrowable(t);
 			}
 		}
 		else

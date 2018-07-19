@@ -1,8 +1,6 @@
 package com.jfireframework.baseutil.concurrent;
 
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
 public class CpuCachePadingInt
 {
@@ -12,7 +10,6 @@ public class CpuCachePadingInt
 	protected volatile int		value;
 	protected long				p9, p10, p11, p12, p13, p14, p15;
 	private static final long	offset	= UNSAFE.getFieldOffset("value", CpuCachePadingInt.class);
-	private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
 	
 	public CpuCachePadingInt(int initValue)
 	{
@@ -31,7 +28,7 @@ public class CpuCachePadingInt
 	
 	public void orderSet(int newValue)
 	{
-		unsafe.putOrderedInt(this, offset, newValue);
+		UNSAFE.putOrderedInt(this, offset, newValue);
 	}
 	
 	public int value()
@@ -41,7 +38,7 @@ public class CpuCachePadingInt
 	
 	public boolean compareAndSwap(int expectedValue, int newValue)
 	{
-		return unsafe.compareAndSwapInt(this, offset, expectedValue, newValue);
+		return UNSAFE.compareAndSwapInt(this, offset, expectedValue, newValue);
 	}
 	
 	public int increaseAndGet()
@@ -50,7 +47,7 @@ public class CpuCachePadingInt
 		{
 			int current = value;
 			int newValue = current + 1;
-			if (unsafe.compareAndSwapInt(this, offset, current, newValue))
+			if (UNSAFE.compareAndSwapInt(this, offset, current, newValue))
 			{
 				return newValue;
 			}
@@ -63,7 +60,7 @@ public class CpuCachePadingInt
 		{
 			int current = value;
 			int newValue = current - 1;
-			if (unsafe.compareAndSwapInt(this, offset, current, newValue))
+			if (UNSAFE.compareAndSwapInt(this, offset, current, newValue))
 			{
 				return newValue;
 			}
@@ -75,7 +72,7 @@ public class CpuCachePadingInt
 		while (true)
 		{
 			int current = value;
-			if (unsafe.compareAndSwapInt(this, offset, current, newValue))
+			if (UNSAFE.compareAndSwapInt(this, offset, current, newValue))
 			{
 				return current;
 			}

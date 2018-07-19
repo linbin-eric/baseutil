@@ -1,8 +1,6 @@
 package com.jfireframework.baseutil.concurrent;
 
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
 abstract class CpuCachePadingLeft
 {
@@ -20,7 +18,6 @@ abstract class CpuCacheValue<T> extends CpuCachePadingLeft
 public class CpuCachePadingRefence<T> extends CpuCacheValue<T>
 {
 	public volatile long		p9, p10, p11, p12, p13, p14, p15;
-	private static final Unsafe	unsafe			= ReflectUtil.getUnsafe();
 	private static final long	refenceOffset	= UNSAFE.getFieldOffset("value", CpuCacheValue.class);
 	
 	public CpuCachePadingRefence(T value)
@@ -40,12 +37,12 @@ public class CpuCachePadingRefence<T> extends CpuCacheValue<T>
 	
 	public void orderSet(T newValue)
 	{
-		unsafe.putOrderedObject(this, refenceOffset, newValue);
+		UNSAFE.putOrderedObject(this, refenceOffset, newValue);
 	}
 	
 	public void ordinarySet(T newValue)
 	{
-		unsafe.putObject(this, refenceOffset, newValue);
+		UNSAFE.putObject(this, refenceOffset, newValue);
 	}
 	
 	public T get()
@@ -55,7 +52,7 @@ public class CpuCachePadingRefence<T> extends CpuCacheValue<T>
 	
 	public boolean compareAndSwap(T expectedValue, T newValue)
 	{
-		return unsafe.compareAndSwapObject(this, refenceOffset, expectedValue, newValue);
+		return UNSAFE.compareAndSwapObject(this, refenceOffset, expectedValue, newValue);
 	}
 	
 }

@@ -4,15 +4,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
 public class MPMCQueue<E> implements Queue<E>
 {
 	private CpuCachePadingRefence<Node<E>>	head;
 	private CpuCachePadingRefence<Node<E>>	tail;
-	private static final Unsafe				unsafe	= ReflectUtil.getUnsafe();
 	private final boolean					fair;
 	private Sync<E>							sync	= new Sync<E>() {
 														
@@ -46,24 +43,24 @@ public class MPMCQueue<E> implements Queue<E>
 		
 		public Node(E value)
 		{
-			unsafe.putObject(this, valueOffset, value);
+			UNSAFE.putObject(this, valueOffset, value);
 		}
 		
 		public void orderSetNext(Node<E> next)
 		{
-			unsafe.putOrderedObject(this, nextOffset, next);
+			UNSAFE.putOrderedObject(this, nextOffset, next);
 		}
 		
 		public E clear()
 		{
 			E origin = value;
-			unsafe.putObject(this, Node.valueOffset, null);
+			UNSAFE.putObject(this, Node.valueOffset, null);
 			return origin;
 		}
 		
 		public void unlink()
 		{
-			unsafe.putObject(this, Node.nextOffset, null);
+			UNSAFE.putObject(this, Node.nextOffset, null);
 		}
 	}
 	

@@ -4,9 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 import com.jfireframework.baseutil.concurrent.SpscQueue.Node;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
 abstract class HeadLeftPad_spsc
 {
@@ -113,7 +111,6 @@ public class SpscQueue<E> extends Tail_spsc implements Queue<E>
 		Object						item;
 		volatile Node				next;
 		private static final long	offset	= UNSAFE.getFieldOffset("next", Node.class);
-		private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
 		
 		public Node(Object item)
 		{
@@ -122,7 +119,7 @@ public class SpscQueue<E> extends Tail_spsc implements Queue<E>
 		
 		public void forgetNext()
 		{
-			unsafe.putObject(this, offset, this);
+			UNSAFE.putObject(this, offset, this);
 		}
 		
 		public void forgetItem()

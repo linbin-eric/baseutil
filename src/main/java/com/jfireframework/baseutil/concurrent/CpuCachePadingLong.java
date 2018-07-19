@@ -1,8 +1,6 @@
 package com.jfireframework.baseutil.concurrent;
 
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
 abstract class left
 {
@@ -20,7 +18,6 @@ public class CpuCachePadingLong extends value
 	// 前后都有7个元素填充，可以保证该核心变量独自在一个缓存行中
 	protected long				p9, p10, p11, p12, p13, p14, p15;
 	private static final long	offset	= UNSAFE.getFieldOffset("value", value.class);
-	private static final Unsafe	unsafe	= ReflectUtil.getUnsafe();
 	
 	public CpuCachePadingLong(long initValue)
 	{
@@ -39,7 +36,7 @@ public class CpuCachePadingLong extends value
 	
 	public void orderSet(long newValue)
 	{
-		unsafe.putOrderedLong(this, offset, newValue);
+		UNSAFE.putOrderedLong(this, offset, newValue);
 	}
 	
 	public long value()
@@ -49,14 +46,14 @@ public class CpuCachePadingLong extends value
 	
 	public boolean compareAndSwap(long expectedValue, long newValue)
 	{
-		return unsafe.compareAndSwapLong(this, offset, expectedValue, newValue);
+		return UNSAFE.compareAndSwapLong(this, offset, expectedValue, newValue);
 	}
 	
 	public long add(long added)
 	{
 		long current = value;
 		long newed = current + 1;
-		if (unsafe.compareAndSwapLong(this, offset, current, newed))
+		if (UNSAFE.compareAndSwapLong(this, offset, current, newed))
 		{
 			return newed;
 		}
@@ -64,7 +61,7 @@ public class CpuCachePadingLong extends value
 		{
 			current = value;
 			newed = current + 1;
-			if (unsafe.compareAndSwapLong(this, offset, current, newed))
+			if (UNSAFE.compareAndSwapLong(this, offset, current, newed))
 			{
 				return newed;
 			}
@@ -76,7 +73,7 @@ public class CpuCachePadingLong extends value
 		while (true)
 		{
 			long current = value;
-			if (unsafe.compareAndSwapLong(this, offset, current, newValue))
+			if (UNSAFE.compareAndSwapLong(this, offset, current, newValue))
 			{
 				return current;
 			}

@@ -2,9 +2,7 @@ package com.jfireframework.baseutil.concurrent;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.reflect.UNSAFE;
-import sun.misc.Unsafe;
 
 public abstract class Sync<E>
 {
@@ -13,7 +11,6 @@ public abstract class Sync<E>
 	private static final long	tailOffset	= UNSAFE.getFieldOffset("tail", Sync.class);
 	private static final int	WAITING		= 1;
 	private static final int	CANCELED	= 2;
-	private static final Unsafe	unsafe		= ReflectUtil.getUnsafe();
 	
 	static class Node
 	{
@@ -25,18 +22,18 @@ public abstract class Sync<E>
 		
 		public Node()
 		{
-			unsafe.putInt(this, statusOffset, WAITING);
+			UNSAFE.putInt(this, statusOffset, WAITING);
 		}
 		
 		public void relaxSetSuccessor(Thread next)
 		{
-			unsafe.putOrderedObject(this, successorOffset, next);
+			UNSAFE.putOrderedObject(this, successorOffset, next);
 		}
 		
 		public void clean()
 		{
 			prev = null;
-			unsafe.putObject(this, successorOffset, null);
+			UNSAFE.putObject(this, successorOffset, null);
 		}
 	}
 	
@@ -56,7 +53,7 @@ public abstract class Sync<E>
 		Node insert = new Node();
 		Node pred = tail;
 		insert.prev = pred;
-		if (unsafe.compareAndSwapObject(this, tailOffset, pred, insert))
+		if (UNSAFE.compareAndSwapObject(this, tailOffset, pred, insert))
 		{
 			// pred.nextWaiter = t;
 			pred.relaxSetSuccessor(t);
@@ -66,7 +63,7 @@ public abstract class Sync<E>
 		{
 			pred = tail;
 			insert.prev = pred;
-			if (unsafe.compareAndSwapObject(this, tailOffset, pred, insert))
+			if (UNSAFE.compareAndSwapObject(this, tailOffset, pred, insert))
 			{
 				pred.relaxSetSuccessor(t);
 				// pred.nextWaiter = t;
