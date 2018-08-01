@@ -1,6 +1,5 @@
-package com.jfireframework.baseutil.verify;
+package com.jfireframework.baseutil;
 
-import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.exception.VerifyException;
 
 public final class Verify

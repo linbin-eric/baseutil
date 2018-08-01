@@ -17,15 +17,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CopyFrom
 {
-	String name();
-	
-	Class<?> from();
-	
-	@Target({ METHOD, FIELD })
-	@Retention(RUNTIME)
-	@Documented
-	@interface List
-	{
-		CopyFrom[] value();
-	}
+    String name();
+    
+    Class<?> from();
+    
+    @Target({ METHOD, FIELD })
+    @Retention(RUNTIME)
+    @Documented
+    @interface List
+    {
+        CopyFrom[] value();
+    }
 }

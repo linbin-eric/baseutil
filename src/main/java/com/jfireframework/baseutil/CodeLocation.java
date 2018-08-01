@@ -1,4 +1,4 @@
-package com.jfireframework.baseutil.code;
+package com.jfireframework.baseutil;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -12,29 +12,29 @@ import java.util.Map;
  */
 class MemoryClassLoader extends URLClassLoader
 {
-	
-	Map<String, byte[]> classBytes = new HashMap<String, byte[]>();
-	
-	public MemoryClassLoader(ClassLoader parent)
-	{
-		super(new URL[0], parent);
-	}
-	
-	public void addClassBytes(Map<String, byte[]> classBytes)
-	{
-		this.classBytes.putAll(classBytes);
-	}
-	
-	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException
-	{
-		byte[] buf = classBytes.get(name);
-		if (buf == null)
-		{
-			return super.findClass(name);
-		}
-		classBytes.remove(name);
-		return defineClass(name, buf, 0, buf.length);
-	}
-	
+    
+    Map<String, byte[]> classBytes = new HashMap<String, byte[]>();
+    
+    public MemoryClassLoader(ClassLoader parent)
+    {
+        super(new URL[0], parent);
+    }
+    
+    public void addClassBytes(Map<String, byte[]> classBytes)
+    {
+        this.classBytes.putAll(classBytes);
+    }
+    
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException
+    {
+        byte[] buf = classBytes.get(name);
+        if (buf == null)
+        {
+            return super.findClass(name);
+        }
+        classBytes.remove(name);
+        return defineClass(name, buf, 0, buf.length);
+    }
+    
 }
