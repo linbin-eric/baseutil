@@ -1,121 +1,69 @@
 package com.jfireframework.baseutil.smc.compiler;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import com.jfireframework.baseutil.smc.model.ClassModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.jfireframework.baseutil.smc.model.ClassModel;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * In-memory compile Java source code as String.
- * 
+ *
  * @author michael
  */
 public class JavaStringCompiler
 {
-    private MemoryClassLoader       memoryClassLoader;
-    private JavaCompiler            compiler;
-    private StandardJavaFileManager stdManager;
-    private static final Logger     logger = LoggerFactory.getLogger(JavaStringCompiler.class);
-    
+    private MemoryClassLoader memoryClassLoader;
+    private JavaCompiler compiler;
+    private MemoryJavaFileManager manager;
+    private static final Logger logger = LoggerFactory.getLogger(JavaStringCompiler.class);
+
     public JavaStringCompiler()
     {
-        this.compiler = ToolProvider.getSystemJavaCompiler();
-        this.stdManager = compiler.getStandardFileManager(null, null, null);
-        memoryClassLoader = new MemoryClassLoader(Thread.currentThread().getContextClassLoader());
+        this(Thread.currentThread().getContextClassLoader());
     }
-    
+
     public JavaStringCompiler(ClassLoader classLoader)
     {
-        this.compiler = ToolProvider.getSystemJavaCompiler();
-        this.stdManager = compiler.getStandardFileManager(null, null, null);
-        memoryClassLoader = new MemoryClassLoader(classLoader == null ? Thread.currentThread().getContextClassLoader() : classLoader);
+        this(classLoader, ToolProvider.getSystemJavaCompiler());
     }
-    
-    /**
-     * Compile a Java source file in memory.
-     * 
-     * @param fileName Java file name, e.g. "Test.java"
-     * @param source The source code as String.
-     * @return The compiled results as Map that contains class name as key,
-     *         class binary as value.
-     * @throws IOException If compile error.
-     */
-    public Map<String, byte[]> compile(String fileName, String source) throws IOException
+
+    public JavaStringCompiler(ClassLoader classLoader, JavaCompiler compiler)
     {
-        MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
-        try
-        {
-            JavaFileObject javaFileObject = manager.makeStringSource(fileName, source);
-            CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
-            Boolean result = task.call();
-            if (result == null || !result.booleanValue())
-            {
-                logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", source);
-                throw new RuntimeException("Compilation failed.");
-            }
-            return manager.getClassBytes();
-        }
-        finally
-        {
-            manager.close();
-        }
+        this.compiler = compiler;
+        memoryClassLoader = new MemoryClassLoader(classLoader);
+        manager = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
     }
-    
-    public Class<?> compile(ClassModel classModel, ClassLoader classLoader) throws IOException, ClassNotFoundException
-    {
-        MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
-        try
-        {
-            String source = classModel.toStringWithLineNo();
-            JavaFileObject javaFileObject = manager.makeStringSource(classModel.fileName(), source);
-            CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
-            Boolean result = task.call();
-            if (result == null || !result.booleanValue())
-            {
-                logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", source);
-                throw new RuntimeException("Compilation failed.");
-            }
-            logger.debug("编译的源代码是:\r\n{}\r\n", source);
-            MemoryClassLoader memoryClassLoader = new MemoryClassLoader(classLoader == null ? Thread.currentThread().getContextClassLoader() : classLoader);
-            memoryClassLoader.addClassBytes(manager.getClassBytes());
-            Class<?> type = memoryClassLoader.loadClass("com.jfireframe.smc.output." + classModel.className());
-            return type;
-        }
-        finally
-        {
-            manager.close();
-        }
-    }
-    
+
+
     public Class<?> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
-        MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager);
         try
         {
             String source = classModel.toStringWithLineNo();
             JavaFileObject javaFileObject = manager.makeStringSource(classModel.fileName(), source);
-            CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
+            StringWriter writer = new StringWriter();
+            CompilationTask task = compiler.getTask(writer, manager, null, null, null, Arrays.asList(javaFileObject));
             Boolean result = task.call();
-            if (result == null || !result.booleanValue())
+            if ( result == null || !result.booleanValue() )
             {
-                logger.error("编译源代码出错，出错的源代码:\r\n{}\r\n", source);
-                throw new RuntimeException("Compilation failed.");
+                throw new RuntimeException("Compilation failed.The error is \r\n"+writer.toString()+"\r\nThe source is \r\n"+source);
             }
             logger.debug("编译的源代码是:\r\n{}\r\n", source);
             memoryClassLoader.addClassBytes(manager.getClassBytes());
             return memoryClassLoader.loadClass("com.jfireframe.smc.output." + classModel.className());
-        }
-        finally
+        } finally
         {
-            manager.close();
+            manager.clear();
         }
     }
-    
+
 }

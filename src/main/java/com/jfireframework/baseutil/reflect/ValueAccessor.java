@@ -4,67 +4,67 @@ import java.lang.reflect.Field;
 
 public class ValueAccessor
 {
-    private static final int _UNSAFE       = 0;
-    private static final int _FIELD        = 1;
-    private static final int INT           = 1;
-    private static final int BYTE          = 2;
-    private static final int CHAR          = 3;
-    private static final int BOOLEAN       = 4;
-    private static final int SHORT         = 5;
-    private static final int LONG          = 6;
-    private static final int FLOAT         = 7;
-    private static final int DOUBLE        = 8;
+    private static final int _UNSAFE = 0;
+    private static final int _FIELD = 1;
+    private static final int INT = 1;
+    private static final int BYTE = 2;
+    private static final int CHAR = 3;
+    private static final int BOOLEAN = 4;
+    private static final int SHORT = 5;
+    private static final int LONG = 6;
+    private static final int FLOAT = 7;
+    private static final int DOUBLE = 8;
     ////
-    private final int        accessType    = UNSAFE.isAvailable() ? _UNSAFE : _FIELD;
-    private Field            field;
-    private long             offset;
-    private boolean          primitive;
-    private int              primitiveType = 0;
-    
+    private final int accessType = UNSAFE.isAvailable() ? _UNSAFE : _FIELD;
+    private Field field;
+    private long offset;
+    private boolean primitive;
+    private int primitiveType = 0;
+
     public ValueAccessor(Field field)
     {
+        this.field = field;
         primitive = field.getType().isPrimitive();
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
             offset = UNSAFE.objectFieldOffset(field);
         }
         else
         {
-            this.field = field;
             field.setAccessible(true);
         }
-        if (primitive)
+        if ( primitive )
         {
             Class<?> type = field.getType();
-            if (type == int.class)
+            if ( type == int.class )
             {
                 primitiveType = INT;
             }
-            else if (type == short.class)
+            else if ( type == short.class )
             {
                 primitiveType = SHORT;
             }
-            else if (type == long.class)
+            else if ( type == long.class )
             {
                 primitiveType = LONG;
             }
-            else if (type == float.class)
+            else if ( type == float.class )
             {
                 primitiveType = FLOAT;
             }
-            else if (type == double.class)
+            else if ( type == double.class )
             {
                 primitiveType = DOUBLE;
             }
-            else if (type == boolean.class)
+            else if ( type == boolean.class )
             {
                 primitiveType = BOOLEAN;
             }
-            else if (type == byte.class)
+            else if ( type == byte.class )
             {
                 primitiveType = BYTE;
             }
-            else if (type == char.class)
+            else if ( type == char.class )
             {
                 primitiveType = CHAR;
             }
@@ -74,12 +74,12 @@ public class ValueAccessor
             }
         }
     }
-    
+
     public void set(Object entity, int value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putInt(entity, offset, value);
             }
@@ -92,7 +92,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setInt(entity, value);
                 }
@@ -100,19 +100,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Integer.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Integer value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putInt(entity, offset, value.intValue());
             }
@@ -125,7 +124,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setInt(entity, value.intValue());
                 }
@@ -133,19 +132,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, short value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putShort(entity, offset, value);
             }
@@ -158,7 +156,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setShort(entity, value);
                 }
@@ -166,19 +164,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Short.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Short value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putShort(entity, offset, value.shortValue());
             }
@@ -191,7 +188,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setShort(entity, value.shortValue());
                 }
@@ -199,19 +196,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, long value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putLong(entity, offset, value);
             }
@@ -224,7 +220,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setLong(entity, value);
                 }
@@ -232,19 +228,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Long.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Long value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putLong(entity, offset, value.longValue());
             }
@@ -257,7 +252,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setLong(entity, value.longValue());
                 }
@@ -265,19 +260,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, char value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putChar(entity, offset, value);
             }
@@ -290,7 +284,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setChar(entity, value);
                 }
@@ -298,19 +292,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Character.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Character value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putChar(entity, offset, value.charValue());
             }
@@ -323,7 +316,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setChar(entity, value.charValue());
                 }
@@ -331,19 +324,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, byte value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putByte(entity, offset, value);
             }
@@ -356,7 +348,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setByte(entity, value);
                 }
@@ -364,19 +356,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Byte.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Byte value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putByte(entity, offset, value.byteValue());
             }
@@ -389,7 +380,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setByte(entity, value.byteValue());
                 }
@@ -397,19 +388,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, boolean value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putBoolean(entity, offset, value);
             }
@@ -422,7 +412,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setBoolean(entity, value);
                 }
@@ -430,19 +420,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Boolean.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Boolean value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putBoolean(entity, offset, value.booleanValue());
             }
@@ -455,7 +444,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setBoolean(entity, value.booleanValue());
                 }
@@ -463,19 +452,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, float value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putFloat(entity, offset, value);
             }
@@ -488,7 +476,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setFloat(entity, value);
                 }
@@ -496,19 +484,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Float.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Float value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putFloat(entity, offset, value.floatValue());
             }
@@ -521,7 +508,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setFloat(entity, value.floatValue());
                 }
@@ -529,19 +516,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, double value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putDouble(entity, offset, value);
             }
@@ -554,7 +540,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setDouble(entity, value);
                 }
@@ -562,19 +548,18 @@ public class ValueAccessor
                 {
                     field.set(entity, Double.valueOf(value));
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void set(Object entity, Double value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 UNSAFE.putDouble(entity, offset, value.doubleValue());
             }
@@ -587,7 +572,7 @@ public class ValueAccessor
         {
             try
             {
-                if (primitive)
+                if ( primitive )
                 {
                     field.setDouble(entity, value.doubleValue());
                 }
@@ -595,19 +580,18 @@ public class ValueAccessor
                 {
                     field.set(entity, value);
                 }
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public void setObject(Object entity, Object value)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 switch (primitiveType)
                 {
@@ -649,14 +633,13 @@ public class ValueAccessor
             try
             {
                 field.set(entity, value);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
             }
         }
     }
-    
+
     public int getInt(Object entity)
     {
         try
@@ -664,14 +647,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getInt(entity, offset) : (Integer) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getInt(entity) : (Integer) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Integer getIntObject(Object entity)
     {
         try
@@ -679,14 +661,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Integer.valueOf(UNSAFE.getInt(entity, offset)) : (Integer) UNSAFE.getObject(entity, offset) : //
                     primitive ? Integer.valueOf(field.getInt(entity)) : (Integer) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public short getShort(Object entity)
     {
         try
@@ -694,14 +675,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getShort(entity, offset) : (Short) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getShort(entity) : (Short) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Short getShortObject(Object entity)
     {
         try
@@ -709,14 +689,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Short.valueOf(UNSAFE.getShort(entity, offset)) : (Short) UNSAFE.getObject(entity, offset) : //
                     primitive ? Short.valueOf(field.getShort(entity)) : (Short) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public boolean getBoolean(Object entity)
     {
         try
@@ -724,14 +703,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getBoolean(entity, offset) : (Boolean) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getBoolean(entity) : (Boolean) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return false;
         }
     }
-    
+
     public Boolean getBooleanObject(Object entity)
     {
         try
@@ -739,14 +717,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Boolean.valueOf(UNSAFE.getBoolean(entity, offset)) : (Boolean) UNSAFE.getObject(entity, offset) : //
                     primitive ? Boolean.valueOf(field.getBoolean(entity)) : (Boolean) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return false;
         }
     }
-    
+
     public long getLong(Object entity)
     {
         try
@@ -754,14 +731,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getLong(entity, offset) : (Long) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getLong(entity) : (Long) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Long getLongObject(Object entity)
     {
         try
@@ -769,14 +745,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Long.valueOf(UNSAFE.getLong(entity, offset)) : (Long) UNSAFE.getObject(entity, offset) : //
                     primitive ? Long.valueOf(field.getLong(entity)) : (Long) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0L;
         }
     }
-    
+
     public byte getByte(Object entity)
     {
         try
@@ -784,14 +759,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getByte(entity, offset) : (Byte) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getByte(entity) : (Byte) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Byte getByteObject(Object entity)
     {
         try
@@ -799,14 +773,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Byte.valueOf(UNSAFE.getByte(entity, offset)) : (Byte) UNSAFE.getObject(entity, offset) : //
                     primitive ? Byte.valueOf(field.getByte(entity)) : (Byte) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public char getChar(Object entity)
     {
         try
@@ -814,14 +787,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getChar(entity, offset) : (Character) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getChar(entity) : (Character) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Character getCharObject(Object entity)
     {
         try
@@ -829,14 +801,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Character.valueOf(UNSAFE.getChar(entity, offset)) : (Character) UNSAFE.getObject(entity, offset) : //
                     primitive ? Character.valueOf(field.getChar(entity)) : (Character) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public float getFloat(Object entity)
     {
         try
@@ -844,14 +815,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getFloat(entity, offset) : (Float) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getFloat(entity) : (Float) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Float getFloatObject(Object entity)
     {
         try
@@ -859,14 +829,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Float.valueOf(UNSAFE.getFloat(entity, offset)) : (Float) UNSAFE.getObject(entity, offset) : //
                     primitive ? Float.valueOf(field.getFloat(entity)) : (Float) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0F;
         }
     }
-    
+
     public double getDouble(Object entity)
     {
         try
@@ -874,14 +843,13 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? UNSAFE.getDouble(entity, offset) : (Double) UNSAFE.getObject(entity, offset) : //
                     primitive ? field.getDouble(entity) : (Double) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
         }
     }
-    
+
     public Double getDoubleObject(Object entity)
     {
         try
@@ -889,19 +857,18 @@ public class ValueAccessor
             return accessType == _UNSAFE ? //
                     primitive ? Double.valueOf(UNSAFE.getDouble(entity, offset)) : (Double) UNSAFE.getObject(entity, offset) : //
                     primitive ? Double.valueOf(field.getDouble(entity)) : (Double) field.get(entity);
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0D;
         }
     }
-    
+
     public Object get(Object entity)
     {
-        if (accessType == _UNSAFE)
+        if ( accessType == _UNSAFE )
         {
-            if (primitive)
+            if ( primitive )
             {
                 switch (primitiveType)
                 {
@@ -935,12 +902,16 @@ public class ValueAccessor
             try
             {
                 return field.get(entity);
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 ReflectUtil.throwException(e);
                 return null;
             }
         }
+    }
+
+    public Field getField()
+    {
+        return field;
     }
 }
