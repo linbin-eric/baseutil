@@ -1,9 +1,9 @@
 package com.jfireframework.baseutil.classreader;
 
-import com.jfireframework.baseutil.classreader.structure.constantinfo.*;
 import com.jfireframework.baseutil.classreader.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.classreader.structure.FieldInfo;
 import com.jfireframework.baseutil.classreader.structure.MethodInfo;
+import com.jfireframework.baseutil.classreader.structure.constantinfo.*;
 import com.jfireframework.baseutil.classreader.util.ConstantType;
 
 import java.util.Arrays;
@@ -183,10 +183,18 @@ public class ClassFileParser
             }
             counter = constantInfo.resolve(bytes, counter);
             constant_pool[i] = constantInfo;
+            if ( constantInfo instanceof LongInfo || constantInfo instanceof DoubleInfo )
+            {
+                //JVM规范规定了如果遇到这两个常量类型，则编号多递增1
+                i++;
+            }
         }
         for (ConstantInfo constantInfo : constant_pool)
         {
-            constantInfo.resolve(constant_pool);
+            if ( constantInfo != null )
+            {
+                constantInfo.resolve(constant_pool);
+            }
         }
     }
 

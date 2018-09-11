@@ -2,32 +2,21 @@ package com.jfireframework.baseutil.classreader.util;
 
 public enum ConstantType
 {
-    Utf8(1),//
-    Integer(3),//
-    Float(4),//
-    Long(5),//
-    Double(6),//
-    Class(7),//
-    String(8),//
-    FieldRef(9),//
-    MethodRef(10),//
-    InterfaceMethodref(11), NameAndType(12),//
-    MethodHandle(15),//
-    MethodType(16),//
-    InvokeDynamic(17),
+    Utf8,//
+    Integer,//
+    Float,//
+    Long,//
+    Double,//
+    Class,//
+    String,//
+    FieldRef,//
+    MethodRef,//
+    InterfaceMethodref, NameAndType,//
+    MethodHandle,//
+    MethodType,//
+    InvokeDynamic,
     //
     ;
-    private final int value;
-
-    ConstantType(int value)
-    {
-        this.value = value;
-    }
-
-    public int value()
-    {
-        return value;
-    }
 
     public static ConstantType byteValue(int value)
     {
@@ -59,7 +48,7 @@ public enum ConstantType
                 return MethodHandle;
             case 16:
                 return MethodType;
-            case 17:
+            case 18:
                 return InvokeDynamic;
             default:
                 throw new IllegalArgumentException();

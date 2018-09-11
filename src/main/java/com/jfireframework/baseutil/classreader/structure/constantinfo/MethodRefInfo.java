@@ -8,4 +8,10 @@ public class MethodRefInfo extends RefInfo
     {
         type = ConstantType.MethodRef;
     }
+
+    @Override
+    public String toString()
+    {
+        return "MethodRefInfo{" + "classInfoIndex=" + classInfoIndex + ", nameAndTypeInfoIndex=" + nameAndTypeInfoIndex + '}';
+    }
 }

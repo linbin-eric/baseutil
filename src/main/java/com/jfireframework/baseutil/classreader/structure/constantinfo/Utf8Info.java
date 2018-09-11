@@ -27,7 +27,7 @@ public class Utf8Info extends ConstantInfo
     @Override
     public String toString()
     {
-        return "Utf8Info{" + value  + '}';
+        return "Utf8Info{" + value + '}';
     }
 
     @Override
@@ -38,7 +38,7 @@ public class Utf8Info extends ConstantInfo
         byte[] content = new byte[length];
         System.arraycopy(bytes, counter, content, 0, length);
         counter += length;
-        value = new String(content, Charset.forName("utf8"));
+        value = new String(content, CHARSET);
         return counter;
     }
 
@@ -46,4 +46,6 @@ public class Utf8Info extends ConstantInfo
     public void resolve(ConstantInfo[] constant_pool)
     {
     }
+
+    private static final Charset CHARSET = Charset.forName("utf8");
 }

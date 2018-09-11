@@ -5,6 +5,7 @@ import com.jfireframework.baseutil.classreader.structure.Attribute.AttributeInfo
 import com.jfireframework.baseutil.classreader.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
 import com.jfireframework.baseutil.classreader.structure.FieldInfo;
 import com.jfireframework.baseutil.classreader.structure.MethodInfo;
+import com.jfireframework.baseutil.classreader.util.AccessFlags;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -128,5 +129,26 @@ public class ClassFile
     public MethodInfo[] getMethodInfos()
     {
         return methodInfos;
+    }
+
+    public boolean isInterface()
+    {
+        return (access_flags & AccessFlags.ACC_INTERFACE) != 0;
+    }
+
+    public boolean isAnnotation()
+    {
+        return (access_flags & AccessFlags.ACC_ANNOTATION) != 0;
+    }
+
+    public boolean isAbstract()
+    {
+        return (access_flags & AccessFlags.ACC_ABSTRACT) != 0;
+    }
+
+    public boolean isEnum()
+    {
+        return (access_flags & AccessFlags.ACC_ENUM) != 0;
+
     }
 }
