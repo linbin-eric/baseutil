@@ -2,10 +2,11 @@ package com.jfireframework.baseutil.classreader.structure;
 
 import com.jfireframework.baseutil.classreader.ClassFile;
 import com.jfireframework.baseutil.classreader.ClassFileParser;
-import com.jfireframework.baseutil.classreader.structure.constantinfo.ConstantInfo;
-import com.jfireframework.baseutil.classreader.structure.constantinfo.Utf8Info;
 import com.jfireframework.baseutil.classreader.structure.Attribute.AnnotationDefaultAttriInfo;
 import com.jfireframework.baseutil.classreader.structure.Attribute.AttributeInfo;
+import com.jfireframework.baseutil.classreader.structure.constantinfo.ConstantInfo;
+import com.jfireframework.baseutil.classreader.structure.constantinfo.Utf8Info;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,7 +15,6 @@ import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarFile;
@@ -121,60 +121,15 @@ public class AnnotationInfo
     {
         try
         {
-            Enumeration<URL> urls = loader.getResources(name + ".class");
-            while (urls.hasMoreElements())
-            {
-                URL url = urls.nextElement();
-                if ( url.getProtocol().startsWith("file") )
-                {
-                    return getBytesFromFile(url);
-                }
-                else if ( url.getProtocol().startsWith("jar") )
-                {
-                    return getBytesFromJar(url, name);
-                }
-            }
+            InputStream resourceAsStream = loader.getResourceAsStream(name + ".class");
+            byte[] content = new byte[resourceAsStream.available()];
+            resourceAsStream.read(content);
+            resourceAsStream.close();
+            return content;
         } catch (IOException e1)
         {
-            throw new RuntimeException(e1);
-        }
-        throw new NullPointerException();
-    }
-
-    private byte[] getBytesFromFile(URL url)
-    {
-        File urlFile = null;
-        try
-        {
-            urlFile = new File(url.toURI());
-            FileInputStream fileInputStream = new FileInputStream(urlFile);
-            byte[] content = new byte[fileInputStream.available()];
-            fileInputStream.read(content);
-            fileInputStream.close();
-            return content;
-        } catch (Exception e)
-        {
-            throw new RuntimeException(e);
+            ReflectUtil.throwException(e1);
+            return null;
         }
     }
-
-    private byte[] getBytesFromJar(URL url, String name)
-    {
-        JarFile jarFile = null;
-        try
-        {
-            // 获取正确并且完成的jar路径的url表示
-            JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
-            jarURLConnection.getJarEntry();
-            InputStream inputStream = jarURLConnection.getJarFile().getInputStream(jarURLConnection.getJarEntry());
-            byte[] content = new byte[inputStream.available()];
-            inputStream.read(content);
-            inputStream.close();
-            return content;
-        } catch (IOException e)
-        {
-            throw new RuntimeException("url地址：'" + url.toString() + "'不正确", e);
-        }
-    }
-
 }
