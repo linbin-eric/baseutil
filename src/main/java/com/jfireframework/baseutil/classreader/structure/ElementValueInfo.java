@@ -3,7 +3,6 @@ package com.jfireframework.baseutil.classreader.structure;
 import com.jfireframework.baseutil.classreader.structure.constantinfo.*;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public class ElementValueInfo
 {
@@ -226,8 +225,7 @@ public class ElementValueInfo
             case CLASS:
                 return classname.replace('/', '.');
             case ANNOTATION:
-                Map<String, Object> annotationAttributes = annotationInfo.getAnnotationAttributes(classLoader);
-                return annotationAttributes;
+                return annotationInfo.getAnnotationAttributes(classLoader);
             case ARRAY:
                 Object[] array = new Object[elementValueInfos.length];
                 for (int i = 0; i < array.length; i++)

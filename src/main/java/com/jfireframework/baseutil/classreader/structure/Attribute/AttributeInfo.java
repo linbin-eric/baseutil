@@ -42,6 +42,14 @@ public abstract class AttributeInfo
         {
             info = new AnnotationDefaultAttriInfo(name, length);
         }
+        else if ( "Code".equals(name) )
+        {
+            info = new CodeAttriInfo(name, length);
+        }
+        else if ( "LocalVariableTable".equals(name) )
+        {
+            info = new LocalVariableTableAttriInfo(name, length);
+        }
         else
         {
             info = new UnknowAttriInfo(name, length);

@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.classreader;
 
+import com.jfireframework.baseutil.classreader.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.classreader.structure.AnnotationInfo;
 import com.jfireframework.baseutil.classreader.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.classreader.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
@@ -7,9 +8,10 @@ import com.jfireframework.baseutil.classreader.structure.FieldInfo;
 import com.jfireframework.baseutil.classreader.structure.MethodInfo;
 import com.jfireframework.baseutil.classreader.util.AccessFlags;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class ClassFile
 {
@@ -22,7 +24,7 @@ public class ClassFile
     private FieldInfo[] fieldInfos;
     private MethodInfo[] methodInfos;
     private AttributeInfo[] attributeInfos;
-    private Map<String, Map<String, Object>> annotations;
+    private List<AnnotationMetadata> annotations;
 
     void setFieldInfos(FieldInfo[] fieldInfos)
     {
@@ -96,7 +98,7 @@ public class ClassFile
         this.access_flags = access_flags;
     }
 
-    public Map<String, Map<String, Object>> getAnnotations(ClassLoader classLoader)
+    public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
     {
         if ( annotations != null )
         {
@@ -113,15 +115,14 @@ public class ClassFile
         }
         if ( runtimeVisibleAnnotationsAttriInfo == null || runtimeVisibleAnnotationsAttriInfo.getAnnotations().length == 0 )
         {
-            annotations = Collections.emptyMap();
+            annotations = Collections.emptyList();
             return annotations;
         }
-        annotations = new HashMap<String, Map<String, Object>>();
+        annotations = new ArrayList<AnnotationMetadata>();
         for (AnnotationInfo info : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
         {
             String type = info.getType();
-            Map<String, Object> annotationAttributes = info.getAnnotationAttributes(classLoader);
-            annotations.put(type, annotationAttributes);
+            annotations.add(info.getAnnotationAttributes(classLoader));
         }
         return annotations;
     }
@@ -149,6 +150,11 @@ public class ClassFile
     public boolean isEnum()
     {
         return (access_flags & AccessFlags.ACC_ENUM) != 0;
+    }
 
+    @Override
+    public String toString()
+    {
+        return "ClassFile{" + "minor_version=" + minor_version + ", major_version=" + major_version + ", access_flags=" + access_flags + ", this_class_name='" + this_class_name + '\'' + ", super_class_name='" + super_class_name + '\'' + ", interfaces=" + Arrays.toString(interfaces) + ", fieldInfos=" + Arrays.toString(fieldInfos) + ", methodInfos=" + Arrays.toString(methodInfos) + ", attributeInfos=" + Arrays.toString(attributeInfos) + ", annotations=" + annotations + '}';
     }
 }

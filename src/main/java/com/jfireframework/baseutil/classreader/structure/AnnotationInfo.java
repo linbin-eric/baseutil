@@ -2,22 +2,17 @@ package com.jfireframework.baseutil.classreader.structure;
 
 import com.jfireframework.baseutil.classreader.ClassFile;
 import com.jfireframework.baseutil.classreader.ClassFileParser;
+import com.jfireframework.baseutil.classreader.annotation.AnnotationMetadata;
+import com.jfireframework.baseutil.classreader.annotation.AnnotationMetadataImpl;
 import com.jfireframework.baseutil.classreader.structure.Attribute.AnnotationDefaultAttriInfo;
 import com.jfireframework.baseutil.classreader.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.classreader.structure.constantinfo.ConstantInfo;
 import com.jfireframework.baseutil.classreader.structure.constantinfo.Utf8Info;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
+import com.jfireframework.baseutil.classreader.util.BytecodeUtil;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.JarFile;
 
 public class AnnotationInfo
 {
@@ -92,9 +87,9 @@ public class AnnotationInfo
         return pairs;
     }
 
-    public Map<String, Object> getAnnotationAttributes(ClassLoader classLoader)
+    public AnnotationMetadata getAnnotationAttributes(ClassLoader classLoader)
     {
-        byte[] bytes = loadResource(classLoader, type);
+        byte[] bytes = BytecodeUtil.loadBytecode(classLoader, type);
         ClassFile annotationClassFile = new ClassFileParser(bytes).parse();
         Map<String, Object> elementValues = new HashMap<String, Object>();
         for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
@@ -114,22 +109,8 @@ public class AnnotationInfo
             ElementValueInfo value = pair.getValue();
             elementValues.put(name, value.getValue(classLoader));
         }
-        return elementValues;
+        return new AnnotationMetadataImpl(type, elementValues, classLoader);
     }
 
-    private byte[] loadResource(ClassLoader loader, String name)
-    {
-        try
-        {
-            InputStream resourceAsStream = loader.getResourceAsStream(name + ".class");
-            byte[] content = new byte[resourceAsStream.available()];
-            resourceAsStream.read(content);
-            resourceAsStream.close();
-            return content;
-        } catch (IOException e1)
-        {
-            ReflectUtil.throwException(e1);
-            return null;
-        }
-    }
+
 }
