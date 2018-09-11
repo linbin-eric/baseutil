@@ -38,6 +38,9 @@ public abstract class AttributeInfo
         {
             info = new RuntimeVisibleAnnotationsAttriInfo(name, length);
         }
+        else if("RuntimeVisibleParameterAnnotations".equals(name)){
+            info = new RuntimeVisibleParameterAnnotationsAttrInfo(name, length);
+        }
         else if ( "AnnotationDefault".equals(name) )
         {
             info = new AnnotationDefaultAttriInfo(name, length);
@@ -52,7 +55,7 @@ public abstract class AttributeInfo
         }
         else
         {
-            info = new UnknowAttriInfo(name, length);
+            info = new UnknowAttrInfo(name, length);
         }
         info.resolve(bytes, counter, constantInfos);
         return info;

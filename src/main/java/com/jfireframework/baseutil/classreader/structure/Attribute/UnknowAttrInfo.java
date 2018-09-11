@@ -2,12 +2,9 @@ package com.jfireframework.baseutil.classreader.structure.Attribute;
 
 import com.jfireframework.baseutil.classreader.structure.constantinfo.ConstantInfo;
 
-public class ConstantValueAttriInfo extends AttributeInfo
+public class UnknowAttrInfo extends AttributeInfo
 {
-    //定长2个字节描述的常量池索引
-    private int index;
-
-    public ConstantValueAttriInfo(String name, int length)
+    public UnknowAttrInfo(String name, int length)
     {
         super(name, length);
     }
