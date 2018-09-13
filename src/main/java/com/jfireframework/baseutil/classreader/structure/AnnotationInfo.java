@@ -56,7 +56,7 @@ public class AnnotationInfo
         int type_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
         counter += 2;
         type = ((Utf8Info) constantInfos[type_index - 1]).getValue();
-        if ( type.startsWith("L") )
+        if (type.startsWith("L"))
         {
             type = type.substring(1, type.length() - 1);
         }
@@ -90,16 +90,19 @@ public class AnnotationInfo
     public AnnotationMetadata getAnnotationAttributes(ClassLoader classLoader)
     {
         byte[] bytes = BytecodeUtil.loadBytecode(classLoader, type);
-        ClassFile annotationClassFile = new ClassFileParser(bytes).parse();
         Map<String, Object> elementValues = new HashMap<String, Object>();
-        for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
+        if (bytes != null)
         {
-            for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
+            ClassFile annotationClassFile = new ClassFileParser(bytes).parse();
+            for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
             {
-                if ( attributeInfo instanceof AnnotationDefaultAttriInfo )
+                for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
                 {
-                    elementValues.put(methodInfo.getName(), ((AnnotationDefaultAttriInfo) attributeInfo).getElementValueInfo().getValue(classLoader));
-                    break;
+                    if (attributeInfo instanceof AnnotationDefaultAttriInfo)
+                    {
+                        elementValues.put(methodInfo.getName(), ((AnnotationDefaultAttriInfo) attributeInfo).getElementValueInfo().getValue(classLoader));
+                        break;
+                    }
                 }
             }
         }
@@ -111,6 +114,7 @@ public class AnnotationInfo
         }
         return new AnnotationMetadataImpl(type, elementValues, classLoader);
     }
+}
 
 
 }
