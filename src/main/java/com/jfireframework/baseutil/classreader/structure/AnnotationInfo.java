@@ -115,6 +115,3 @@ public class AnnotationInfo
         return new AnnotationMetadataImpl(type, elementValues, classLoader);
     }
 }
-
-
-}
