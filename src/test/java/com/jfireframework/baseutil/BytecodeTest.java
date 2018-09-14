@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 
 import static com.jfireframework.baseutil.bytecode.util.BytecodeUtil.parseMethodParamNames;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class BytecodeTest
 {
@@ -51,7 +52,7 @@ public class BytecodeTest
         System.out.println(timewatch.getTotal());
     }
 
-    public < E extends AnnotationInfo,T extends Annotation> void tt(Class<T>[] l, E va) throws NoSuchMethodException
+    public <E extends AnnotationInfo, T extends Annotation> void tt(Class<T>[] name1, E name2) throws NoSuchMethodException
     {
 
     }
@@ -60,16 +61,10 @@ public class BytecodeTest
     public void test3() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
         Method method = BytecodeTest.class.getDeclaredMethod("tt", Class[].class, AnnotationInfo.class);
-        Type[] genericParameterTypes =
-                method.getGenericParameterTypes();
-        for (Type genericParameterType : genericParameterTypes)
-        {
-            genericParameterType.
-        }
-        System.out.println(method.toGenericString());
-        Method getGenericSignature = method.getClass().getDeclaredMethod("getGenericSignature");
-        getGenericSignature.setAccessible(true);
-        Object invoke = getGenericSignature.invoke(method);
-        System.out.println(invoke);
+        assertNotNull(method);
+        String[] paramNames = parseMethodParamNames(method);
+        assertEquals(2  ,paramNames.length);
+        assertEquals("name1",paramNames[0]);
+        assertEquals("name2",paramNames[1]);
     }
 }
