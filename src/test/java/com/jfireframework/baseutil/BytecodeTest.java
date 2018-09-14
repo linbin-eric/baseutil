@@ -1,12 +1,16 @@
 package com.jfireframework.baseutil;
 
 import com.jfireframework.baseutil.anno.AnnotationUtil;
+import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.time.Timewatch;
 import org.junit.Test;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import static com.jfireframework.baseutil.bytecode.util.BytecodeUtil.parseMethodParamNames;
 import static org.junit.Assert.assertEquals;
@@ -45,5 +49,27 @@ public class BytecodeTest
         }
         timewatch.end();
         System.out.println(timewatch.getTotal());
+    }
+
+    public < E extends AnnotationInfo,T extends Annotation> void tt(Class<T>[] l, E va) throws NoSuchMethodException
+    {
+
+    }
+
+    @Test
+    public void test3() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        Method method = BytecodeTest.class.getDeclaredMethod("tt", Class[].class, AnnotationInfo.class);
+        Type[] genericParameterTypes =
+                method.getGenericParameterTypes();
+        for (Type genericParameterType : genericParameterTypes)
+        {
+            genericParameterType.
+        }
+        System.out.println(method.toGenericString());
+        Method getGenericSignature = method.getClass().getDeclaredMethod("getGenericSignature");
+        getGenericSignature.setAccessible(true);
+        Object invoke = getGenericSignature.invoke(method);
+        System.out.println(invoke);
     }
 }
