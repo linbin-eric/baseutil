@@ -1,13 +1,12 @@
 package com.jfireframework.baseutil;
 
 import com.jfireframework.baseutil.anno.AnnotationUtil;
+import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.time.Timewatch;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import static com.jfireframework.baseutil.bytecode.util.BytecodeUtil.parseMethodParamNames;
 import static org.junit.Assert.assertEquals;
@@ -25,6 +24,11 @@ public class BytecodeTest
         assertEquals(2, paramNames.length);
         assertEquals("annoType", paramNames[0]);
         assertEquals("field", paramNames[1]);
+        method = BytecodeUtil.class.getMethod("loadBytecode", ClassLoader.class, String.class);
+        paramNames = parseMethodParamNames(method);
+        assertEquals(2, paramNames.length);
+        assertEquals("loader", paramNames[0]);
+        assertEquals("name", paramNames[1]);
     }
 
     /**

@@ -12,6 +12,7 @@ import com.jfireframework.baseutil.reflect.ReflectUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class BytecodeUtil
 {
@@ -42,6 +43,12 @@ public class BytecodeUtil
         }
     }
 
+    /**
+     * 获取方法的入参名称，以数组的形式返回。获取方法入参名称依赖于编译器是否编译了入参名称到字节码中，因此可能存在获取失败的情况。如果获取失败，则返回null。
+     *
+     * @param method
+     * @return
+     */
     public static String[] parseMethodParamNames(Method method)
     {
         String name = method.getDeclaringClass().getName().replace('.', '/');
@@ -74,9 +81,19 @@ public class BytecodeUtil
                                     LocalVariableTableAttriInfo localVariableTableAttriInfo = (LocalVariableTableAttriInfo) info;
                                     LocalVariableTableAttriInfo.LocalVariableTableEntry[] entries = localVariableTableAttriInfo.getEntries();
                                     String[] names = new String[method.getParameterTypes().length];
-                                    for (int i = 0; i < names.length; i++)
+                                    if (Modifier.isStatic(method.getModifiers()))
                                     {
-                                        names[i] = entries[i + 1].getName();
+                                        for (int i = 0; i < names.length; i++)
+                                        {
+                                            names[i] = entries[i].getName();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (int i = 0; i < names.length; i++)
+                                        {
+                                            names[i] = entries[i + 1].getName();
+                                        }
                                     }
                                     return names;
                                 }
@@ -106,12 +123,11 @@ public class BytecodeUtil
         }
         else if (parameterType.isArray())
         {
-            return "[" + getName(parameterType);
+            return "[" + getName(parameterType.getComponentType());
         }
         else
         {
             return "L" + parameterType.getName() + ";";
         }
     }
-
 }

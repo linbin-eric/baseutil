@@ -32,7 +32,7 @@ public class PackageScan
     public static String[] scan(String packageName)
     {
         String filterNames = null;
-        if ( packageName.contains(":") )
+        if (packageName.contains(":"))
         {
             filterNames = packageName.split(":")[1];
             packageName = packageName.split(":")[0];
@@ -46,7 +46,7 @@ public class PackageScan
             while (urls.hasMoreElements())
             {
                 URL url = urls.nextElement();
-                if ( url.getProtocol().contains("file") )
+                if (url.getProtocol().contains("file"))
                 {
                     try
                     {
@@ -58,7 +58,7 @@ public class PackageScan
                         ReflectUtil.throwException(e);
                     }
                 }
-                else if ( url.getProtocol().contains("jar") )
+                else if (url.getProtocol().contains("jar"))
                 {
                     getClassNamesByJar(url, resourceName, classNames);
                 }
@@ -97,7 +97,7 @@ public class PackageScan
             JarEntry jarEntry = entries.nextElement();
             String entryName = jarEntry.getName();
             // 将符合条件的class文件的全限定名加入到list中
-            if ( entryName.endsWith(".class") && entryName.startsWith(packageName) )
+            if (entryName.endsWith(".class") && entryName.startsWith(packageName))
             {
                 String className = entryName.substring(0, entryName.indexOf(".class"));
                 className = className.replaceAll("/", ".");
@@ -114,7 +114,7 @@ public class PackageScan
      */
     private static void findClassNamesByFile(String packageName, File packageFile, List<String> classNames)
     {
-        if ( packageFile.isFile() )
+        if (packageFile.isFile())
         {
             String className = packageName + packageFile.getName().replace(".class", "");
             className = className.replaceAll("/", ".");
@@ -139,11 +139,11 @@ public class PackageScan
      */
     private static void doFilter(String filterNames, List<String> classNames)
     {
-        if ( filterNames == null )
+        if (filterNames == null)
         {
             return;
         }
-        if ( filterNames.startsWith("in~") )
+        if (filterNames.startsWith("in~"))
         {
             String[] filters = filterNames.substring(3).split(",");
             for (String filter : filters)
@@ -151,7 +151,7 @@ public class PackageScan
                 inFilter(filter, classNames);
             }
         }
-        else if ( filterNames.startsWith("out~") )
+        else if (filterNames.startsWith("out~"))
         {
             String[] filters = filterNames.substring(4).split(",");
             for (String filter : filters)
@@ -168,7 +168,7 @@ public class PackageScan
         while (iterator.hasNext())
         {
             String value = iterator.next();
-            if ( StringUtil.match(value, rule) == false )
+            if (StringUtil.match(value, rule) == false)
             {
                 iterator.remove();
             }
@@ -181,7 +181,7 @@ public class PackageScan
         while (iterator.hasNext())
         {
             String value = iterator.next();
-            if ( StringUtil.match(value, rule) )
+            if (StringUtil.match(value, rule))
             {
                 iterator.remove();
             }
