@@ -11,6 +11,7 @@ import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.Utf8Info;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,12 +91,12 @@ public class AnnotationInfo
 
     public AnnotationMetadata getAnnotationAttributes(ClassLoader classLoader)
     {
+        Map<String, Object> elementValues = new HashMap<String, Object>();
         byte[] bytes = BytecodeUtil.loadBytecode(classLoader, type);
         if (bytes == null)
         {
             return new UnValidAnnotationMetadata(type);
         }
-        Map<String, Object> elementValues = new HashMap<String, Object>();
         ClassFile annotationClassFile = new ClassFileParser(bytes).parse();
         for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
         {
@@ -116,4 +117,5 @@ public class AnnotationInfo
         }
         return new AnnotationMetadataImpl(type, elementValues, classLoader);
     }
+
 }

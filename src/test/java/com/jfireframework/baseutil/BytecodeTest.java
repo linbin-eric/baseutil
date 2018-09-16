@@ -10,7 +10,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 
 import static com.jfireframework.baseutil.bytecode.util.BytecodeUtil.parseMethodParamNames;
 import static org.junit.Assert.assertEquals;

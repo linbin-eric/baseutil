@@ -47,7 +47,7 @@ public class ClassFile
         for (int i = 0; i < this.interfaces.length; i++)
         {
             String value = interfaces[i];
-            if ( value.indexOf('/') != -1 )
+            if (value.indexOf('/') != -1)
             {
                 value = value.replace('/', '.');
             }
@@ -57,7 +57,7 @@ public class ClassFile
 
     void setThis_class_name(String this_class_name)
     {
-        if ( this_class_name.indexOf('/') != -1 )
+        if (this_class_name.indexOf('/') != -1)
         {
             this_class_name = this_class_name.replace('/', '.');
         }
@@ -66,7 +66,7 @@ public class ClassFile
 
     void setSuper_class_name(String super_class_name)
     {
-        if ( super_class_name.indexOf('/') != -1 )
+        if (super_class_name.indexOf('/') != -1)
         {
             super_class_name = super_class_name.replace('/', '.');
         }
@@ -100,20 +100,25 @@ public class ClassFile
 
     public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
     {
-        if ( annotations != null )
+        return getAnnotations(classLoader, null);
+    }
+
+    public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader, String name)
+    {
+        if (annotations != null)
         {
             return annotations;
         }
         RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = null;
         for (AttributeInfo attributeInfo : attributeInfos)
         {
-            if ( attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo )
+            if (attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
             {
                 runtimeVisibleAnnotationsAttriInfo = (RuntimeVisibleAnnotationsAttriInfo) attributeInfo;
                 break;
             }
         }
-        if ( runtimeVisibleAnnotationsAttriInfo == null || runtimeVisibleAnnotationsAttriInfo.getAnnotations().length == 0 )
+        if (runtimeVisibleAnnotationsAttriInfo == null || runtimeVisibleAnnotationsAttriInfo.getAnnotations().length == 0)
         {
             annotations = Collections.emptyList();
             return annotations;
@@ -121,6 +126,10 @@ public class ClassFile
         annotations = new ArrayList<AnnotationMetadata>();
         for (AnnotationInfo info : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
         {
+            if (info.getType().equals(name))
+            {
+                continue;
+            }
             annotations.add(info.getAnnotationAttributes(classLoader));
         }
         return annotations;
