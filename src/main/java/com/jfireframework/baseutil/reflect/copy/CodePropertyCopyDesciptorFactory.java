@@ -5,14 +5,14 @@ import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.smc.SmcHelper;
-import com.jfireframework.baseutil.smc.compiler.JavaStringCompiler;
+import com.jfireframework.baseutil.smc.compiler.CompileHelper;
 import com.jfireframework.baseutil.smc.model.ClassModel;
 import com.jfireframework.baseutil.smc.model.MethodModel;
 
 public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescriptorFactory
 {
     private static final AtomicInteger                   count    = new AtomicInteger(0);
-    private static final JavaStringCompiler              compiler = new JavaStringCompiler();
+    private static final CompileHelper compiler = new CompileHelper();
     public static final CodePropertyCopyDesciptorFactory instance = new CodePropertyCopyDesciptorFactory();
     
     @SuppressWarnings("unchecked")

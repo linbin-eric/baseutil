@@ -1,6 +1,6 @@
 package com.jfireframework.baseutil;
 
-import com.jfireframework.baseutil.smc.compiler.JavaStringCompiler;
+import com.jfireframework.baseutil.smc.compiler.CompileHelper;
 import com.jfireframework.baseutil.smc.model.ClassModel;
 import com.jfireframework.baseutil.smc.model.MethodModel;
 import org.junit.Assert;
@@ -23,7 +23,7 @@ public class CompilerTest
         MethodModel methodModel = new MethodModel(Ptest.class.getMethod("sayHello"), classModel);
         methodModel.setBody("return \"hi\";");
         classModel.putMethodModel(methodModel);
-        JavaStringCompiler compiler = new JavaStringCompiler(Thread.currentThread().getContextClassLoader());
+        CompileHelper compiler = new CompileHelper(Thread.currentThread().getContextClassLoader());
         Class<?> compile = compiler.compile(classModel);
         Ptest instance = (Ptest) compile.newInstance();
         Assert.assertEquals("hi", instance.sayHello());
