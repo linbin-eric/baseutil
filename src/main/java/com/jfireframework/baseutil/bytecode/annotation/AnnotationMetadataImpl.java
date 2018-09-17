@@ -4,23 +4,19 @@ import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AnnotationMetadataImpl implements AnnotationMetadata
 {
-    private String typeName;
-    private Map<String, Object> attributes;
+    private String                   typeName;
+    private Map<String, Object>      attributes;
     private List<AnnotationMetadata> presentAnnotations;
 
     public AnnotationMetadataImpl(String typeName, Map<String, Object> attributes, ClassLoader loader)
     {
         this.typeName = typeName;
         this.attributes = attributes;
-        byte[] bytes = BytecodeUtil.loadBytecode(loader, typeName);
-        ClassFile classFile = new ClassFileParser(bytes).parse();
-        presentAnnotations = classFile.getAnnotations(loader, typeName);
     }
 
     @Override
@@ -50,6 +46,10 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     @Override
     public List<AnnotationMetadata> getPresentAnnotations()
     {
+        if (presentAnnotations == null)
+        {
+           presentAnnotations = BytecodeUtil.findAnnotationOnClass(typeName,this.getClass().getClassLoader());
+        }
         return presentAnnotations;
     }
 

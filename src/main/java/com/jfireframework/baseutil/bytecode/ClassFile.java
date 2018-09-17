@@ -98,12 +98,8 @@ public class ClassFile
         this.access_flags = access_flags;
     }
 
-    public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
-    {
-        return getAnnotations(classLoader, null);
-    }
 
-    public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader, String name)
+    public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
     {
         if (annotations != null)
         {
@@ -126,10 +122,6 @@ public class ClassFile
         annotations = new ArrayList<AnnotationMetadata>();
         for (AnnotationInfo info : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
         {
-            if (info.getType().equals(name))
-            {
-                continue;
-            }
             annotations.add(info.getAnnotationAttributes(classLoader));
         }
         return annotations;

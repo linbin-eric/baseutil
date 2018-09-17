@@ -225,7 +225,7 @@ public class ElementValueInfo
             case CLASS:
                 return classname.replace('/', '.');
             case ANNOTATION:
-                return annotationInfo.getAnnotationAttributes(classLoader);
+                return annotationInfo.getAnnotationAttributes(classLoader).getAttributes();
             case ARRAY:
                 Object[] array = new Object[elementValueInfos.length];
                 for (int i = 0; i < array.length; i++)

@@ -2,9 +2,12 @@ package com.jfireframework.baseutil.bytecode.util;
 
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
+import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.CodeAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.LocalVariableTableAttriInfo;
+import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
@@ -13,6 +16,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class BytecodeUtil
 {
@@ -36,7 +43,8 @@ public class BytecodeUtil
             resourceAsStream.read(content);
             resourceAsStream.close();
             return content;
-        } catch (IOException e1)
+        }
+        catch (IOException e1)
         {
             ReflectUtil.throwException(e1);
             return null;
@@ -51,10 +59,10 @@ public class BytecodeUtil
      */
     public static String[] parseMethodParamNames(Method method)
     {
-        String name = method.getDeclaringClass().getName().replace('.', '/');
-        byte[] bytes = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
-        ClassFile classFile = new ClassFileParser(bytes).parse();
-        StringCache cache = new StringCache();
+        String      name      = method.getDeclaringClass().getName().replace('.', '/');
+        byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
+        ClassFile   classFile = new ClassFileParser(bytes).parse();
+        StringCache cache     = new StringCache();
         cache.append('(');
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes)
@@ -78,9 +86,9 @@ public class BytecodeUtil
                             {
                                 if (info instanceof LocalVariableTableAttriInfo)
                                 {
-                                    LocalVariableTableAttriInfo localVariableTableAttriInfo = (LocalVariableTableAttriInfo) info;
-                                    LocalVariableTableAttriInfo.LocalVariableTableEntry[] entries = localVariableTableAttriInfo.getEntries();
-                                    String[] names = new String[method.getParameterTypes().length];
+                                    LocalVariableTableAttriInfo                           localVariableTableAttriInfo = (LocalVariableTableAttriInfo) info;
+                                    LocalVariableTableAttriInfo.LocalVariableTableEntry[] entries                     = localVariableTableAttriInfo.getEntries();
+                                    String[]                                              names                       = new String[method.getParameterTypes().length];
                                     if (Modifier.isStatic(method.getModifiers()))
                                     {
                                         for (int i = 0; i < names.length; i++)
@@ -129,5 +137,84 @@ public class BytecodeUtil
         {
             return "L" + parameterType.getName() + ";";
         }
+    }
+
+    /**
+     * 找到在类上的所有有效注解
+     *
+     * @param name        资源名称，格式为aa/bb/cc
+     * @param classLoader
+     * @return
+     */
+    public static List<AnnotationMetadata> findAnnotationOnClass(String name, ClassLoader classLoader)
+    {
+        byte[]                   bytecode  = loadBytecode(classLoader, name);
+        ClassFile                classFile = new ClassFileParser(bytecode).parse();
+        List<AnnotationMetadata> list      = new LinkedList<AnnotationMetadata>();
+        for (AnnotationMetadata annotation : classFile.getAnnotations(classLoader))
+        {
+            if (annotation.isValid())
+            {
+                list.add(annotation);
+            }
+        }
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
+     * 找到在方法上所有有效注解
+     *
+     * @param method
+     * @param loader
+     * @return
+     */
+    public static List<AnnotationMetadata> findAnnotationOnMethod(Method method, ClassLoader loader)
+    {
+        String      name      = method.getDeclaringClass().getName().replace('.', '/');
+        byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
+        ClassFile   classFile = new ClassFileParser(bytes).parse();
+        StringCache cache     = new StringCache();
+        cache.append('(');
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (Class<?> parameterType : parameterTypes)
+        {
+            cache.append(getName(parameterType));
+        }
+        cache.append(')').append(getName(method.getReturnType()));
+        String methodName = method.getName();
+        String descriptor = cache.toString().replace('.', '/');
+        for (MethodInfo methodInfo : classFile.getMethodInfos())
+        {
+            if (methodInfo.getName().equals(methodName))
+            {
+                if (methodInfo.getDescriptor().equals(descriptor))
+                {
+                    for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
+                    {
+                        if (attributeInfo instanceof CodeAttriInfo)
+                        {
+                            for (AttributeInfo info : ((CodeAttriInfo) attributeInfo).getAttributeInfos())
+                            {
+                                if (info instanceof RuntimeVisibleAnnotationsAttriInfo)
+                                {
+                                    List<AnnotationMetadata>           list                               = new LinkedList<AnnotationMetadata>();
+                                    RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = (RuntimeVisibleAnnotationsAttriInfo) info;
+                                    for (AnnotationInfo annotation : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
+                                    {
+                                        AnnotationMetadata annotationMetadata = annotation.getAnnotationAttributes(loader);
+                                        if (annotationMetadata.isValid())
+                                        {
+                                            list.add(annotationMetadata);
+                                        }
+                                    }
+                                    return Collections.unmodifiableList(list);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
     }
 }

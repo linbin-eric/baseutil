@@ -12,7 +12,7 @@ public interface AnnotationMetadata
     boolean isValid();
     /**
      * 返回该注解实例的所有值，以Map的形式。
-     * object的实际类型可能为基本类型的包装类，String，Class，Enum，AnnotationMetadata，以及以上元素的数组
+     * object的实际类型可能为基本类型的包装类，String，Class，Enum，Map<String, Object>，以及以上元素的数组
      *
      * @return
      */
@@ -27,7 +27,7 @@ public interface AnnotationMetadata
     boolean isAnnotation(String name);
 
     /**
-     * 返回该注解类型的全限定名
+     * 返回该注解类型的资源名，格式为aa/bb/cc
      *
      * @return
      */
