@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import static com.sun.org.apache.xml.internal.security.keys.keyresolver.KeyResolver.iterator;
 
 /**
  * In-memory compile Java source code as String.
