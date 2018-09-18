@@ -216,23 +216,9 @@ public class ElementValueInfo
             case ENUM:
                 String typeName = enumConstant.getTypeName();
                 String enumName = enumConstant.getEnumName();
-                try
-                {
-                    return Enum.valueOf((Class) Class.forName(typeName.replace('/', '.')), enumName);
-                } catch (ClassNotFoundException e)
-                {
-                    throw new RuntimeException(e);
-                }
+                return typeName.replace('/', '.')+":"+enumName;
             case CLASS:
-                try
-                {
-                    return classLoader.loadClass(classname.substring(1,classname.length()-1).replace('/', '.'));
-                }
-                catch (ClassNotFoundException e)
-                {
-                    ReflectUtil.throwException(e);
-                    return null;
-                }
+                return classname.substring(1,classname.length()-1).replace('/', '.');
             case ANNOTATION:
                 return annotationInfo.getAnnotationAttributes(classLoader).getAttributes();
             case ARRAY:
