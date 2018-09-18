@@ -1,6 +1,7 @@
 package com.jfireframework.baseutil.bytecode.structure;
 
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 import java.util.Arrays;
 
@@ -223,7 +224,15 @@ public class ElementValueInfo
                     throw new RuntimeException(e);
                 }
             case CLASS:
-                return classname.replace('/', '.');
+                try
+                {
+                    return classLoader.loadClass(classname.substring(1,classname.length()-1).replace('/', '.'));
+                }
+                catch (ClassNotFoundException e)
+                {
+                    ReflectUtil.throwException(e);
+                    return null;
+                }
             case ANNOTATION:
                 return annotationInfo.getAnnotationAttributes(classLoader).getAttributes();
             case ARRAY:

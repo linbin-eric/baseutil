@@ -191,25 +191,19 @@ public class BytecodeUtil
                 {
                     for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
                     {
-                        if (attributeInfo instanceof CodeAttriInfo)
+                        if (attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
                         {
-                            for (AttributeInfo info : ((CodeAttriInfo) attributeInfo).getAttributeInfos())
+                            List<AnnotationMetadata>           list                               = new LinkedList<AnnotationMetadata>();
+                            RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = (RuntimeVisibleAnnotationsAttriInfo) attributeInfo;
+                            for (AnnotationInfo annotation : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
                             {
-                                if (info instanceof RuntimeVisibleAnnotationsAttriInfo)
+                                AnnotationMetadata annotationMetadata = annotation.getAnnotationAttributes(loader);
+                                if (annotationMetadata.isValid())
                                 {
-                                    List<AnnotationMetadata>           list                               = new LinkedList<AnnotationMetadata>();
-                                    RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = (RuntimeVisibleAnnotationsAttriInfo) info;
-                                    for (AnnotationInfo annotation : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
-                                    {
-                                        AnnotationMetadata annotationMetadata = annotation.getAnnotationAttributes(loader);
-                                        if (annotationMetadata.isValid())
-                                        {
-                                            list.add(annotationMetadata);
-                                        }
-                                    }
-                                    return Collections.unmodifiableList(list);
+                                    list.add(annotationMetadata);
                                 }
                             }
+                            return Collections.unmodifiableList(list);
                         }
                     }
                 }
