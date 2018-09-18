@@ -1,7 +1,5 @@
 package com.jfireframework.baseutil.bytecode.annotation;
 
-import com.jfireframework.baseutil.bytecode.ClassFile;
-import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
 import java.util.List;
@@ -48,7 +46,7 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     {
         if (presentAnnotations == null)
         {
-           presentAnnotations = BytecodeUtil.findAnnotationOnClass(typeName,this.getClass().getClassLoader());
+           presentAnnotations = BytecodeUtil.findAnnotationsOnClass(typeName,this.getClass().getClassLoader());
         }
         return presentAnnotations;
     }

@@ -146,7 +146,7 @@ public class BytecodeUtil
      * @param classLoader
      * @return
      */
-    public static List<AnnotationMetadata> findAnnotationOnClass(String name, ClassLoader classLoader)
+    public static List<AnnotationMetadata> findAnnotationsOnClass(String name, ClassLoader classLoader)
     {
         byte[]                   bytecode  = loadBytecode(classLoader, name);
         ClassFile                classFile = new ClassFileParser(bytecode).parse();
@@ -168,7 +168,7 @@ public class BytecodeUtil
      * @param loader
      * @return
      */
-    public static List<AnnotationMetadata> findAnnotationOnMethod(Method method, ClassLoader loader)
+    public static List<AnnotationMetadata> findAnnotationsOnMethod(Method method, ClassLoader loader)
     {
         String      name      = method.getDeclaringClass().getName().replace('.', '/');
         byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
