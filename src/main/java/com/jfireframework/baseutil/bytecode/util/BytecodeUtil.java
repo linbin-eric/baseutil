@@ -34,6 +34,7 @@ public class BytecodeUtil
     {
         try
         {
+            loader = loader==null?Thread.currentThread().getContextClassLoader():loader;
             InputStream resourceAsStream = loader.getResourceAsStream(name + ".class");
             if (resourceAsStream == null)
             {
@@ -44,7 +45,7 @@ public class BytecodeUtil
             resourceAsStream.close();
             return content;
         }
-        catch (IOException e1)
+        catch (Exception e1)
         {
             ReflectUtil.throwException(e1);
             return null;

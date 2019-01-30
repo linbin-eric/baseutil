@@ -1,9 +1,10 @@
 package com.jfireframework.baseutil.smc.model;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.smc.SmcHelper;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class MethodModel
 {
@@ -86,7 +87,7 @@ public class MethodModel
                 for (int i = 0; i < paramterTypes.length; i++)
                 {
                     Class<?> each = paramterTypes[i];
-                    cache.append(SmcHelper.getTypeName(each)).append(" $").append(i).appendComma();
+                    cache.append(SmcHelper.getReferenceName(each,classModel)).append(" $").append(i).appendComma();
                 }
             }
             else
@@ -98,7 +99,7 @@ public class MethodModel
                     {
                         cache.append("final ");
                     }
-                    cache.append(SmcHelper.getTypeName(each)).append(" $").append(i).appendComma();
+                    cache.append(SmcHelper.getReferenceName(each,classModel)).append(" $").append(i).appendComma();
                 }
             }
             if (cache.isCommaLast())
@@ -112,7 +113,7 @@ public class MethodModel
             cache.append(" throws ");
             for (Class<?> each : throwables)
             {
-                cache.append(SmcHelper.getTypeName(each)).appendComma();
+                cache.append(SmcHelper.getReferenceName(each,classModel)).appendComma();
             }
             cache.deleteLast();
         }
