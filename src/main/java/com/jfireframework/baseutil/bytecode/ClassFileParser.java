@@ -10,21 +10,21 @@ import java.util.Arrays;
 
 public class ClassFileParser
 {
-    private int magic;
-    private int minor_version;
-    private int major_version;
-    private int constant_pool_count;
-    private ConstantInfo[] constant_pool;
-    private int access_flags;
-    private String this_class_name;
-    private String super_class_name;
-    private String[] interfaces;
-    private FieldInfo[] fieldInfos;
-    private MethodInfo[] methodInfos;
+    private int             magic;
+    private int             minor_version;
+    private int             major_version;
+    private int             constant_pool_count;
+    private ConstantInfo[]  constant_pool;
+    private int             access_flags;
+    private String          this_class_name;
+    private String          super_class_name;
+    private String[]        interfaces;
+    private FieldInfo[]     fieldInfos;
+    private MethodInfo[]    methodInfos;
     private AttributeInfo[] attributeInfos;
     /////
-    private int counter = 0;
-    private byte[] bytes;
+    private int             counter = 0;
+    private byte[]          bytes;
 
     public ClassFileParser(byte[] bytes)
     {
@@ -110,7 +110,18 @@ public class ClassFileParser
     private void readSuperClass()
     {
         int super_class = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        super_class_name = ((ClassInfo) constant_pool[super_class - 1]).getName();
+        if (super_class == 0)
+        {
+            if (!this_class_name.equals("java/lang/Object"))
+            {
+                throw new RuntimeException("字节码解析错误，只有Object类型的父类才允许为空");
+            }
+            super_class_name = null;
+        }
+        else
+        {
+            super_class_name = ((ClassInfo) constant_pool[super_class - 1]).getName();
+        }
         counter += 2;
     }
 
@@ -183,7 +194,7 @@ public class ClassFileParser
             }
             counter = constantInfo.resolve(bytes, counter);
             constant_pool[i] = constantInfo;
-            if ( constantInfo instanceof LongInfo || constantInfo instanceof DoubleInfo )
+            if (constantInfo instanceof LongInfo || constantInfo instanceof DoubleInfo)
             {
                 //JVM规范规定了如果遇到这两个常量类型，则编号多递增1
                 i++;
@@ -191,7 +202,7 @@ public class ClassFileParser
         }
         for (ConstantInfo constantInfo : constant_pool)
         {
-            if ( constantInfo != null )
+            if (constantInfo != null)
             {
                 constantInfo.resolve(constant_pool);
             }
@@ -225,10 +236,10 @@ public class ClassFileParser
 
     private void readMagic()
     {
-        if ( (bytes[counter] & 0xff) == 0xca//
+        if ((bytes[counter] & 0xff) == 0xca//
                 && (bytes[counter + 1] & 0xff) == 0xfe//
                 && (bytes[counter + 2] & 0xff) == 0xba//
-                && (bytes[counter + 3] & 0xff) == 0xbe )
+                && (bytes[counter + 3] & 0xff) == 0xbe)
         {
             magic = 0xcafebabe;
             counter += 4;
