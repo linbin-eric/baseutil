@@ -1,19 +1,23 @@
 package com.jfireframework.baseutil.bytecode.structure;
 
+import com.jfireframework.baseutil.bytecode.ClassFile;
+import com.jfireframework.baseutil.bytecode.ClassFileParser;
+import com.jfireframework.baseutil.bytecode.annotation.ValuePair;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
+import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 import java.util.Arrays;
 
 public class ElementValueInfo
 {
-    private char tag;
-    private ElementValueType elementValueType;
-    private ConstantValue constantValue;
-    private EnumConstant enumConstant;
-    private String classname;
-    private AnnotationInfo annotationInfo;
-    private int num_values;
+    private char               tag;
+    private ElementValueType   elementValueType;
+    private ConstantValue      constantValue;
+    private EnumConstant       enumConstant;
+    private String             classname;
+    private AnnotationInfo     annotationInfo;
+    private int                num_values;
     private ElementValueInfo[] elementValueInfos;
 
     public int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
@@ -21,28 +25,28 @@ public class ElementValueInfo
         tag = (char) bytes[counter];
         counter++;
         elementValueType = resolveType(tag);
-        if ( isPrimitive(elementValueType) || elementValueType == ElementValueType.STRING )
+        if (isPrimitive(elementValueType) || elementValueType == ElementValueType.STRING)
         {
             int const_value_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
             counter += 2;
             ConstantInfo constantInfo = constantInfos[const_value_index - 1];
-            if ( constantInfo instanceof IntegerInfo )
+            if (constantInfo instanceof IntegerInfo)
             {
                 constantValue = new ConstantValue(elementValueType, ((IntegerInfo) constantInfo).getValue());
             }
-            else if ( constantInfo instanceof FloatInfo )
+            else if (constantInfo instanceof FloatInfo)
             {
                 constantValue = new ConstantValue(elementValueType, ((FloatInfo) constantInfo).getValue());
             }
-            else if ( constantInfo instanceof LongInfo )
+            else if (constantInfo instanceof LongInfo)
             {
                 constantValue = new ConstantValue(elementValueType, ((LongInfo) constantInfo).getValue());
             }
-            else if ( constantInfo instanceof DoubleInfo )
+            else if (constantInfo instanceof DoubleInfo)
             {
                 constantValue = new ConstantValue(elementValueType, ((DoubleInfo) constantInfo).getValue());
             }
-            else if ( elementValueType == ElementValueType.STRING )
+            else if (elementValueType == ElementValueType.STRING)
             {
                 constantValue = new ConstantValue(elementValueType, ((Utf8Info) constantInfo).getValue());
             }
@@ -51,7 +55,7 @@ public class ElementValueInfo
                 throw new IllegalArgumentException();
             }
         }
-        else if ( elementValueType == ElementValueType.ENUM )
+        else if (elementValueType == ElementValueType.ENUM)
         {
             int type_name_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
             counter += 2;
@@ -61,18 +65,18 @@ public class ElementValueInfo
             String enumName = ((Utf8Info) constantInfos[const_name_index - 1]).getValue();
             enumConstant = new EnumConstant(typeName, enumName);
         }
-        else if ( elementValueType == ElementValueType.CLASS )
+        else if (elementValueType == ElementValueType.CLASS)
         {
             int class_info_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
             counter += 2;
             classname = ((Utf8Info) constantInfos[class_info_index - 1]).getValue();
         }
-        else if ( elementValueType == ElementValueType.ANNOTATION )
+        else if (elementValueType == ElementValueType.ANNOTATION)
         {
             annotationInfo = new AnnotationInfo();
             counter = annotationInfo.resolve(bytes, counter, constantInfos);
         }
-        else if ( elementValueType == ElementValueType.ARRAY )
+        else if (elementValueType == ElementValueType.ARRAY)
         {
             num_values = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
             counter += 2;
@@ -88,7 +92,7 @@ public class ElementValueInfo
 
     public boolean isPrimitive(ElementValueType type)
     {
-        if ( type == elementValueType.BYTE //
+        if (type == elementValueType.BYTE //
                 || type == elementValueType.CHAR//
                 || type == elementValueType.DOUBLE//
                 || type == elementValueType.FLOAT//
@@ -182,54 +186,151 @@ public class ElementValueInfo
         return elementValueInfos;
     }
 
-    public Object getValue(ClassLoader classLoader)
+    public ValuePair getValue(ClassLoader classLoader, MethodInfo methodInfo)
     {
+        ValuePair valuePair = new ValuePair();
+        valuePair.setElementValueType(elementValueType);
         switch (elementValueType)
         {
             case BYTE:
                 byte b = (byte) constantValue.getIntValue();
-                return b;
+                valuePair.setB(b);
+                break;
             case CHAR:
                 char c = (char) constantValue.getIntValue();
-                return c;
+                valuePair.setC(c);
+                break;
             case DOUBLE:
                 double doubleValue = constantValue.getDoubleValue();
-                return doubleValue;
+                valuePair.setD(doubleValue);
+                break;
             case FLOAT:
                 float floatValue = constantValue.getFloatValue();
-                return floatValue;
+                valuePair.setF(floatValue);
+                break;
             case INT:
                 int intValue = constantValue.getIntValue();
-                return intValue;
+                valuePair.setI(intValue);
+                break;
             case LONG:
                 long longValue = constantValue.getLongValue();
-                return longValue;
+                valuePair.setL(longValue);
+                break;
             case SHORT:
                 short shortValue = (short) constantValue.getIntValue();
-                return shortValue;
+                valuePair.setS(shortValue);
+                break;
             case BOOLEAN:
                 boolean booleanValue = constantValue.getIntValue() > 0;
-                return booleanValue;
+                valuePair.setBooleanValue(booleanValue);
+                break;
             case STRING:
                 String stringValue = constantValue.getStringValue();
-                return stringValue;
+                valuePair.setStringValue(stringValue);
+                break;
             case ENUM:
                 String typeName = enumConstant.getTypeName();
                 String enumName = enumConstant.getEnumName();
-                return typeName.replace('/', '.')+":"+enumName;
+                valuePair.setEnumTypeName(typeName.replace('/', '.'));
+                valuePair.setEnumValueName(enumName);
+                break;
             case CLASS:
-                return classname.substring(1,classname.length()-1).replace('/', '.');
+                valuePair.setClassName(classname.substring(1, classname.length() - 1).replace('/', '.'));
+                break;
             case ANNOTATION:
-                return annotationInfo.getAnnotationAttributes(classLoader).getAttributes();
+                valuePair.setAnnotation(annotationInfo.getAnnotationAttributes(classLoader));
+                break;
             case ARRAY:
-                Object[] array = new Object[elementValueInfos.length];
-                for (int i = 0; i < array.length; i++)
+                if (num_values != 0)
                 {
-                    array[i] = elementValueInfos[i].getValue(classLoader);
+                    valuePair.setComponentType(elementValueInfos[0].getElementValueType());
+                    ValuePair[] array = new ValuePair[num_values];
+                    for (int i = 0; i < array.length; i++)
+                    {
+                        array[i] = elementValueInfos[i].getValue(classLoader, methodInfo);
+                    }
+                    valuePair.setArray(array);
+                    if (valuePair.getComponentType() == ElementValueType.ENUM)
+                    {
+                        valuePair.setComponentEnumTypeName(elementValueInfos[0].getEnumConstant().getTypeName().replace('/', '.'));
+                    }
+                    else if (valuePair.getComponentType() == ElementValueType.ANNOTATION)
+                    {
+                        valuePair.setComponentAnnotationType(elementValueInfos[0].getAnnotationInfo().getType().replace('/', '.'));
+                    }
                 }
-                return array;
+                else
+                {
+                    String           methodInfoDescriptor = methodInfo.getDescriptor();
+                    int              index                = methodInfoDescriptor.indexOf(")");
+                    char             c1                   = methodInfoDescriptor.charAt(index + 2);
+                    ElementValueType componentType        = null;
+                    switch (c1)
+                    {
+                        case 'B':
+                            componentType = ElementValueType.BYTE;
+                            break;
+                        case 'C':
+                            componentType = ElementValueType.CHAR;
+                            break;
+                        case 'D':
+                            componentType = ElementValueType.DOUBLE;
+                            break;
+                        case 'F':
+                            componentType = ElementValueType.FLOAT;
+                            break;
+                        case 'I':
+                            componentType = ElementValueType.INT;
+                            break;
+                        case 'J':
+                            componentType = ElementValueType.LONG;
+                            break;
+                        case 'S':
+                            componentType = ElementValueType.SHORT;
+                            break;
+                        case 'Z':
+                            componentType = ElementValueType.BOOLEAN;
+                            break;
+                        case 'L':
+                            String reference = methodInfoDescriptor.substring(index + 2, methodInfoDescriptor.length() - 2);
+                            if (reference.equals("java/lang/String"))
+                            {
+                                componentType = ElementValueType.STRING;
+                            }
+                            else if (reference.equals("java/lang/Class"))
+                            {
+                                componentType = ElementValueType.CLASS;
+                            }
+                            else
+                            {
+                                byte[]    bytes     = BytecodeUtil.loadBytecode(classLoader, reference);
+                                ClassFile classFile = new ClassFileParser(bytes).parse();
+                                if (classFile.isAnnotation())
+                                {
+                                    componentType = ElementValueType.ANNOTATION;
+                                    valuePair.setComponentAnnotationType(reference.replace('/', '.'));
+                                }
+                                else if (classFile.isEnum())
+                                {
+                                    componentType = ElementValueType.ENUM;
+                                    valuePair.setComponentEnumTypeName(reference.replace('/', '.'));
+                                }
+                                else
+                                {
+                                    ReflectUtil.throwException(new IllegalArgumentException());
+                                }
+                            }
+                            break;
+                        default:
+                            throw new IllegalArgumentException();
+                    }
+                    valuePair.setComponentType(componentType);
+                    valuePair.setArray(new ValuePair[0]);
+                }
+                break;
             default:
                 throw new IllegalArgumentException();
         }
+        return valuePair;
     }
 }

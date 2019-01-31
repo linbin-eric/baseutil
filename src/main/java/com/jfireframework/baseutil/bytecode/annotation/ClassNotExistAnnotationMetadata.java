@@ -3,11 +3,11 @@ package com.jfireframework.baseutil.bytecode.annotation;
 import java.util.List;
 import java.util.Map;
 
-public class UnValidAnnotationMetadata implements AnnotationMetadata
+public class ClassNotExistAnnotationMetadata implements AnnotationMetadata
 {
     private String type;
 
-    public UnValidAnnotationMetadata(String type)
+    public ClassNotExistAnnotationMetadata(String type)
     {
         this.type = type;
     }
@@ -19,7 +19,7 @@ public class UnValidAnnotationMetadata implements AnnotationMetadata
     }
 
     @Override
-    public Map<String, Object> getAttributes()
+    public Map<String, ValuePair> getAttributes()
     {
         throw new UnsupportedOperationException();
     }

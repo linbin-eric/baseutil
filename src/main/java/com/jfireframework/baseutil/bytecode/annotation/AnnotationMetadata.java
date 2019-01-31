@@ -6,7 +6,11 @@ import java.util.Map;
 public interface AnnotationMetadata
 {
     /**
-     * 是否是合法的注解。非法注解的情况就是该注解实例的类不在classpath中
+     * 是否是合法的注解。非法注解的情况包括：
+     * 1）该注解实例的类不在classpath中；
+     * 2）该注解某一个属性是枚举类型或枚举数组类型，且该枚举类型的类不在classpath中
+     * 3）该注解某一个属性是Class类型且定义了默认值，而该默认值的类不在classpath中
+     * 4）该注解的某个属性是class类型的数组且定义了默认值，而默认值中的某个元素的类不在classpath中
      * @return
      */
     boolean isValid();
@@ -16,12 +20,12 @@ public interface AnnotationMetadata
      *
      * @return
      */
-    Map<String, Object> getAttributes();
+    Map<String, ValuePair> getAttributes();
 
     /**
      * 返回该实例是否为某一个注解的实例
      *
-     * @param name 注解类的全限定名
+     * @param name 格式为aa/bb/cc
      * @return
      */
     boolean isAnnotation(String name);

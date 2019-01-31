@@ -8,10 +8,10 @@ import java.util.Map;
 public class AnnotationMetadataImpl implements AnnotationMetadata
 {
     private String                   typeName;
-    private Map<String, Object>      attributes;
+    private Map<String, ValuePair>      attributes;
     private List<AnnotationMetadata> presentAnnotations;
 
-    public AnnotationMetadataImpl(String typeName, Map<String, Object> attributes, ClassLoader loader)
+    public AnnotationMetadataImpl(String typeName, Map<String, ValuePair> attributes, ClassLoader loader)
     {
         this.typeName = typeName;
         this.attributes = attributes;
@@ -24,7 +24,7 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     }
 
     @Override
-    public Map<String, Object> getAttributes()
+    public Map<String, ValuePair> getAttributes()
     {
         return attributes;
     }
