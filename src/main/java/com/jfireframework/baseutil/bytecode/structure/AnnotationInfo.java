@@ -89,7 +89,7 @@ public class AnnotationInfo
         return pairs;
     }
 
-    public AnnotationMetadata getAnnotationAttributes(ClassLoader classLoader)
+    public AnnotationMetadata getAnnotation(ClassLoader classLoader)
     {
         Map<String, ValuePair> elementValues = new HashMap<String, ValuePair>();
         byte[]                 bytes         = BytecodeUtil.loadBytecode(classLoader, type);

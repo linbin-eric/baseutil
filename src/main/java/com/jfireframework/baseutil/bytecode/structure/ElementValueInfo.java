@@ -188,7 +188,7 @@ public class ElementValueInfo
 
     public ValuePair getValue(ClassLoader classLoader, MethodInfo methodInfo)
     {
-        ValuePair valuePair = new ValuePair();
+        ValuePair valuePair = new ValuePair(methodInfo);
         valuePair.setElementValueType(elementValueType);
         switch (elementValueType)
         {
@@ -238,7 +238,7 @@ public class ElementValueInfo
                 valuePair.setClassName(classname.substring(1, classname.length() - 1).replace('/', '.'));
                 break;
             case ANNOTATION:
-                valuePair.setAnnotation(annotationInfo.getAnnotationAttributes(classLoader));
+                valuePair.setAnnotation(annotationInfo.getAnnotation(classLoader));
                 break;
             case ARRAY:
                 if (num_values != 0)

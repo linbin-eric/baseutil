@@ -1,20 +1,31 @@
 package com.jfireframework.baseutil.bytecode.annotation;
 
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AnnotationMetadataImpl implements AnnotationMetadata
 {
     private String                   typeName;
-    private Map<String, ValuePair>      attributes;
+    private Map<String, ValuePair>   attributes;
     private List<AnnotationMetadata> presentAnnotations;
+    private Annotation               annotation;
+    private ClassLoader              loader;
+    private Class<?>                 annotationType;
 
     public AnnotationMetadataImpl(String typeName, Map<String, ValuePair> attributes, ClassLoader loader)
     {
         this.typeName = typeName;
         this.attributes = attributes;
+        this.loader = loader;
     }
 
     @Override
@@ -27,6 +38,23 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     public Map<String, ValuePair> getAttributes()
     {
         return attributes;
+    }
+
+    @Override
+    public Class<?> annotationType()
+    {
+        if (annotationType == null)
+        {
+            try
+            {
+                annotationType = loader.loadClass(typeName.replace('/', '.'));
+            } catch (ClassNotFoundException e)
+            {
+                ReflectUtil.throwException(e);
+                annotationType = null;
+            }
+        }
+        return annotationType;
     }
 
     @Override
@@ -46,9 +74,238 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     {
         if (presentAnnotations == null)
         {
-           presentAnnotations = BytecodeUtil.findAnnotationsOnClass(typeName,this.getClass().getClassLoader());
+            presentAnnotations = BytecodeUtil.findAnnotationsOnClass(typeName, this.getClass().getClassLoader());
         }
         return presentAnnotations;
+    }
+
+    @Override
+    public Annotation annotation()
+    {
+        if (annotation == null)
+        {
+            final Map<String, Object> values = new HashMap<String, Object>();
+            for (Map.Entry<String, ValuePair> entry : attributes.entrySet())
+            {
+                switch (entry.getValue().getElementValueType())
+                {
+                    case BOOLEAN:
+                        values.put(entry.getKey(), entry.getValue().booleanValue());
+                        break;
+                    case DOUBLE:
+                        values.put(entry.getKey(), entry.getValue().getD());
+                        break;
+                    case SHORT:
+                        values.put(entry.getKey(), entry.getValue().getS());
+                        break;
+                    case FLOAT:
+                        values.put(entry.getKey(), entry.getValue().getF());
+                        break;
+                    case LONG:
+                        values.put(entry.getKey(), entry.getValue().getL());
+                        break;
+                    case CHAR:
+                        values.put(entry.getKey(), entry.getValue().getC());
+                        break;
+                    case BYTE:
+                        values.put(entry.getKey(), entry.getValue().getB());
+                        break;
+                    case INT:
+                        values.put(entry.getKey(), entry.getValue().getI());
+                        break;
+                    case ANNOTATION:
+                        values.put(entry.getKey(), entry.getValue().getAnnotation().annotation());
+                        break;
+                    case STRING:
+                        values.put(entry.getKey(), entry.getValue().getStringValue());
+                        break;
+                    case CLASS:
+                        try
+                        {
+                            values.put(entry.getKey(), loader.loadClass(entry.getValue().getClassName()));
+                        } catch (ClassNotFoundException e)
+                        {
+                            ReflectUtil.throwException(e);
+                        }
+                        break;
+                    case ENUM:
+                        try
+                        {
+                            Class<Enum> enumClass    = (Class<Enum>) loader.loadClass(entry.getValue().getEnumTypeName());
+                            Object      enumInstance = Enum.valueOf(enumClass, entry.getValue().getEnumValueName());
+                            values.put(entry.getKey(), enumInstance);
+                        } catch (Exception e)
+                        {
+                            ReflectUtil.throwException(e);
+                        }
+                        break;
+                    case ARRAY:
+                        ValuePair valuePair = entry.getValue();
+                        switch (valuePair.getComponentType())
+                        {
+                            case INT:
+                            {
+                                int[] array = new int[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getI();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case BYTE:
+                            {
+                                byte[] array = new byte[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getB();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case LONG:
+                            {
+                                long[] array = new long[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getL();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case FLOAT:
+                            {
+                                float[] array = new float[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getF();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case SHORT:
+                            {
+                                short[] array = new short[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getS();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case DOUBLE:
+                            {
+                                double[] array = new double[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getD();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case BOOLEAN:
+                            {
+                                boolean[] array = new boolean[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].booleanValue();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case CHAR:
+                            {
+                                char[] array = new char[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getC();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case STRING:
+                            {
+                                String[] array = new String[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    array[i] = valuePair.getArray()[i].getStringValue();
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case CLASS:
+                            {
+                                Class[] array = new Class[valuePair.getArray().length];
+                                for (int i = 0; i < valuePair.getArray().length; i++)
+                                {
+                                    try
+                                    {
+                                        array[i] = loader.loadClass(valuePair.getArray()[i].getClassName());
+                                    } catch (Exception e)
+                                    {
+                                        ReflectUtil.throwException(e);
+                                    }
+                                }
+                                values.put(entry.getKey(), array);
+                                break;
+                            }
+                            case ENUM:
+                            {
+                                try
+                                {
+                                    String      enumTypeName = valuePair.getComponentEnumTypeName();
+                                    Class<Enum> aClass       = (Class<Enum>) loader.loadClass(enumTypeName);
+                                    Object      array        = Array.newInstance(aClass, valuePair.getArray().length);
+                                    for (int i = 0; i < valuePair.getArray().length; i++)
+                                    {
+                                        Object enumInstance = Enum.valueOf(aClass, valuePair.getArray()[i].getEnumValueName());
+                                        Array.set(array, i, enumInstance);
+                                    }
+                                    values.put(entry.getKey(), array);
+                                    break;
+                                } catch (Exception e)
+                                {
+                                    ReflectUtil.throwException(e);
+                                }
+                            }
+                            case ANNOTATION:
+                                String annotationType = entry.getValue().getComponentAnnotationType();
+                                try
+                                {
+                                    Class<?> aClass = loader.loadClass(annotationType);
+                                    Object   array  = Array.newInstance(aClass, valuePair.getArray().length);
+                                    for (int i = 0; i < valuePair.getArray().length; i++)
+                                    {
+                                        Array.set(array, i, entry.getValue().getArray()[i].getAnnotation().annotation());
+                                    }
+                                    values.put(entry.getKey(), array);
+                                    break;
+                                } catch (ClassNotFoundException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                        }
+                        break;
+                }
+            }
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            try
+            {
+                annotation = (Annotation) Proxy.newProxyInstance(classLoader, new Class[]{classLoader.loadClass(typeName.replace('/', '.'))}, new InvocationHandler()
+                {
+
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+                    {
+                        return values.get(method.getName());
+                    }
+                });
+            } catch (ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return annotation;
     }
 
     @Override

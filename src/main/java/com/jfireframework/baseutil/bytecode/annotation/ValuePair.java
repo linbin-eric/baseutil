@@ -1,6 +1,7 @@
 package com.jfireframework.baseutil.bytecode.annotation;
 
 import com.jfireframework.baseutil.bytecode.structure.ElementValueType;
+import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 
 public class ValuePair
 {
@@ -28,6 +29,12 @@ public class ValuePair
      */
     private String             componentAnnotationType;
     private AnnotationMetadata annotation;
+    private MethodInfo         methodInfo;
+
+    public ValuePair(MethodInfo methodInfo)
+    {
+        this.methodInfo = methodInfo;
+    }
 
     public String getComponentAnnotationType()
     {

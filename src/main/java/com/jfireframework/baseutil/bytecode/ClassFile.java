@@ -125,7 +125,7 @@ public class ClassFile
         annotations = new ArrayList<AnnotationMetadata>();
         for (AnnotationInfo info : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
         {
-            annotations.add(info.getAnnotationAttributes(classLoader));
+            annotations.add(info.getAnnotation(classLoader));
         }
         return annotations;
     }

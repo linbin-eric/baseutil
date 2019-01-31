@@ -12,11 +12,9 @@ import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +32,7 @@ public class BytecodeUtil
     {
         try
         {
-            loader = loader==null?Thread.currentThread().getContextClassLoader():loader;
+            loader = loader == null ? Thread.currentThread().getContextClassLoader() : loader;
             InputStream resourceAsStream = loader.getResourceAsStream(name + ".class");
             if (resourceAsStream == null)
             {
@@ -44,8 +42,7 @@ public class BytecodeUtil
             resourceAsStream.read(content);
             resourceAsStream.close();
             return content;
-        }
-        catch (Exception e1)
+        } catch (Exception e1)
         {
             ReflectUtil.throwException(e1);
             return null;
@@ -149,11 +146,17 @@ public class BytecodeUtil
      */
     public static List<AnnotationMetadata> findAnnotationsOnClass(String name, ClassLoader classLoader)
     {
+        name = name.replace('.', '/');
         byte[]                   bytecode  = loadBytecode(classLoader, name);
         ClassFile                classFile = new ClassFileParser(bytecode).parse();
         List<AnnotationMetadata> list      = new LinkedList<AnnotationMetadata>();
         for (AnnotationMetadata annotation : classFile.getAnnotations(classLoader))
         {
+            //排除掉三个JDK自带的注解，否则会这三个会无限循环
+            if (annotation.type().equals(AnnotationMetadata.DocumentedName) || annotation.type().equals(AnnotationMetadata.RetentionName) || annotation.type().equals(AnnotationMetadata.TargetName))
+            {
+                continue;
+            }
             if (annotation.isValid())
             {
                 list.add(annotation);
@@ -198,7 +201,12 @@ public class BytecodeUtil
                             RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = (RuntimeVisibleAnnotationsAttriInfo) attributeInfo;
                             for (AnnotationInfo annotation : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
                             {
-                                AnnotationMetadata annotationMetadata = annotation.getAnnotationAttributes(loader);
+                                AnnotationMetadata annotationMetadata = annotation.getAnnotation(loader);
+                                //排除掉三个JDK自带的注解，否则会这三个会无限循环
+                                if (annotationMetadata.type().equals(AnnotationMetadata.DocumentedName) || annotationMetadata.type().equals(AnnotationMetadata.RetentionName) || annotationMetadata.type().equals(AnnotationMetadata.TargetName))
+                                {
+                                    continue;
+                                }
                                 if (annotationMetadata.isValid())
                                 {
                                     list.add(annotationMetadata);
