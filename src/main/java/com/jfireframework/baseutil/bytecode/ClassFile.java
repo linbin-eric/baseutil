@@ -15,15 +15,15 @@ import java.util.List;
 
 public class ClassFile
 {
-    private int minor_version;
-    private int major_version;
-    private int access_flags;
-    private String this_class_name;
-    private String super_class_name;
-    private String[] interfaces;
-    private FieldInfo[] fieldInfos;
-    private MethodInfo[] methodInfos;
-    private AttributeInfo[] attributeInfos;
+    private int                      minor_version;
+    private int                      major_version;
+    private int                      access_flags;
+    private String                   this_class_name;
+    private String                   super_class_name;
+    private String[]                 interfaces;
+    private FieldInfo[]              fieldInfos;
+    private MethodInfo[]             methodInfos;
+    private AttributeInfo[]          attributeInfos;
     private List<AnnotationMetadata> annotations;
 
     void setFieldInfos(FieldInfo[] fieldInfos)
@@ -66,6 +66,10 @@ public class ClassFile
 
     void setSuper_class_name(String super_class_name)
     {
+        if (super_class_name == null)
+        {
+            return;
+        }
         if (super_class_name.indexOf('/') != -1)
         {
             super_class_name = super_class_name.replace('/', '.');
@@ -98,7 +102,6 @@ public class ClassFile
         this.access_flags = access_flags;
     }
 
-
     public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
     {
         if (annotations != null)
@@ -122,7 +125,7 @@ public class ClassFile
         annotations = new ArrayList<AnnotationMetadata>();
         for (AnnotationInfo info : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
         {
-            annotations.add(info.getAnnotationAttributes(classLoader));
+            annotations.add(info.getAnnotation(classLoader));
         }
         return annotations;
     }

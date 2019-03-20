@@ -4,26 +4,26 @@ import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadataImpl;
-import com.jfireframework.baseutil.bytecode.annotation.UnValidAnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.annotation.ClassNotExistAnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.annotation.ValuePair;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AnnotationDefaultAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.Utf8Info;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
-import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AnnotationInfo
 {
-    private String type;
+    private String                type;
     private element_value_pairs[] pairs;
 
     public class element_value_pairs
     {
-        private String elementName;
+        private String           elementName;
         private ElementValueInfo value;
 
         public int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
@@ -89,33 +89,37 @@ public class AnnotationInfo
         return pairs;
     }
 
-    public AnnotationMetadata getAnnotationAttributes(ClassLoader classLoader)
+    public AnnotationMetadata getAnnotation(ClassLoader classLoader)
     {
-        Map<String, Object> elementValues = new HashMap<String, Object>();
-        byte[] bytes = BytecodeUtil.loadBytecode(classLoader, type);
+        Map<String, ValuePair> elementValues = new HashMap<String, ValuePair>();
+        byte[]                 bytes         = BytecodeUtil.loadBytecode(classLoader, type);
         if (bytes == null)
         {
-            return new UnValidAnnotationMetadata(type);
+            return new ClassNotExistAnnotationMetadata(type);
         }
-        ClassFile annotationClassFile = new ClassFileParser(bytes).parse();
+        ClassFile               annotationClassFile = new ClassFileParser(bytes).parse();
+        Map<String, MethodInfo> methodInfoMap       = new HashMap<String, MethodInfo>();
+        for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
+        {
+            methodInfoMap.put(methodInfo.getName(), methodInfo);
+        }
         for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
         {
             for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
             {
                 if (attributeInfo instanceof AnnotationDefaultAttriInfo)
                 {
-                    elementValues.put(methodInfo.getName(), ((AnnotationDefaultAttriInfo) attributeInfo).getElementValueInfo().getValue(classLoader));
+                    elementValues.put(methodInfo.getName(), ((AnnotationDefaultAttriInfo) attributeInfo).getElementValueInfo().getValue(classLoader,methodInfo));
                     break;
                 }
             }
         }
         for (element_value_pairs pair : pairs)
         {
-            String name = pair.getElementName();
+            String           name  = pair.getElementName();
             ElementValueInfo value = pair.getValue();
-            elementValues.put(name, value.getValue(classLoader));
+            elementValues.put(name, value.getValue(classLoader,methodInfoMap.get(name)));
         }
         return new AnnotationMetadataImpl(type, elementValues, classLoader);
     }
-
 }

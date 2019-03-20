@@ -95,9 +95,9 @@ public class UNSAFE
         unsafe.putOrderedInt(src, offset, value);
     }
 
-    public static void putIntVolatile(Object o, long address, int i)
+    public static void putVolatileInt(Object src, long offset, int value)
     {
-        unsafe.putIntVolatile(o, address, i);
+        unsafe.putIntVolatile(src, offset, value);
     }
 
     public static void putOrderedObject(Object src, long offset, Object value)
