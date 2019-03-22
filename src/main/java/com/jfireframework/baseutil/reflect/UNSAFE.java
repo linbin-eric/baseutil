@@ -269,4 +269,16 @@ public class UNSAFE
     {
         unsafe.putDouble(entity, offset, d);
     }
+
+    public static Object allocateInstance(Class<?> type)
+    {
+        try
+        {
+            return unsafe.allocateInstance(type);
+        } catch (InstantiationException e)
+        {
+            ReflectUtil.throwException(e);
+            return null;
+        }
+    }
 }
