@@ -96,15 +96,14 @@ public class ClassFileParser
         interfaces = new String[interfaces_cout];
         for (int i = 0; i < interfaces_cout; i++)
         {
-            int interfaceIndex = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
+            int interfaceIndex = binaryData.readShort();
             interfaces[i] = ((ClassInfo) constant_pool[interfaceIndex - 1]).getName();
         }
     }
 
     private void readSuperClass()
     {
-        int super_class = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
+        int super_class = binaryData.readShort();
         if (super_class == 0)
         {
             if (!this_class_name.equals("java/lang/Object"))
@@ -117,20 +116,17 @@ public class ClassFileParser
         {
             super_class_name = ((ClassInfo) constant_pool[super_class - 1]).getName();
         }
-        counter += 2;
     }
 
     private void readThisClass()
     {
-        int this_class = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
+        int this_class = binaryData.readShort();
         this_class_name = ((ClassInfo) constant_pool[this_class - 1]).getName();
-        counter += 2;
     }
 
     private void readAccessFlags()
     {
-        access_flags = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        access_flags = binaryData.readShort();
     }
 
     private void readConstantInfo()
@@ -187,7 +183,7 @@ public class ClassFileParser
                 default:
                     throw new IllegalArgumentException();
             }
-            counter = constantInfo.resolve(bytes, counter);
+            constantInfo.resolve(binaryData);
             constant_pool[i] = constantInfo;
             if (constantInfo instanceof LongInfo || constantInfo instanceof DoubleInfo)
             {

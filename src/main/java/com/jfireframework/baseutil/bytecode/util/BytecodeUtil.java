@@ -42,7 +42,8 @@ public class BytecodeUtil
             resourceAsStream.read(content);
             resourceAsStream.close();
             return content;
-        } catch (Exception e1)
+        }
+        catch (Exception e1)
         {
             ReflectUtil.throwException(e1);
             return null;
@@ -59,7 +60,7 @@ public class BytecodeUtil
     {
         String      name      = method.getDeclaringClass().getName().replace('.', '/');
         byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
-        ClassFile   classFile = new ClassFileParser(bytes).parse();
+        ClassFile   classFile = new ClassFileParser(new BinaryData(bytes)).parse();
         StringCache cache     = new StringCache();
         cache.append('(');
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -148,7 +149,7 @@ public class BytecodeUtil
     {
         name = name.replace('.', '/');
         byte[]                   bytecode  = loadBytecode(classLoader, name);
-        ClassFile                classFile = new ClassFileParser(bytecode).parse();
+        ClassFile                classFile = new ClassFileParser(new BinaryData(bytecode)).parse();
         List<AnnotationMetadata> list      = new LinkedList<AnnotationMetadata>();
         for (AnnotationMetadata annotation : classFile.getAnnotations(classLoader))
         {
@@ -176,7 +177,7 @@ public class BytecodeUtil
     {
         String      name      = method.getDeclaringClass().getName().replace('.', '/');
         byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
-        ClassFile   classFile = new ClassFileParser(bytes).parse();
+        ClassFile   classFile = new ClassFileParser(new BinaryData(bytes)).parse();
         StringCache cache     = new StringCache();
         cache.append('(');
         Class<?>[] parameterTypes = method.getParameterTypes();
