@@ -1,6 +1,7 @@
 package com.jfireframework.baseutil.bytecode.structure.Attribute;
 
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public class ConstantValueAttrInfo extends AttributeInfo
 {
@@ -13,7 +14,7 @@ public class ConstantValueAttrInfo extends AttributeInfo
     }
 
     @Override
-    protected void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
     }
 }

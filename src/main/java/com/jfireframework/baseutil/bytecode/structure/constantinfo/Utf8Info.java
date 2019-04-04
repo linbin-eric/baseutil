@@ -1,12 +1,13 @@
 package com.jfireframework.baseutil.bytecode.structure.constantinfo;
 
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 import java.nio.charset.Charset;
 
 public class Utf8Info extends ConstantInfo
 {
-    private int length;
+    private int    length;
     private String value;
 
     public Utf8Info()
@@ -31,15 +32,12 @@ public class Utf8Info extends ConstantInfo
     }
 
     @Override
-    public int resolve(byte[] bytes, int counter)
+    public void resolve(BinaryData binaryData)
     {
-        length = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        length = binaryData.readShort();
         byte[] content = new byte[length];
-        System.arraycopy(bytes, counter, content, 0, length);
-        counter += length;
+        binaryData.read(content);
         value = new String(content, CHARSET);
-        return counter;
     }
 
     @Override

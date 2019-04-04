@@ -4,6 +4,7 @@ import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.annotation.ValuePair;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
@@ -20,16 +21,14 @@ public class ElementValueInfo
     private int                num_values;
     private ElementValueInfo[] elementValueInfos;
 
-    public int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    public void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
-        tag = (char) bytes[counter];
-        counter++;
+        tag = (char) binaryData.readByte();
         elementValueType = resolveType(tag);
         if (isPrimitive(elementValueType) || elementValueType == ElementValueType.STRING)
         {
-            int const_value_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
-            ConstantInfo constantInfo = constantInfos[const_value_index - 1];
+            int          const_value_index = binaryData.readShort();
+            ConstantInfo constantInfo      = constantInfos[const_value_index - 1];
             if (constantInfo instanceof IntegerInfo)
             {
                 constantValue = new ConstantValue(elementValueType, ((IntegerInfo) constantInfo).getValue());
@@ -57,37 +56,32 @@ public class ElementValueInfo
         }
         else if (elementValueType == ElementValueType.ENUM)
         {
-            int type_name_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
-            int const_name_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
-            String typeName = ((Utf8Info) constantInfos[type_name_index - 1]).getValue();
-            String enumName = ((Utf8Info) constantInfos[const_name_index - 1]).getValue();
+            int    type_name_index  = binaryData.readShort();
+            int    const_name_index = binaryData.readShort();
+            String typeName         = ((Utf8Info) constantInfos[type_name_index - 1]).getValue();
+            String enumName         = ((Utf8Info) constantInfos[const_name_index - 1]).getValue();
             enumConstant = new EnumConstant(typeName, enumName);
         }
         else if (elementValueType == ElementValueType.CLASS)
         {
-            int class_info_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
+            int class_info_index = binaryData.readShort();
             classname = ((Utf8Info) constantInfos[class_info_index - 1]).getValue();
         }
         else if (elementValueType == ElementValueType.ANNOTATION)
         {
             annotationInfo = new AnnotationInfo();
-            counter = annotationInfo.resolve(bytes, counter, constantInfos);
+            annotationInfo.resolve(binaryData, constantInfos);
         }
         else if (elementValueType == ElementValueType.ARRAY)
         {
-            num_values = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
+            num_values = binaryData.readShort();
             elementValueInfos = new ElementValueInfo[num_values];
             for (int i = 0; i < num_values; i++)
             {
                 elementValueInfos[i] = new ElementValueInfo();
-                counter = elementValueInfos[i].resolve(bytes, counter, constantInfos);
+                elementValueInfos[i].resolve(binaryData, constantInfos);
             }
         }
-        return counter;
     }
 
     public boolean isPrimitive(ElementValueType type)
@@ -304,7 +298,7 @@ public class ElementValueInfo
                             else
                             {
                                 byte[]    bytes     = BytecodeUtil.loadBytecode(classLoader, reference);
-                                ClassFile classFile = new ClassFileParser(bytes).parse();
+                                ClassFile classFile = new ClassFileParser(new BinaryData(bytes)).parse();
                                 if (classFile.isAnnotation())
                                 {
                                     componentType = ElementValueType.ANNOTATION;

@@ -4,6 +4,7 @@ import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
 import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 import java.util.Arrays;
@@ -23,12 +24,11 @@ public class ClassFileParser
     private MethodInfo[]    methodInfos;
     private AttributeInfo[] attributeInfos;
     /////
-    private int             counter = 0;
-    private byte[]          bytes;
+    private BinaryData      binaryData;
 
-    public ClassFileParser(byte[] bytes)
+    public ClassFileParser(BinaryData binaryData)
     {
-        this.bytes = bytes;
+        this.binaryData = binaryData;
         readMagic();
         readminorVersion();
         readmajorVersion();
@@ -60,44 +60,39 @@ public class ClassFileParser
 
     private void readAttributeInfos()
     {
-        int attribute_count = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int attribute_count = binaryData.readShort();
         attributeInfos = new AttributeInfo[attribute_count];
         for (int i = 0; i < attributeInfos.length; i++)
         {
-            attributeInfos[i] = AttributeInfo.parse(bytes, counter, constant_pool);
-            counter += 2 + 4 + attributeInfos[i].getLength();
+            attributeInfos[i] = AttributeInfo.parse(binaryData, constant_pool);
         }
     }
 
     private void readMethodInfos()
     {
-        int method_count = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int method_count = binaryData.readShort();
         methodInfos = new MethodInfo[method_count];
         for (int i = 0; i < method_count; i++)
         {
             methodInfos[i] = new MethodInfo();
-            counter = methodInfos[i].resolve(bytes, counter, constant_pool);
+            methodInfos[i].resolve(binaryData, constant_pool);
         }
     }
 
     private void readFieldInfos()
     {
-        int fields_cout = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int fields_cout = binaryData.readShort();
         fieldInfos = new FieldInfo[fields_cout];
         for (int i = 0; i < fields_cout; i++)
         {
             fieldInfos[i] = new FieldInfo();
-            counter = fieldInfos[i].resolve(bytes, counter, constant_pool);
+            fieldInfos[i].resolve(binaryData, constant_pool);
         }
     }
 
     private void readInterfaces()
     {
-        int interfaces_cout = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int interfaces_cout = binaryData.readShort();
         interfaces = new String[interfaces_cout];
         for (int i = 0; i < interfaces_cout; i++)
         {
@@ -211,38 +206,34 @@ public class ClassFileParser
 
     private ConstantType readTag()
     {
-        int tag = bytes[counter];
-        counter++;
+        int tag = binaryData.readByte();
         return ConstantType.byteValue(tag);
     }
 
     private void readConstantPoolCount()
     {
-        constant_pool_count = ((0xff & bytes[counter]) << 8) | (0xff & bytes[counter + 1]);
-        counter += 2;
+        constant_pool_count = binaryData.readShort();
     }
 
     private void readmajorVersion()
     {
-        major_version = ((0xff & bytes[counter]) << 8) | (0xff & bytes[counter + 1]);
-        counter += 2;
+        major_version = binaryData.readShort();
     }
 
     private void readminorVersion()
     {
-        minor_version = ((0xff & bytes[counter]) << 8) | (0xff & bytes[counter + 1]);
-        counter += 2;
+        minor_version = binaryData.readShort();
     }
 
     private void readMagic()
     {
-        if ((bytes[counter] & 0xff) == 0xca//
-                && (bytes[counter + 1] & 0xff) == 0xfe//
-                && (bytes[counter + 2] & 0xff) == 0xba//
-                && (bytes[counter + 3] & 0xff) == 0xbe)
+        if ((binaryData.readByte() & 0xff) == 0xca//
+                && (binaryData.readByte() & 0xff) == 0xfe//
+                && (binaryData.readByte() & 0xff) == 0xba//
+                && (binaryData.readByte() & 0xff) == 0xbe)
         {
             magic = 0xcafebabe;
-            counter += 4;
+            binaryData.addIndex(4);
         }
         else
         {

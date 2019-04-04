@@ -2,13 +2,14 @@ package com.jfireframework.baseutil.bytecode.structure.Attribute;
 
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.Utf8Info;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
 public class LocalVariableTableAttriInfo extends AttributeInfo
 {
-    private int local_variable_table_length;
+    private int                       local_variable_table_length;
     private LocalVariableTableEntry[] entries;
 
     public LocalVariableTableAttriInfo(String name, int length)
@@ -23,16 +24,14 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
     }
 
     @Override
-    protected void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
-        local_variable_table_length = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter+=2;
+        local_variable_table_length = binaryData.readShort();
         entries = new LocalVariableTableEntry[local_variable_table_length];
         for (int i = 0; i < entries.length; i++)
         {
             entries[i] = new LocalVariableTableEntry();
-            entries[i].resolve(bytes, counter, constantInfos);
-            counter += 10;
+            entries[i].resolve(binaryData, constantInfos);
         }
         Arrays.sort(entries, new Comparator<LocalVariableTableEntry>()
         {
@@ -46,25 +45,24 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
 
     public class LocalVariableTableEntry
     {
-        private int start_pc;
-        private int length;
-        private int name_index;
-        private int descriptor_index;
-        private int index;
+        private int    start_pc;
+        private int    length;
+        private int    name_index;
+        private int    descriptor_index;
+        private int    index;
         private String name;
 
-        void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+        void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
         {
             //忽略start_pc
-            counter += 2;
+            binaryData.addIndex(2);
             //忽略length
-            counter += 2;
-            name_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
+            binaryData.addIndex(2);
+            name_index = binaryData.readShort();
             name = ((Utf8Info) constantInfos[name_index - 1]).getValue();
             //忽略descriptor_index
-            counter += 2;
-            index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
+            binaryData.addIndex(2);
+            index = binaryData.readShort();
         }
 
         public int getIndex()

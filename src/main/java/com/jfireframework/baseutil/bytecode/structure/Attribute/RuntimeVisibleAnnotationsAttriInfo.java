@@ -2,12 +2,13 @@ package com.jfireframework.baseutil.bytecode.structure.Attribute;
 
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 import java.util.Arrays;
 
 public class RuntimeVisibleAnnotationsAttriInfo extends AttributeInfo
 {
-    private int num_annotations;
+    private int              num_annotations;
     private AnnotationInfo[] annotations;
 
     public RuntimeVisibleAnnotationsAttriInfo(String name, int length)
@@ -22,15 +23,14 @@ public class RuntimeVisibleAnnotationsAttriInfo extends AttributeInfo
     }
 
     @Override
-    protected void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
-        num_annotations = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        num_annotations = binaryData.readShort();
         annotations = new AnnotationInfo[num_annotations];
         for (int i = 0; i < num_annotations; i++)
         {
             annotations[i] = new AnnotationInfo();
-            counter = annotations[i].resolve(bytes, counter, constantInfos);
+            annotations[i].resolve(binaryData, constantInfos);
         }
     }
 

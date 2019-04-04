@@ -1,5 +1,7 @@
 package com.jfireframework.baseutil.bytecode.structure.constantinfo;
 
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
+
 public abstract class RefInfo extends ConstantInfo
 {
     protected int classInfoIndex;
@@ -7,13 +9,10 @@ public abstract class RefInfo extends ConstantInfo
     protected ClassInfo classInfo;
 
     @Override
-    public int resolve(byte[] bytes, int counter)
+    public void resolve(BinaryData binaryData)
     {
-        classInfoIndex = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
-        nameAndTypeInfoIndex = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
-        return counter;
+        classInfoIndex = binaryData.readShort();
+        nameAndTypeInfoIndex = binaryData.readShort();
     }
 
     @Override

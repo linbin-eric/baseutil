@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.bytecode.structure.constantinfo;
 
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 public class StringInfo extends ConstantInfo
@@ -18,11 +19,9 @@ public class StringInfo extends ConstantInfo
     }
 
     @Override
-    public int resolve(byte[] bytes, int counter)
+    public void resolve(BinaryData binaryData)
     {
-        stringIndex = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
-        return counter;
+        stringIndex = binaryData.readShort();
     }
 
     @Override

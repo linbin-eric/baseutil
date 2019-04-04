@@ -2,6 +2,7 @@ package com.jfireframework.baseutil.bytecode.structure.Attribute;
 
 import com.jfireframework.baseutil.bytecode.structure.ElementValueInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public class AnnotationDefaultAttriInfo extends AttributeInfo
 {
@@ -13,10 +14,10 @@ public class AnnotationDefaultAttriInfo extends AttributeInfo
     private ElementValueInfo elementValueInfo;
 
     @Override
-    protected void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
         elementValueInfo = new ElementValueInfo();
-        elementValueInfo.resolve(bytes, counter, constantInfos);
+        elementValueInfo.resolve(binaryData, constantInfos);
     }
 
     @Override

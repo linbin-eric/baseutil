@@ -1,6 +1,7 @@
 package com.jfireframework.baseutil.bytecode.structure.Attribute;
 
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public class ExceptionsAttriInfo extends AttributeInfo
 {
@@ -15,8 +16,5 @@ public class ExceptionsAttriInfo extends AttributeInfo
         super(name, length);
     }
 
-    @Override
-    protected void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
-    {
-    }
+
 }

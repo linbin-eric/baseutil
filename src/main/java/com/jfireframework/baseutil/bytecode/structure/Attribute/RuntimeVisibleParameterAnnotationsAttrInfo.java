@@ -2,12 +2,13 @@ package com.jfireframework.baseutil.bytecode.structure.Attribute;
 
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 import java.util.Arrays;
 
 public class RuntimeVisibleParameterAnnotationsAttrInfo extends AttributeInfo
 {
-    private int num_parameters;
+    private int                   num_parameters;
     private ParameterAnnotation[] parameterAnnotations;
 
     public RuntimeVisibleParameterAnnotationsAttrInfo(String name, int length)
@@ -16,34 +17,31 @@ public class RuntimeVisibleParameterAnnotationsAttrInfo extends AttributeInfo
     }
 
     @Override
-    protected void resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
-        num_parameters = bytes[counter];
-        counter++;
+        num_parameters = binaryData.readByte();
         parameterAnnotations = new ParameterAnnotation[num_parameters];
         for (int i = 0; i < parameterAnnotations.length; i++)
         {
             parameterAnnotations[i] = new ParameterAnnotation();
-            counter = parameterAnnotations[i].resolve(bytes, counter, constantInfos);
+            parameterAnnotations[i].resolve(binaryData, constantInfos);
         }
     }
 
     class ParameterAnnotation
     {
-        private int num_annotations;
+        private int              num_annotations;
         private AnnotationInfo[] annotationInfos;
 
-        int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+        void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
         {
-            num_annotations = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
+            num_annotations = binaryData.readShort();
             annotationInfos = new AnnotationInfo[num_annotations];
             for (int i = 0; i < annotationInfos.length; i++)
             {
                 annotationInfos[i] = new AnnotationInfo();
-                counter = annotationInfos[i].resolve(bytes, counter, constantInfos);
+                annotationInfos[i].resolve(binaryData, constantInfos);
             }
-            return counter;
         }
 
         @Override

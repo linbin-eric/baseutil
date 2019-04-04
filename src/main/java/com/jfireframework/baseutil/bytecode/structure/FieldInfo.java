@@ -1,38 +1,33 @@
 package com.jfireframework.baseutil.bytecode.structure;
 
+import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.Utf8Info;
-import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 import java.util.Arrays;
 
 public class FieldInfo
 {
-    private int access_flags;
-    private int name_index;
-    private String name;
-    private String descriptor;
+    private int             access_flags;
+    private int             name_index;
+    private String          name;
+    private String          descriptor;
     private AttributeInfo[] attributeInfos;
 
-    public int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    public void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
-        access_flags = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
-        name_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        access_flags = binaryData.readShort();
+        name_index = binaryData.readShort();
         name = ((Utf8Info) constantInfos[name_index - 1]).getValue();
-        int descriptor_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int descriptor_index = binaryData.readShort();
         descriptor = ((Utf8Info) constantInfos[descriptor_index - 1]).getValue();
-        int attributes_count = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int attributes_count = binaryData.readShort();
         attributeInfos = new AttributeInfo[attributes_count];
         for (int i = 0; i < attributes_count; i++)
         {
-            attributeInfos[i] = AttributeInfo.parse(bytes, counter, constantInfos);
-            counter += 2 + 4 + attributeInfos[i].getLength();
+            attributeInfos[i] = AttributeInfo.parse(binaryData, constantInfos);
         }
-        return counter;
     }
 
     @Override

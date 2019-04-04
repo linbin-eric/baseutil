@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.bytecode.structure.constantinfo;
 
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 public class FloatInfo extends ConstantInfo
@@ -17,15 +18,10 @@ public class FloatInfo extends ConstantInfo
     }
 
     @Override
-    public int resolve(byte[] bytes, int counter)
+    public void resolve(BinaryData binaryData)
     {
-        int intBits = ((bytes[counter] & 0xff) << 24)//
-                | ((bytes[counter + 1] & 0xff) << 16)//
-                | ((bytes[counter + 2] & 0xff) << 8)//
-                | ((bytes[counter + 3] & 0xff) << 0);
+        int intBits = binaryData.readInt();
         value = Float.intBitsToFloat(intBits);
-        counter += 4;
-        return counter;
     }
 
     @Override

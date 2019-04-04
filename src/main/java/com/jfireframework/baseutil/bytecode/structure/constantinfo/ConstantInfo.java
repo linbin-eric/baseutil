@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.bytecode.structure.constantinfo;
 
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 public abstract class ConstantInfo
@@ -13,7 +14,7 @@ public abstract class ConstantInfo
      * @param counter
      * @return
      */
-    public abstract int resolve(byte[] bytes, int counter);
+    public abstract void resolve(BinaryData binaryData);
 
     /**
      * 使用常量池中的数据解析一些描述字符串链接等

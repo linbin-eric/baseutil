@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.bytecode.structure.constantinfo;
 
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 public class InvokeDynamicInfo extends ConstantInfo
@@ -16,13 +17,10 @@ public class InvokeDynamicInfo extends ConstantInfo
     }
 
     @Override
-    public int resolve(byte[] bytes, int counter)
+    public void resolve(BinaryData binaryData)
     {
-        bootstrap_method_attr_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
-        name_and_type_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
-        return counter;
+        bootstrap_method_attr_index = binaryData.readShort();
+        name_and_type_index = binaryData.readShort();
     }
 
     @Override

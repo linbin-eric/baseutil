@@ -10,6 +10,7 @@ import com.jfireframework.baseutil.bytecode.structure.Attribute.AnnotationDefaul
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.ConstantInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.Utf8Info;
+import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
 import java.util.Arrays;
@@ -26,14 +27,12 @@ public class AnnotationInfo
         private String           elementName;
         private ElementValueInfo value;
 
-        public int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+        public void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
         {
-            int element_name_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-            counter += 2;
+            int element_name_index = binaryData.readShort();
             elementName = ((Utf8Info) constantInfos[element_name_index - 1]).getValue();
             value = new ElementValueInfo();
-            counter = value.resolve(bytes, counter, constantInfos);
-            return counter;
+            value.resolve(binaryData, constantInfos);
         }
 
         public String getElementName()
@@ -53,24 +52,21 @@ public class AnnotationInfo
         }
     }
 
-    public int resolve(byte[] bytes, int counter, ConstantInfo[] constantInfos)
+    public void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
-        int type_index = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int type_index = binaryData.readShort();
         type = ((Utf8Info) constantInfos[type_index - 1]).getValue();
         if (type.startsWith("L"))
         {
             type = type.substring(1, type.length() - 1);
         }
-        int num_element_value_pairs = ((bytes[counter] & 0xff) << 8) | (bytes[counter + 1] & 0xff);
-        counter += 2;
+        int num_element_value_pairs = binaryData.readShort();
         pairs = new element_value_pairs[num_element_value_pairs];
         for (int i = 0; i < num_element_value_pairs; i++)
         {
             pairs[i] = new element_value_pairs();
-            counter = pairs[i].resolve(bytes, counter, constantInfos);
+            pairs[i].resolve(binaryData, constantInfos);
         }
-        return counter;
     }
 
     @Override
@@ -97,7 +93,7 @@ public class AnnotationInfo
         {
             return new ClassNotExistAnnotationMetadata(type);
         }
-        ClassFile               annotationClassFile = new ClassFileParser(bytes).parse();
+        ClassFile               annotationClassFile = new ClassFileParser(new BinaryData(bytes)).parse();
         Map<String, MethodInfo> methodInfoMap       = new HashMap<String, MethodInfo>();
         for (MethodInfo methodInfo : annotationClassFile.getMethodInfos())
         {
@@ -109,7 +105,7 @@ public class AnnotationInfo
             {
                 if (attributeInfo instanceof AnnotationDefaultAttriInfo)
                 {
-                    elementValues.put(methodInfo.getName(), ((AnnotationDefaultAttriInfo) attributeInfo).getElementValueInfo().getValue(classLoader,methodInfo));
+                    elementValues.put(methodInfo.getName(), ((AnnotationDefaultAttriInfo) attributeInfo).getElementValueInfo().getValue(classLoader, methodInfo));
                     break;
                 }
             }
@@ -118,7 +114,7 @@ public class AnnotationInfo
         {
             String           name  = pair.getElementName();
             ElementValueInfo value = pair.getValue();
-            elementValues.put(name, value.getValue(classLoader,methodInfoMap.get(name)));
+            elementValues.put(name, value.getValue(classLoader, methodInfoMap.get(name)));
         }
         return new AnnotationMetadataImpl(type, elementValues, classLoader);
     }
