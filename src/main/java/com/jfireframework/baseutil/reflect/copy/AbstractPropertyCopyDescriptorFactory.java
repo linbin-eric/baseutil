@@ -38,7 +38,6 @@ public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyC
                 @Override
                 public void process(S source, D des) throws Exception
                 {
-                    ;
                 }
             };
         }
@@ -123,11 +122,7 @@ public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyC
                 break;
             }
         }
-        if (miss)
-        {
-            return false;
-        }
-        return true;
+        return !miss;
     }
     
     protected abstract <S, D> PropertyCopyDescriptor<S, D> generateEnumCopyPropertyCopyDescriptor(Class<S> s, Class<D> d, final Field fromProperty, final Field toProperty);

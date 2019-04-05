@@ -118,7 +118,6 @@ public class MPMCQueue<E> implements Queue<E>
                     }
                     else
                     {
-                        ;
                     }
                     if (head.compareAndSwap(h, next))
                     {
@@ -140,7 +139,6 @@ public class MPMCQueue<E> implements Queue<E>
                 }
                 else
                 {
-                    ;
                 }
             }
         }
@@ -180,7 +178,6 @@ public class MPMCQueue<E> implements Queue<E>
                     }
                     else
                     {
-                        ;
                     }
                     if (head.compareAndSwap(h, next))
                     {
@@ -202,7 +199,6 @@ public class MPMCQueue<E> implements Queue<E>
                 }
                 else
                 {
-                    ;
                 }
             }
         }

@@ -19,15 +19,15 @@ import java.util.Map;
 
 public class AnnotationInfo
 {
-    private String                type;
-    private element_value_pairs[] pairs;
+    private String               type;
+    private element_value_pair[] pairs;
 
-    public class element_value_pairs
+    public class element_value_pair
     {
         private String           elementName;
         private ElementValueInfo value;
 
-        public void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
+        void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
         {
             int element_name_index = binaryData.readShort();
             elementName = ((Utf8Info) constantInfos[element_name_index - 1]).getValue();
@@ -35,12 +35,12 @@ public class AnnotationInfo
             value.resolve(binaryData, constantInfos);
         }
 
-        public String getElementName()
+        String getElementName()
         {
             return elementName;
         }
 
-        public ElementValueInfo getValue()
+        ElementValueInfo getValue()
         {
             return value;
         }
@@ -48,7 +48,7 @@ public class AnnotationInfo
         @Override
         public String toString()
         {
-            return "element_value_pairs{" + "elementName='" + elementName + '\'' + ", value=" + value + '}';
+            return "element_value_pair{" + "elementName='" + elementName + '\'' + ", value=" + value + '}';
         }
     }
 
@@ -61,10 +61,10 @@ public class AnnotationInfo
             type = type.substring(1, type.length() - 1);
         }
         int num_element_value_pairs = binaryData.readShort();
-        pairs = new element_value_pairs[num_element_value_pairs];
+        pairs = new element_value_pair[num_element_value_pairs];
         for (int i = 0; i < num_element_value_pairs; i++)
         {
-            pairs[i] = new element_value_pairs();
+            pairs[i] = new element_value_pair();
             pairs[i].resolve(binaryData, constantInfos);
         }
     }
@@ -80,7 +80,7 @@ public class AnnotationInfo
         return type;
     }
 
-    public element_value_pairs[] getPairs()
+    public element_value_pair[] getPairs()
     {
         return pairs;
     }
@@ -110,7 +110,7 @@ public class AnnotationInfo
                 }
             }
         }
-        for (element_value_pairs pair : pairs)
+        for (element_value_pair pair : pairs)
         {
             String           name  = pair.getElementName();
             ElementValueInfo value = pair.getValue();

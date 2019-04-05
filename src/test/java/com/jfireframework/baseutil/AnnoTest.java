@@ -13,7 +13,7 @@ public class AnnoTest
 {
     @Resource
     @Retention(RUNTIME)
-    public static @interface testAnno
+    public @interface testAnno
     {
         
     }
@@ -28,32 +28,30 @@ public class AnnoTest
     }
     
     @Retention(RUNTIME)
-    public static @interface level1value
+    public @interface level1value
     {
-        public String value();
+        String value();
         
-        public String[] array() default {};
+        String[] array() default {};
     }
     
     @level2value(value = "levle2-nest", a = "3")
     @Retention(RUNTIME)
-    public static @interface level2nest
+    public @interface level2nest
     {
         
     }
     
     @Retention(RUNTIME)
     @level1value(value = "level1", array = { "1", "2" })
-    public static @interface level2value
+    public @interface level2value
     {
-        @OverridesAttribute(name = "value", annotation = level1value.class)
-        public String value();
+        @OverridesAttribute(name = "value", annotation = level1value.class) String value();
         
-        @OverridesAttribute(name = "array", annotation = level1value.class)
-        public String[] a() default {};
+        @OverridesAttribute(name = "array", annotation = level1value.class) String[] a() default {};
         
         @Retention(RUNTIME)
-        public static @interface list
+        @interface list
         {
             level2value[] value();
         }

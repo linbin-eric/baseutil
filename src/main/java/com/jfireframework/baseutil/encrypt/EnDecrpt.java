@@ -13,21 +13,21 @@ public interface EnDecrpt
      * 
      * @param key
      */
-    public void setKey(byte[] key);
+    void setKey(byte[] key);
     
     /**
      * 设置非对称加密的公钥
      * 
      * @param publicKeyBytes
      */
-    public void setPublicKey(byte[] publicKeyBytes);
+    void setPublicKey(byte[] publicKeyBytes);
     
     /**
      * 设置非对称加密的私钥
      * 
      * @param privateKeyBytes
      */
-    public void setPrivateKey(byte[] privateKeyBytes);
+    void setPrivateKey(byte[] privateKeyBytes);
     
     /**
      * 加密原始信息
@@ -35,7 +35,7 @@ public interface EnDecrpt
      * @param src
      * @return
      */
-    public byte[] encrypt(byte[] src);
+    byte[] encrypt(byte[] src);
     
     /**
      * 解析加密信息
@@ -43,7 +43,7 @@ public interface EnDecrpt
      * @param src
      * @return
      */
-    public byte[] decrypt(byte[] src);
+    byte[] decrypt(byte[] src);
     
     /**
      * 对内容进行签名，返回签名信息
@@ -51,7 +51,7 @@ public interface EnDecrpt
      * @param src
      * @return
      */
-    public byte[] sign(byte[] src);
+    byte[] sign(byte[] src);
     
     /**
      * 使用签名信息对原文进行验证，返回验证结果
@@ -60,5 +60,5 @@ public interface EnDecrpt
      * @param sign 签名内容
      * @return
      */
-    public boolean check(byte[] src, byte[] sign);
+    boolean check(byte[] src, byte[] sign);
 }

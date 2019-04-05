@@ -16,5 +16,6 @@ public class ConstantValueAttrInfo extends AttributeInfo
     @Override
     protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
+        binaryData.addIndex(length);
     }
 }

@@ -23,7 +23,6 @@ public class ClassFileParser
     private FieldInfo[]     fieldInfos;
     private MethodInfo[]    methodInfos;
     private AttributeInfo[] attributeInfos;
-    /////
     private BinaryData      binaryData;
 
     public ClassFileParser(BinaryData binaryData)
@@ -229,7 +228,6 @@ public class ClassFileParser
                 && (binaryData.readByte() & 0xff) == 0xbe)
         {
             magic = 0xcafebabe;
-            binaryData.addIndex(4);
         }
         else
         {

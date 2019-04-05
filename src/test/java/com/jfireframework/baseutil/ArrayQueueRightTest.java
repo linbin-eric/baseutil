@@ -1,18 +1,20 @@
 package com.jfireframework.baseutil;
 
-import static org.junit.Assert.assertEquals;
+import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
-import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
-import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class ArrayQueueRightTest
@@ -61,7 +63,6 @@ public class ArrayQueueRightTest
                     }
                     catch (Exception e)
                     {
-                        ;
                     }
                     int j = -1;
                     try

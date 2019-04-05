@@ -184,7 +184,6 @@ public class BitMap
         }
         else
         {
-            ;
         }
     }
     

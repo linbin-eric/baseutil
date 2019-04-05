@@ -12,7 +12,7 @@ public interface Order
      */
     int getOrder();
     
-    static final Comparator<Order> AES  = new Comparator<Order>() {
+    Comparator<Order> AES  = new Comparator<Order>() {
                                             
                                             @Override
                                             public int compare(Order o1, Order o2)
@@ -31,7 +31,7 @@ public interface Order
                                                 }
                                             }
                                         };
-    static final Comparator<Order> DESC = new Comparator<Order>() {
+    Comparator<Order> DESC = new Comparator<Order>() {
                                             
                                             @Override
                                             public int compare(Order o1, Order o2)

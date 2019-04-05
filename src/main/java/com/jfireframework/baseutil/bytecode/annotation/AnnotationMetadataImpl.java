@@ -48,7 +48,8 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
             try
             {
                 annotationType = loader.loadClass(typeName.replace('/', '.'));
-            } catch (ClassNotFoundException e)
+            }
+            catch (ClassNotFoundException e)
             {
                 ReflectUtil.throwException(e);
                 annotationType = null;
@@ -60,7 +61,7 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     @Override
     public boolean isAnnotation(String name)
     {
-        return name == null ? false : name.equals(typeName);
+        return name != null && name.equals(typeName);
     }
 
     @Override
@@ -123,7 +124,8 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                         try
                         {
                             values.put(entry.getKey(), loader.loadClass(entry.getValue().getClassName()));
-                        } catch (ClassNotFoundException e)
+                        }
+                        catch (ClassNotFoundException e)
                         {
                             ReflectUtil.throwException(e);
                         }
@@ -134,7 +136,8 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                             Class<Enum> enumClass    = (Class<Enum>) loader.loadClass(entry.getValue().getEnumTypeName());
                             Object      enumInstance = Enum.valueOf(enumClass, entry.getValue().getEnumValueName());
                             values.put(entry.getKey(), enumInstance);
-                        } catch (Exception e)
+                        }
+                        catch (Exception e)
                         {
                             ReflectUtil.throwException(e);
                         }
@@ -241,7 +244,8 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                                     try
                                     {
                                         array[i] = loader.loadClass(valuePair.getArray()[i].getClassName());
-                                    } catch (Exception e)
+                                    }
+                                    catch (Exception e)
                                     {
                                         ReflectUtil.throwException(e);
                                     }
@@ -263,7 +267,8 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                                     }
                                     values.put(entry.getKey(), array);
                                     break;
-                                } catch (Exception e)
+                                }
+                                catch (Exception e)
                                 {
                                     ReflectUtil.throwException(e);
                                 }
@@ -280,7 +285,8 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                                     }
                                     values.put(entry.getKey(), array);
                                     break;
-                                } catch (ClassNotFoundException e)
+                                }
+                                catch (ClassNotFoundException e)
                                 {
                                     e.printStackTrace();
                                 }
@@ -300,9 +306,10 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                         return values.get(method.getName());
                     }
                 });
-            } catch (ClassNotFoundException e)
+            }
+            catch (ClassNotFoundException e)
             {
-                e.printStackTrace();
+                ReflectUtil.throwException(e);
             }
         }
         return annotation;

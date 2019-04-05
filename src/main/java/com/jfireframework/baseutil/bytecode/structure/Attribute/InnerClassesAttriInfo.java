@@ -5,7 +5,7 @@ import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public class InnerClassesAttriInfo extends AttributeInfo
 {
-    private int number_of_classes;
+    private int          number_of_classes;
     private InnerClass[] innerClasses;
 
     public InnerClassesAttriInfo(String name, int length)
@@ -16,6 +16,7 @@ public class InnerClassesAttriInfo extends AttributeInfo
     @Override
     protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
+        ignoreParse(binaryData);
     }
 
     class InnerClass

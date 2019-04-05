@@ -131,7 +131,6 @@ public class XMPSCLinkQueue<E> implements Queue<E>
             {
                 while ((e = (E) head.getVolatile(readPosi)) == null)
                 {
-                    ;
                 }
             }
             else
@@ -147,11 +146,7 @@ public class XMPSCLinkQueue<E> implements Queue<E>
     boolean casFlag()
     {
         int now = flag;
-        if (now == idle && UNSAFE.compareAndSwapInt(this, FLAG_OFFSET, idle, busy))
-        {
-            return true;
-        }
-        return false;
+        return now == idle && UNSAFE.compareAndSwapInt(this, FLAG_OFFSET, idle, busy);
     }
     
     @Override

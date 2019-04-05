@@ -164,10 +164,7 @@ public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
         if (pIndex >= pLimit)
         {
             pLimit = consumerIndex + mask + 1;
-            if (pIndex >= pLimit)
-            {
-                return false;
-            }
+            return pIndex < pLimit;
         }
         return true;
     }
@@ -193,7 +190,6 @@ public class FastMPSCArrayQueue<E> extends Pad4 implements Queue<E>
             {
                 while ((object = UNSAFE.getObjectVolatile(buffer, offset)) == null)
                 {
-                    ;
                 }
             }
             else

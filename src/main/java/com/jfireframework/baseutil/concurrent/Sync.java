@@ -104,7 +104,6 @@ public abstract class Sync<E>
                     {
                         for (int i = 0; i < 1000; i++)
                         {
-                            ;
                         }
                     }
                     else
@@ -132,7 +131,6 @@ public abstract class Sync<E>
                 {
                     for (int i = 0; i < 1000; i++)
                     {
-                        ;
                     }
                 }
                 else

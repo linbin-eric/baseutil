@@ -101,7 +101,6 @@ public class MPSCLinkedQueue<E> extends PadTail implements Queue<E>
             {
                 while ((hn = h.next) == null)
                 {
-                    ;
                 }
                 Object e = hn.getValueAndNullIt();
                 h.forgetNext();

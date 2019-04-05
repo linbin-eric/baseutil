@@ -8,7 +8,7 @@ import java.lang.reflect.Modifier;
 
 public class MethodModel
 {
-    public static enum AccessLevel
+    public enum AccessLevel
     {
         PUBLIC, PRIVATE, PROTECTED
     }

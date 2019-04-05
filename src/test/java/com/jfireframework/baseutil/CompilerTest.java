@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class CompilerTest
 {
-    public static interface Ptest
+    public interface Ptest
     {
         String sayHello();
     }

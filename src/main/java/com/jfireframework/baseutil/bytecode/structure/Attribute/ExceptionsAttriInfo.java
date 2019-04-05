@@ -5,7 +5,7 @@ import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public class ExceptionsAttriInfo extends AttributeInfo
 {
-    private int number_of_exceptions;
+    private int   number_of_exceptions;
     /**
      * exception_index_table列表每项为CONSTANT_Class常量项的索引，表示具体的异常类
      */
@@ -16,5 +16,9 @@ public class ExceptionsAttriInfo extends AttributeInfo
         super(name, length);
     }
 
-
+    @Override
+    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
+    {
+        ignoreParse(binaryData);
+    }
 }

@@ -58,19 +58,9 @@ public class BytecodeUtil
      */
     public static String[] parseMethodParamNames(Method method)
     {
-        String      name      = method.getDeclaringClass().getName().replace('.', '/');
-        byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
-        ClassFile   classFile = new ClassFileParser(new BinaryData(bytes)).parse();
-        StringCache cache     = new StringCache();
-        cache.append('(');
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        for (Class<?> parameterType : parameterTypes)
-        {
-            cache.append(getName(parameterType));
-        }
-        cache.append(')').append(getName(method.getReturnType()));
-        String methodName = method.getName();
-        String descriptor = cache.toString().replace('.', '/');
+        ClassFile classFile  = getMethodDeclaringClassFile(method);
+        String    descriptor = getMethodDescriptor(method);
+        String    methodName = method.getName();
         for (MethodInfo methodInfo : classFile.getMethodInfos())
         {
             if (methodInfo.getName().equals(methodName))
@@ -111,6 +101,13 @@ public class BytecodeUtil
             }
         }
         return null;
+    }
+
+    private static ClassFile getMethodDeclaringClassFile(Method method)
+    {
+        String name  = method.getDeclaringClass().getName().replace('.', '/');
+        byte[] bytes = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
+        return new ClassFileParser(new BinaryData(bytes)).parse();
     }
 
     private static String getName(Class<?> parameterType)
@@ -175,19 +172,9 @@ public class BytecodeUtil
      */
     public static List<AnnotationMetadata> findAnnotationsOnMethod(Method method, ClassLoader loader)
     {
-        String      name      = method.getDeclaringClass().getName().replace('.', '/');
-        byte[]      bytes     = loadBytecode(method.getDeclaringClass().getClassLoader(), name);
-        ClassFile   classFile = new ClassFileParser(new BinaryData(bytes)).parse();
-        StringCache cache     = new StringCache();
-        cache.append('(');
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        for (Class<?> parameterType : parameterTypes)
-        {
-            cache.append(getName(parameterType));
-        }
-        cache.append(')').append(getName(method.getReturnType()));
-        String methodName = method.getName();
-        String descriptor = cache.toString().replace('.', '/');
+        ClassFile classFile  = getMethodDeclaringClassFile(method);
+        String    descriptor = getMethodDescriptor(method);
+        String    methodName = method.getName();
         for (MethodInfo methodInfo : classFile.getMethodInfos())
         {
             if (methodInfo.getName().equals(methodName))
@@ -220,5 +207,18 @@ public class BytecodeUtil
             }
         }
         return Collections.emptyList();
+    }
+
+    private static String getMethodDescriptor(Method method)
+    {
+        StringCache cache = new StringCache();
+        cache.append('(');
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        for (Class<?> parameterType : parameterTypes)
+        {
+            cache.append(getName(parameterType));
+        }
+        cache.append(')').append(getName(method.getReturnType()));
+        return cache.toString().replace('.', '/');
     }
 }

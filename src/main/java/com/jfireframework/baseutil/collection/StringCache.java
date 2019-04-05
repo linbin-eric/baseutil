@@ -641,7 +641,6 @@ public class StringCache
                 {
                     if (target[k] == target[j1])
                     {
-                        ;
                     }
                     else
                     {

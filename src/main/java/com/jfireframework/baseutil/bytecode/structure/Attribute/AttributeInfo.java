@@ -56,8 +56,11 @@ public abstract class AttributeInfo
         return info;
     }
 
-    protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
+    protected abstract void resolve(BinaryData binaryData, ConstantInfo[] constantInfos);
+
+    protected void ignoreParse(BinaryData binaryData)
     {
+        binaryData.addIndex(length);
     }
 
     @Override

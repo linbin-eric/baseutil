@@ -86,22 +86,22 @@ public class ElementValueInfo
 
     public boolean isPrimitive(ElementValueType type)
     {
-        if (type == elementValueType.BYTE //
-                || type == elementValueType.CHAR//
-                || type == elementValueType.DOUBLE//
-                || type == elementValueType.FLOAT//
-                || type == elementValueType.INT//
-                || type == elementValueType.LONG//
-                || type == elementValueType.SHORT//
-                || type == elementValueType.BOOLEAN//
-        )
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        //
+//
+//
+//
+//
+//
+//
+//
+        return type == ElementValueType.BYTE //
+                || type == ElementValueType.CHAR//
+                || type == ElementValueType.DOUBLE//
+                || type == ElementValueType.FLOAT//
+                || type == ElementValueType.INT//
+                || type == ElementValueType.LONG//
+                || type == ElementValueType.SHORT//
+                || type == ElementValueType.BOOLEAN;
     }
 
     ElementValueType resolveType(char c)

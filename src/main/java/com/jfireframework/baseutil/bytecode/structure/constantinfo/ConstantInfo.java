@@ -10,9 +10,6 @@ public abstract class ConstantInfo
     /**
      * 该常量类型解析除了tag字节以外的内容，并且返回解析完成后计数器的值
      *
-     * @param bytes
-     * @param counter
-     * @return
      */
     public abstract void resolve(BinaryData binaryData);
 

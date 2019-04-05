@@ -30,13 +30,13 @@ public class IniReader
         Set<String> keySet();
     }
     
-    public static interface Section extends PropertyValueStore
+    public interface Section extends PropertyValueStore
     {
         String name();
         
     }
     
-    public static interface IniFile extends PropertyValueStore
+    public interface IniFile extends PropertyValueStore
     {
         Section getSection(String name);
         

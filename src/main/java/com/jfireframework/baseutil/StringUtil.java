@@ -132,14 +132,7 @@ public class StringUtil
                 return true;
             }
             // 如果index比src的长度小，又不是0.那么如果rule中*是最后一个字母，则表示此时匹配，返回true
-            else if (rule.charAt(rule.length() - 1) == '*')
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            else return rule.charAt(rule.length() - 1) == '*';
         }
         else
         {
@@ -155,14 +148,7 @@ public class StringUtil
      */
     public static boolean isNotBlank(String src)
     {
-        if (src != null && src.equals("") != true)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return src != null && src.equals("") != true;
     }
     
     /**
@@ -313,7 +299,6 @@ public class StringUtil
                 }
                 catch (IOException e)
                 {
-                    ;
                 }
             }
         }
