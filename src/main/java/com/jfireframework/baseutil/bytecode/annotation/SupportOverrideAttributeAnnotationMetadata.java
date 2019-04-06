@@ -1,6 +1,6 @@
 package com.jfireframework.baseutil.bytecode.annotation;
 
-import com.jfireframework.baseutil.anno.OverridesAttribute;
+import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
@@ -34,20 +34,20 @@ public class SupportOverrideAttributeAnnotationMetadata extends AbstractAnnotati
                     {
                         if (annotation.getType().equals(name))
                         {
-                            AnnotationMetadata overrideAttribute   = annotation.getAnnotation(loader);
-                            ValuePair          valuePair           = overrideAttribute.getAttribyte("annotation");
-                            String             annotationClassName = valuePair.getClassName();
-                            String             name                = overrideAttribute.getAttribyte("name").getStringValue();
-                            OverrideItem       overrideItem        = new OverrideItem();
-                            overrideItem.overrideAnnotationName = annotationClassName;
+                            AnnotationMetadata overrideAttribute      = annotation.getAnnotation(loader);
+                            ValuePair          valuePair              = overrideAttribute.getAttribyte("annotation");
+                            String             annotationResourceName = valuePair.getClassName().replace('.', '/');
+                            String             name                   = overrideAttribute.getAttribyte("name").getStringValue();
+                            OverrideItem       overrideItem           = new OverrideItem();
+                            overrideItem.overrideAnnotationName = annotationResourceName;
                             overrideItem.overrideAttribute = name;
                             overrideItem.attribute = methodInfo.getName();
                             overrideItem.valuePair = attributes.get(methodInfo.getName());
-                            List<OverrideItem> overrideItems = map.get(annotationClassName);
+                            List<OverrideItem> overrideItems = map.get(annotationResourceName);
                             if (overrideItems == null)
                             {
                                 overrideItems = new LinkedList<OverrideItem>();
-                                map.put(annotationClassName, overrideItems);
+                                map.put(annotationResourceName, overrideItems);
                             }
                             overrideItems.add(overrideItem);
                             break;

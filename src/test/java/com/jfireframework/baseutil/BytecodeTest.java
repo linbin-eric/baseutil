@@ -1,19 +1,26 @@
 package com.jfireframework.baseutil;
 
 import com.jfireframework.baseutil.anno.AnnotationUtil;
+import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
+import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
+import com.jfireframework.baseutil.bytecode.support.AnnotationContext;
+import com.jfireframework.baseutil.bytecode.support.AnnotationContextFactory;
+import com.jfireframework.baseutil.bytecode.support.SupportOverrideAttributeAnnotationContextFactory;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.time.Timewatch;
 import org.junit.Test;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static com.jfireframework.baseutil.bytecode.util.BytecodeUtil.parseMethodParamNames;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class BytecodeTest
 {
@@ -23,7 +30,7 @@ public class BytecodeTest
     @Test
     public void test() throws NoSuchMethodException
     {
-        Method method = AnnotationUtil.class.getDeclaredMethod("isPresent", Class.class, Field.class);
+        Method   method     = AnnotationUtil.class.getDeclaredMethod("isPresent", Class.class, Field.class);
         String[] paramNames = parseMethodParamNames(method);
         assertEquals(2, paramNames.length);
         assertEquals("annoType", paramNames[0]);
@@ -41,7 +48,7 @@ public class BytecodeTest
     @Test
     public void test2() throws NoSuchMethodException
     {
-        Method method = AnnotationUtil.class.getDeclaredMethod("isPresent", Class.class, Field.class);
+        Method    method    = AnnotationUtil.class.getDeclaredMethod("isPresent", Class.class, Field.class);
         Timewatch timewatch = new Timewatch();
         for (int i = 0; i < 10000; i++)
         {
@@ -53,7 +60,6 @@ public class BytecodeTest
 
     public <E extends AnnotationInfo, T extends Annotation> void tt(Class<T>[] name1, E name2) throws NoSuchMethodException
     {
-
     }
 
     @Test
@@ -62,8 +68,35 @@ public class BytecodeTest
         Method method = BytecodeTest.class.getDeclaredMethod("tt", Class[].class, AnnotationInfo.class);
         assertNotNull(method);
         String[] paramNames = parseMethodParamNames(method);
-        assertEquals(2  ,paramNames.length);
-        assertEquals("name1",paramNames[0]);
-        assertEquals("name2",paramNames[1]);
+        assertEquals(2, paramNames.length);
+        assertEquals("name1", paramNames[0]);
+        assertEquals("name2", paramNames[1]);
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Level1
+    {
+        String value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Level1("level1")
+    @interface Level2
+    {
+        @OverridesAttribute(annotation = Level1.class, name = "value") String value();
+    }
+
+    @Test
+    @Level2("level2")
+    public void test4() throws NoSuchMethodException
+    {
+        Method                   test4                    = BytecodeTest.class.getDeclaredMethod("test4", null);
+        AnnotationContextFactory annotationContextFactory = new SupportOverrideAttributeAnnotationContextFactory();
+        AnnotationContext        annotationContext        = annotationContextFactory.get(test4, Thread.currentThread().getContextClassLoader());
+        AnnotationMetadata       annotationMetadata       = annotationContext.getAnnotationMetadata(Level1.class);
+        assertTrue(annotationMetadata instanceof SupportOverrideAttributeAnnotationMetadata);
+        assertEquals("level2", annotationMetadata.getAttribyte("value").getStringValue());
+        Level1 level1 = annotationContext.getAnnotation(Level1.class);
+        assertEquals("level2", level1.value());
     }
 }

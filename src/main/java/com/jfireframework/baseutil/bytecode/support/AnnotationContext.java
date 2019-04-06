@@ -9,7 +9,7 @@ public interface AnnotationContext
 {
     boolean isAnnotationPresent(Class<? extends Annotation> ckass);
 
-    Annotation getAnnotation(Class<? extends Annotation> ckass);
+    <E extends Annotation> E getAnnotation(Class<E> ckass);
 
     List<Annotation> getAnnotations(Class<? extends Annotation> ckass);
 

@@ -1,5 +1,8 @@
 package com.jfireframework.baseutil.anno;
 
+import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -7,12 +10,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
+import java.util.*;
 
 public class CompositionAnnotationImpl implements CompositionAnnotation
 {

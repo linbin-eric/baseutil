@@ -7,7 +7,7 @@ import javax.annotation.Resource;
 import org.junit.Assert;
 import org.junit.Test;
 import com.jfireframework.baseutil.anno.AnnotationUtil;
-import com.jfireframework.baseutil.anno.OverridesAttribute;
+import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
 
 public class AnnoTest
 {

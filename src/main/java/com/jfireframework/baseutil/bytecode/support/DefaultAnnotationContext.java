@@ -28,6 +28,12 @@ public class DefaultAnnotationContext implements AnnotationContext
         return false;
     }
 
+    @Override
+    public <E extends Annotation> E getAnnotation(Class<E> ckass)
+    {
+        return (E) getAnnotationMetadata(ckass).annotation();
+    }
+
     private AnnotationMetadata find(AnnotationMetadata metadata, String resourceName)
     {
         if (metadata.isAnnotation(resourceName))
@@ -43,12 +49,6 @@ public class DefaultAnnotationContext implements AnnotationContext
             }
         }
         return null;
-    }
-
-    @Override
-    public Annotation getAnnotation(Class<? extends Annotation> ckass)
-    {
-        return getAnnotationMetadata(ckass).annotation();
     }
 
     @Override
