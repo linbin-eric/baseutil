@@ -11,7 +11,9 @@ public interface AnnotationContext
 
     <E extends Annotation> E getAnnotation(Class<E> ckass);
 
-    List<Annotation> getAnnotations(Class<? extends Annotation> ckass);
+    <E extends Annotation> List<E> getAnnotations(Class<E> ckass);
 
     AnnotationMetadata getAnnotationMetadata(Class<? extends Annotation> ckass);
+
+    List<AnnotationMetadata> getAnnotationMetadatas(Class<? extends Annotation> ckass);
 }

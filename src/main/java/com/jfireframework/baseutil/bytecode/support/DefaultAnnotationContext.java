@@ -3,11 +3,16 @@ package com.jfireframework.baseutil.bytecode.support;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 
 import java.lang.annotation.Annotation;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class DefaultAnnotationContext implements AnnotationContext
 {
-    private List<AnnotationMetadata> metadataList;
+    private final List<AnnotationMetadata>                metadataList;
+    private       Map<Class<?>, List<AnnotationMetadata>> metadataStore;
+    private       Map<Class<?>, List<Annotation>>         annotationStore;
 
     public DefaultAnnotationContext(List<AnnotationMetadata> metadataList)
     {
@@ -51,10 +56,42 @@ public class DefaultAnnotationContext implements AnnotationContext
         return null;
     }
 
-    @Override
-    public List<Annotation> getAnnotations(Class<? extends Annotation> ckass)
+    private void findAll(AnnotationMetadata metadata, String resourceName, List<AnnotationMetadata> list)
     {
-        throw new UnsupportedOperationException();
+        if (metadata.isAnnotation(resourceName))
+        {
+            list.add(metadata);
+        }
+        for (AnnotationMetadata presentAnnotation : metadata.getPresentAnnotations())
+        {
+            findAll(presentAnnotation, resourceName, list);
+        }
+    }
+
+    @Override
+    public <E extends Annotation> List<E> getAnnotations(Class<E> ckass)
+    {
+        if (getAnnotationStore().containsKey(ckass))
+        {
+            return (List<E>) getAnnotationStore().get(ckass);
+        }
+        List<E> list = new LinkedList<E>();
+        for (AnnotationMetadata each : getAnnotationMetadatas(ckass))
+        {
+            list.add((E) each.annotation());
+        }
+        getAnnotationStore().put(ckass, (List<Annotation>) list);
+        return list;
+    }
+
+    private Map<Class<?>, List<Annotation>> getAnnotationStore()
+    {
+        if (annotationStore != null)
+        {
+            return annotationStore;
+        }
+        annotationStore = new IdentityHashMap<Class<?>, List<Annotation>>();
+        return annotationStore;
     }
 
     @Override
@@ -70,5 +107,32 @@ public class DefaultAnnotationContext implements AnnotationContext
             }
         }
         return null;
+    }
+
+    @Override
+    public List<AnnotationMetadata> getAnnotationMetadatas(Class<? extends Annotation> ckass)
+    {
+        if (getMetadataStore().containsKey(ckass))
+        {
+            return getMetadataStore().get(ckass);
+        }
+        String                   resourceName = ckass.getName().replace('.', '/');
+        List<AnnotationMetadata> result       = new LinkedList<AnnotationMetadata>();
+        for (AnnotationMetadata each : metadataList)
+        {
+            findAll(each, resourceName, result);
+        }
+        getMetadataStore().put(ckass, result);
+        return result;
+    }
+
+    private Map<Class<?>, List<AnnotationMetadata>> getMetadataStore()
+    {
+        if (metadataStore != null)
+        {
+            return metadataStore;
+        }
+        metadataStore = new IdentityHashMap<Class<?>, List<AnnotationMetadata>>();
+        return metadataStore;
     }
 }

@@ -286,7 +286,7 @@ public class ElementValueInfo
                             componentType = ElementValueType.BOOLEAN;
                             break;
                         case 'L':
-                            String reference = methodInfoDescriptor.substring(index + 2, methodInfoDescriptor.length() - 2);
+                            String reference = methodInfoDescriptor.substring(index + 3, methodInfoDescriptor.length() - 1);
                             if (reference.equals("java/lang/String"))
                             {
                                 componentType = ElementValueType.STRING;

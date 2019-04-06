@@ -1,12 +1,11 @@
 package com.jfireframework.baseutil;
 
-import com.jfireframework.baseutil.anno.AnnotationUtil;
-import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.support.AnnotationContext;
 import com.jfireframework.baseutil.bytecode.support.AnnotationContextFactory;
+import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
 import com.jfireframework.baseutil.bytecode.support.SupportOverrideAttributeAnnotationContextFactory;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.time.Timewatch;
@@ -15,7 +14,6 @@ import org.junit.Test;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -30,13 +28,8 @@ public class BytecodeTest
     @Test
     public void test() throws NoSuchMethodException
     {
-        Method   method     = AnnotationUtil.class.getDeclaredMethod("isPresent", Class.class, Field.class);
+        Method   method     = BytecodeUtil.class.getMethod("loadBytecode", ClassLoader.class, String.class);
         String[] paramNames = parseMethodParamNames(method);
-        assertEquals(2, paramNames.length);
-        assertEquals("annoType", paramNames[0]);
-        assertEquals("field", paramNames[1]);
-        method = BytecodeUtil.class.getMethod("loadBytecode", ClassLoader.class, String.class);
-        paramNames = parseMethodParamNames(method);
         assertEquals(2, paramNames.length);
         assertEquals("loader", paramNames[0]);
         assertEquals("name", paramNames[1]);
@@ -48,11 +41,11 @@ public class BytecodeTest
     @Test
     public void test2() throws NoSuchMethodException
     {
-        Method    method    = AnnotationUtil.class.getDeclaredMethod("isPresent", Class.class, Field.class);
+        Method    method    = BytecodeUtil.class.getMethod("loadBytecode", ClassLoader.class, String.class);
         Timewatch timewatch = new Timewatch();
         for (int i = 0; i < 10000; i++)
         {
-            String[] paramNames = parseMethodParamNames(method);
+            parseMethodParamNames(method);
         }
         timewatch.end();
         System.out.println(timewatch.getTotal());
