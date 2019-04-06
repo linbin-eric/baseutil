@@ -3,6 +3,7 @@ package com.jfireframework.baseutil.bytecode.util;
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.annotation.ClassNotExistAnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.CodeAttriInfo;
@@ -150,12 +151,11 @@ public class BytecodeUtil
         List<AnnotationMetadata> list      = new LinkedList<AnnotationMetadata>();
         for (AnnotationMetadata annotation : classFile.getAnnotations(classLoader))
         {
-            //排除掉三个JDK自带的注解，否则会这三个会无限循环
-            if (annotation.type().equals(AnnotationMetadata.DocumentedName) || annotation.type().equals(AnnotationMetadata.RetentionName) || annotation.type().equals(AnnotationMetadata.TargetName))
+            if (annotation.shouldIgnore())
             {
                 continue;
             }
-            if (annotation.isValid())
+            if (annotation instanceof ClassNotExistAnnotationMetadata == false)
             {
                 list.add(annotation);
             }
@@ -191,11 +191,11 @@ public class BytecodeUtil
                             {
                                 AnnotationMetadata annotationMetadata = annotation.getAnnotation(loader);
                                 //排除掉三个JDK自带的注解，否则会这三个会无限循环
-                                if (annotationMetadata.type().equals(AnnotationMetadata.DocumentedName) || annotationMetadata.type().equals(AnnotationMetadata.RetentionName) || annotationMetadata.type().equals(AnnotationMetadata.TargetName))
+                                if (annotationMetadata.shouldIgnore())
                                 {
                                     continue;
                                 }
-                                if (annotationMetadata.isValid())
+                                if (annotationMetadata instanceof ClassNotExistAnnotationMetadata == false)
                                 {
                                     list.add(annotationMetadata);
                                 }

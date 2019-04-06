@@ -42,6 +42,11 @@ public class ClassFileParser
         readAttributeInfos();
     }
 
+    public ClassFileParser(byte[] bytecode)
+    {
+        this(new BinaryData(bytecode));
+    }
+
     public ClassFile parse()
     {
         ClassFile classFile = new ClassFile();

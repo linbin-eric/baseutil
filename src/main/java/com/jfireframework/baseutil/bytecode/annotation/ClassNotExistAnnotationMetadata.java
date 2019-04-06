@@ -2,7 +2,6 @@ package com.jfireframework.baseutil.bytecode.annotation;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Map;
 
 public class ClassNotExistAnnotationMetadata implements AnnotationMetadata
 {
@@ -14,13 +13,13 @@ public class ClassNotExistAnnotationMetadata implements AnnotationMetadata
     }
 
     @Override
-    public boolean isValid()
+    public boolean shouldIgnore()
     {
-        return false;
+        return true;
     }
 
     @Override
-    public Map<String, ValuePair> getAttributes()
+    public ValuePair getAttribyte(String name)
     {
         throw new UnsupportedOperationException();
     }
@@ -28,7 +27,7 @@ public class ClassNotExistAnnotationMetadata implements AnnotationMetadata
     @Override
     public Class<?> annotationType()
     {
-        throw new  UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

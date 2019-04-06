@@ -1,6 +1,5 @@
 package com.jfireframework.baseutil.bytecode.annotation;
 
-import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 import java.lang.annotation.Annotation;
@@ -12,32 +11,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AnnotationMetadataImpl implements AnnotationMetadata
+public abstract class AbstractAnnotationMetadata implements AnnotationMetadata
 {
-    private String                   typeName;
-    private Map<String, ValuePair>   attributes;
-    private List<AnnotationMetadata> presentAnnotations;
-    private Annotation               annotation;
-    private ClassLoader              loader;
-    private Class<?>                 annotationType;
+    protected String                   resourceName;
+    protected Map<String, ValuePair>   attributes;
+    protected List<AnnotationMetadata> presentAnnotations;
+    protected Annotation               annotation;
+    protected ClassLoader              loader;
+    protected Class<?>                 annotationType;
 
-    public AnnotationMetadataImpl(String typeName, Map<String, ValuePair> attributes, ClassLoader loader)
+    public AbstractAnnotationMetadata(String resourceName, Map<String, ValuePair> attributes, ClassLoader loader)
     {
-        this.typeName = typeName;
+        this.resourceName = resourceName;
         this.attributes = attributes;
         this.loader = loader;
     }
 
     @Override
-    public boolean isValid()
+    public boolean shouldIgnore()
     {
-        return true;
+        //排除掉三个JDK自带的注解，否则会这三个会无限循环
+        if (type().equals(AnnotationMetadata.DocumentedName) || type().equals(AnnotationMetadata.RetentionName) || type().equals(AnnotationMetadata.TargetName))
+        {
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public Map<String, ValuePair> getAttributes()
+    public ValuePair getAttribyte(String name)
     {
-        return attributes;
+        return attributes.get(name);
     }
 
     @Override
@@ -47,7 +51,7 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
         {
             try
             {
-                annotationType = loader.loadClass(typeName.replace('/', '.'));
+                annotationType = loader.loadClass(resourceName.replace('/', '.'));
             }
             catch (ClassNotFoundException e)
             {
@@ -61,23 +65,13 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
     @Override
     public boolean isAnnotation(String name)
     {
-        return name != null && name.equals(typeName);
+        return name != null && name.equals(resourceName);
     }
 
     @Override
     public String type()
     {
-        return typeName;
-    }
-
-    @Override
-    public List<AnnotationMetadata> getPresentAnnotations()
-    {
-        if (presentAnnotations == null)
-        {
-            presentAnnotations = BytecodeUtil.findAnnotationsOnClass(typeName, this.getClass().getClassLoader());
-        }
-        return presentAnnotations;
+        return resourceName;
     }
 
     @Override
@@ -288,7 +282,7 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
                                 }
                                 catch (ClassNotFoundException e)
                                 {
-                                    e.printStackTrace();
+                                    ReflectUtil.throwException(e);
                                 }
                         }
                         break;
@@ -297,7 +291,7 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             try
             {
-                annotation = (Annotation) Proxy.newProxyInstance(classLoader, new Class[]{classLoader.loadClass(typeName.replace('/', '.'))}, new InvocationHandler()
+                annotation = (Annotation) Proxy.newProxyInstance(classLoader, new Class[]{classLoader.loadClass(resourceName.replace('/', '.'))}, new InvocationHandler()
                 {
 
                     @Override
@@ -315,9 +309,18 @@ public class AnnotationMetadataImpl implements AnnotationMetadata
         return annotation;
     }
 
-    @Override
-    public String toString()
+    public String getResourceName()
     {
-        return "AnnotationMetadataImpl{" + "typeName='" + typeName + '\'' + ", attributes=" + attributes + '}';
+        return resourceName;
+    }
+
+    public Map<String, ValuePair> getAttributes()
+    {
+        return attributes;
+    }
+
+    public ClassLoader getLoader()
+    {
+        return loader;
     }
 }

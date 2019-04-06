@@ -3,8 +3,8 @@ package com.jfireframework.baseutil.bytecode.structure;
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
-import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadataImpl;
 import com.jfireframework.baseutil.bytecode.annotation.ClassNotExistAnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.annotation.DefaultAnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.annotation.ValuePair;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AnnotationDefaultAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
@@ -22,7 +22,7 @@ public class AnnotationInfo
     private String               type;
     private element_value_pair[] pairs;
 
-    public class element_value_pair
+    class element_value_pair
     {
         private String           elementName;
         private ElementValueInfo value;
@@ -80,11 +80,6 @@ public class AnnotationInfo
         return type;
     }
 
-    public element_value_pair[] getPairs()
-    {
-        return pairs;
-    }
-
     public AnnotationMetadata getAnnotation(ClassLoader classLoader)
     {
         Map<String, ValuePair> elementValues = new HashMap<String, ValuePair>();
@@ -116,6 +111,6 @@ public class AnnotationInfo
             ElementValueInfo value = pair.getValue();
             elementValues.put(name, value.getValue(classLoader, methodInfoMap.get(name)));
         }
-        return new AnnotationMetadataImpl(type, elementValues, classLoader);
+        return new DefaultAnnotationMetadata(type, elementValues, classLoader);
     }
 }
