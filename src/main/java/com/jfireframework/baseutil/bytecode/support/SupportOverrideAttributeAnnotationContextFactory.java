@@ -11,12 +11,6 @@ import java.util.List;
 
 public class SupportOverrideAttributeAnnotationContextFactory extends CacheableAnnotationContextFactory
 {
-    @Override
-    protected AnnotationContext build(Class<?> ckass, ClassLoader classLoader)
-    {
-        List<AnnotationMetadata> annotationsOnClass = BytecodeUtil.findAnnotationsOnClass(ckass.getName().replace('.', '/'), classLoader);
-        return castToSupportOverrideContext(annotationsOnClass);
-    }
 
     private AnnotationContext castToSupportOverrideContext(List<AnnotationMetadata> annotationsOnClass)
     {
@@ -34,5 +28,12 @@ public class SupportOverrideAttributeAnnotationContextFactory extends CacheableA
     {
         List<AnnotationMetadata> annotationsOnMethod = BytecodeUtil.findAnnotationsOnMethod(method, classLoader);
         return castToSupportOverrideContext(annotationsOnMethod);
+    }
+
+    @Override
+    protected AnnotationContext build(String resourceName, ClassLoader classLoader)
+    {
+        List<AnnotationMetadata> annotationMetadataList = BytecodeUtil.findAnnotationsOnClass(resourceName, classLoader);
+        return castToSupportOverrideContext(annotationMetadataList);
     }
 }

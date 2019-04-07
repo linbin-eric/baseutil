@@ -6,5 +6,7 @@ public interface AnnotationContextFactory
 {
     AnnotationContext get(Class<?> ckass, ClassLoader classLoader);
 
+    AnnotationContext get(String resourceName, ClassLoader classLoader);
+
     AnnotationContext get(Method method, ClassLoader classLoader);
 }

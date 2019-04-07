@@ -10,9 +10,9 @@ public class DefaultAnnotationContextFactory extends CacheableAnnotationContextF
 {
 
     @Override
-    protected AnnotationContext build(Class<?> ckass, ClassLoader classLoader)
+    protected AnnotationContext build(String resourceName, ClassLoader classLoader)
     {
-        List<AnnotationMetadata> annotationMetadataList = BytecodeUtil.findAnnotationsOnClass(ckass.getName().replace('.', '/'), classLoader);
+        List<AnnotationMetadata> annotationMetadataList = BytecodeUtil.findAnnotationsOnClass(resourceName, classLoader);
         return new DefaultAnnotationContext(annotationMetadataList);
     }
 
