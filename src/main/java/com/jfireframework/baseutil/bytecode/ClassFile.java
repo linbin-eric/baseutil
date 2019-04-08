@@ -102,6 +102,11 @@ public class ClassFile
         this.access_flags = access_flags;
     }
 
+    public FieldInfo[] getFieldInfos()
+    {
+        return fieldInfos;
+    }
+
     public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
     {
         if (annotations != null)

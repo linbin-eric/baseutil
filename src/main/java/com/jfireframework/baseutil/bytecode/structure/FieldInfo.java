@@ -30,6 +30,16 @@ public class FieldInfo
         }
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
+    public AttributeInfo[] getAttributeInfos()
+    {
+        return attributeInfos;
+    }
+
     @Override
     public String toString()
     {

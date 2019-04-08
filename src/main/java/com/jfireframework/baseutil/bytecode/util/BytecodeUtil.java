@@ -9,11 +9,13 @@ import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.CodeAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.LocalVariableTableAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
+import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
 import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -111,6 +113,13 @@ public class BytecodeUtil
         return new ClassFileParser(new BinaryData(bytes)).parse();
     }
 
+    private static ClassFile getFieldDeclaringClassFile(Field field)
+    {
+        String name  = field.getDeclaringClass().getName().replace('.', '/');
+        byte[] bytes = loadBytecode(field.getDeclaringClass().getClassLoader(), name);
+        return new ClassFileParser(new BinaryData(bytes)).parse();
+    }
+
     private static String getName(Class<?> parameterType)
     {
         if (parameterType.isPrimitive())
@@ -163,6 +172,26 @@ public class BytecodeUtil
         return Collections.unmodifiableList(list);
     }
 
+    public static List<AnnotationMetadata> findAnnotationsOnField(Field field, ClassLoader classLoader)
+    {
+        ClassFile classFile = getFieldDeclaringClassFile(field);
+        String    fieldName = field.getName();
+        for (FieldInfo fieldInfo : classFile.getFieldInfos())
+        {
+            if (fieldInfo.getName().equals(fieldName))
+            {
+                for (AttributeInfo attributeInfo : fieldInfo.getAttributeInfos())
+                {
+                    if (attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
+                    {
+                        return getAnnotationMetadata(classLoader, (RuntimeVisibleAnnotationsAttriInfo) attributeInfo);
+                    }
+                }
+            }
+        }
+        return Collections.emptyList();
+    }
+
     /**
      * 找到在方法上所有有效注解
      *
@@ -172,9 +201,14 @@ public class BytecodeUtil
      */
     public static List<AnnotationMetadata> findAnnotationsOnMethod(Method method, ClassLoader loader)
     {
-        ClassFile classFile  = getMethodDeclaringClassFile(method);
-        String    descriptor = getMethodDescriptor(method);
-        String    methodName = method.getName();
+        ClassFile classFile = getMethodDeclaringClassFile(method);
+        return findAnnotationsOnMethod(method, loader, classFile);
+    }
+
+    private static List<AnnotationMetadata> findAnnotationsOnMethod(Method method, ClassLoader loader, ClassFile classFile)
+    {
+        String descriptor = getMethodDescriptor(method);
+        String methodName = method.getName();
         for (MethodInfo methodInfo : classFile.getMethodInfos())
         {
             if (methodInfo.getName().equals(methodName))
@@ -185,28 +219,33 @@ public class BytecodeUtil
                     {
                         if (attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
                         {
-                            List<AnnotationMetadata>           list                               = new LinkedList<AnnotationMetadata>();
-                            RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = (RuntimeVisibleAnnotationsAttriInfo) attributeInfo;
-                            for (AnnotationInfo annotation : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
-                            {
-                                AnnotationMetadata annotationMetadata = annotation.getAnnotation(loader);
-                                //排除掉三个JDK自带的注解，否则会这三个会无限循环
-                                if (annotationMetadata.shouldIgnore())
-                                {
-                                    continue;
-                                }
-                                if (annotationMetadata instanceof ClassNotExistAnnotationMetadata == false)
-                                {
-                                    list.add(annotationMetadata);
-                                }
-                            }
-                            return Collections.unmodifiableList(list);
+                            return getAnnotationMetadata(loader, (RuntimeVisibleAnnotationsAttriInfo) attributeInfo);
                         }
                     }
                 }
             }
         }
         return Collections.emptyList();
+    }
+
+    private static List<AnnotationMetadata> getAnnotationMetadata(ClassLoader loader, RuntimeVisibleAnnotationsAttriInfo attributeInfo)
+    {
+        List<AnnotationMetadata>           list                               = new LinkedList<AnnotationMetadata>();
+        RuntimeVisibleAnnotationsAttriInfo runtimeVisibleAnnotationsAttriInfo = attributeInfo;
+        for (AnnotationInfo annotation : runtimeVisibleAnnotationsAttriInfo.getAnnotations())
+        {
+            AnnotationMetadata annotationMetadata = annotation.getAnnotation(loader);
+            //排除掉三个JDK自带的注解，否则会这三个会无限循环
+            if (annotationMetadata.shouldIgnore())
+            {
+                continue;
+            }
+            if (annotationMetadata instanceof ClassNotExistAnnotationMetadata == false)
+            {
+                list.add(annotationMetadata);
+            }
+        }
+        return Collections.unmodifiableList(list);
     }
 
     private static String getMethodDescriptor(Method method)
