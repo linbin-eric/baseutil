@@ -5,6 +5,7 @@ import com.jfireframework.baseutil.bytecode.annotation.DefaultAnnotationMetadata
 import com.jfireframework.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,12 @@ public class SupportOverrideAttributeAnnotationContextFactory extends CacheableA
     {
         List<AnnotationMetadata> annotationsOnMethod = BytecodeUtil.findAnnotationsOnMethod(method, classLoader);
         return castToSupportOverrideContext(annotationsOnMethod);
+    }
+
+    @Override
+    protected AnnotationContext build(Field field, ClassLoader classLoader)
+    {
+        return castToSupportOverrideContext(BytecodeUtil.findAnnotationsOnField(field, classLoader));
     }
 
     @Override

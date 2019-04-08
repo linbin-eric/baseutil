@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil.bytecode.support;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -10,6 +11,7 @@ public abstract class CacheableAnnotationContextFactory implements AnnotationCon
 
     protected IdentityHashMap<Method, AnnotationContext> methodAnnotationContextStore       = new IdentityHashMap<Method, AnnotationContext>();
     protected Map<String, AnnotationContext>             resourceNameAnnotationContextStore = new HashMap<String, AnnotationContext>();
+    protected IdentityHashMap<Field, AnnotationContext>  fieldAnnotationContextStore        = new IdentityHashMap<Field, AnnotationContext>();
 
     protected abstract AnnotationContext build(String resourceName, ClassLoader classLoader);
 
@@ -46,4 +48,19 @@ public abstract class CacheableAnnotationContextFactory implements AnnotationCon
         resourceNameAnnotationContextStore.put(resourceName, annotationContext);
         return annotationContext;
     }
+
+    @Override
+    public AnnotationContext get(Field field, ClassLoader classLoader)
+    {
+        AnnotationContext annotationContext = fieldAnnotationContextStore.get(field);
+        if (annotationContext != null)
+        {
+            return annotationContext;
+        }
+        annotationContext = build(field, classLoader);
+        fieldAnnotationContextStore.put(field, annotationContext);
+        return annotationContext;
+    }
+
+    protected abstract AnnotationContext build(Field field, ClassLoader classLoader);
 }

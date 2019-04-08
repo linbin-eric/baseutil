@@ -3,6 +3,7 @@ package com.jfireframework.baseutil.bytecode.support;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -21,5 +22,12 @@ public class DefaultAnnotationContextFactory extends CacheableAnnotationContextF
     {
         List<AnnotationMetadata> annotationsOnMethod = BytecodeUtil.findAnnotationsOnMethod(method, classLoader);
         return new DefaultAnnotationContext(annotationsOnMethod);
+    }
+
+    @Override
+    protected AnnotationContext build(Field field, ClassLoader classLoader)
+    {
+        List<AnnotationMetadata> annotationMetadataList = BytecodeUtil.findAnnotationsOnField(field, classLoader);
+        return new DefaultAnnotationContext(annotationMetadataList);
     }
 }
