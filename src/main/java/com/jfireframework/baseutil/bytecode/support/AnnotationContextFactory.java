@@ -12,4 +12,12 @@ public interface AnnotationContextFactory
     AnnotationContext get(Method method, ClassLoader classLoader);
 
     AnnotationContext get(Field field, ClassLoader classLoader);
+
+    AnnotationContext get(Class<?> ckass);
+
+    AnnotationContext get(String resourceName);
+
+    AnnotationContext get(Method method);
+
+    AnnotationContext get(Field field);
 }

@@ -63,4 +63,28 @@ public abstract class CacheableAnnotationContextFactory implements AnnotationCon
     }
 
     protected abstract AnnotationContext build(Field field, ClassLoader classLoader);
+
+    @Override
+    public AnnotationContext get(Class<?> ckass)
+    {
+        return get(ckass, Thread.currentThread().getContextClassLoader());
+    }
+
+    @Override
+    public AnnotationContext get(String resourceName)
+    {
+        return get(resourceName, Thread.currentThread().getContextClassLoader());
+    }
+
+    @Override
+    public AnnotationContext get(Method method)
+    {
+        return get(method, Thread.currentThread().getContextClassLoader());
+    }
+
+    @Override
+    public AnnotationContext get(Field field)
+    {
+        return get(field, Thread.currentThread().getContextClassLoader());
+    }
 }

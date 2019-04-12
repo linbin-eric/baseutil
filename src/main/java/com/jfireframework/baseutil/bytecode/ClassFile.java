@@ -160,6 +160,39 @@ public class ClassFile
         return (access_flags & AccessFlags.ACC_ENUM) != 0;
     }
 
+    public String[] getInterfaces()
+    {
+        return interfaces;
+    }
+
+    public String getSuperClassName()
+    {
+        return super_class_name;
+    }
+
+    public String getThis_class_name()
+    {
+        return this_class_name;
+    }
+
+    public boolean hasInterface(Class<?> ckass)
+    {
+        String name = ckass.getName();
+        for (String each : interfaces)
+        {
+            if (each.equals(name))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isSuperClass(Class<?> ckass)
+    {
+        return ckass.getName().equals(super_class_name);
+    }
+
     @Override
     public String toString()
     {

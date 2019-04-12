@@ -54,6 +54,39 @@ public class BytecodeUtil
     }
 
     /**
+     * 根据资源名称搜索对应的类文件并且解析二进制数据，如果无法搜索到，则返回null
+     *
+     * @param classLoader
+     * @param resourceName 格式为aa/bb/cc
+     * @return
+     */
+    public static ClassFile loadClassFile(ClassLoader classLoader, String resourceName)
+    {
+        InputStream resourceAsStream = classLoader.getResourceAsStream(resourceName + ".class");
+        if (resourceAsStream == null)
+        {
+            return null;
+        }
+        try
+        {
+            byte[] content = new byte[resourceAsStream.available()];
+            resourceAsStream.read(content);
+            resourceAsStream.close();
+            return new ClassFileParser(content).parse();
+        }
+        catch (Throwable e)
+        {
+            ReflectUtil.throwException(e);
+            return null;
+        }
+    }
+
+    public static ClassFile loadClassFile(String resourceName)
+    {
+        return loadClassFile(Thread.currentThread().getContextClassLoader(), resourceName);
+    }
+
+    /**
      * 获取方法的入参名称，以数组的形式返回。获取方法入参名称依赖于编译器是否编译了入参名称到字节码中，因此可能存在获取失败的情况。如果获取失败，则返回null。
      *
      * @param method

@@ -1,5 +1,6 @@
 package com.jfireframework.baseutil;
 
+import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
@@ -91,5 +92,28 @@ public class BytecodeTest
         assertEquals("level2", annotationMetadata.getAttribyte("value").getStringValue());
         Level1 level1 = annotationContext.getAnnotation(Level1.class);
         assertEquals("level2", level1.value());
+    }
+
+    @Test
+    public void test5()
+    {
+        ClassFile classFile = BytecodeUtil.loadClassFile(fortest5_2.class.getName().replace('.', '/'));
+        assertTrue(classFile.hasInterface(forTest5.class));
+        assertTrue(classFile.isSuperClass(fortest5_1.class));
+    }
+
+    interface forTest5
+    {
+
+    }
+
+    abstract class fortest5_1
+    {
+
+    }
+
+    class fortest5_2 extends fortest5_1 implements forTest5
+    {
+
     }
 }
