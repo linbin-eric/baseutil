@@ -33,7 +33,7 @@ public class SingleSync
         Thread t = owner;
         if (t == null || await == false)
         {
-            return "now waiter";
+            return "no waiter";
         }
         else
         {
