@@ -9,10 +9,10 @@ import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.CodeAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.LocalVariableTableAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
-import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
 import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
+import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;

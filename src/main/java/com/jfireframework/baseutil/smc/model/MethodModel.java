@@ -1,7 +1,7 @@
 package com.jfireframework.baseutil.smc.model;
 
-import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.smc.SmcHelper;
+import com.jfireframework.baseutil.collection.StringCache;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;

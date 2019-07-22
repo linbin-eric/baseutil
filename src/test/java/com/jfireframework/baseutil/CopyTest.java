@@ -13,8 +13,8 @@ public class CopyTest
     @Test
     public void test()
     {
-        Copy<Person, Person> util = new FastCopy<CopyTest.Person, CopyTest.Person>() {};
-        Person src = new Person();
+        Copy<Person, Person> util = new FastCopy<Person, Person>() {};
+        Person               src  = new Person();
         src.setAge(13);
         src.setSex(true);
         Person result = util.copy(src, new Person());

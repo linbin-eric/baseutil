@@ -1,8 +1,8 @@
 package com.jfireframework.baseutil.test;
 
+import com.jfireframework.baseutil.StringUtil;
 import org.junit.Assert;
 import org.junit.Test;
-import com.jfireframework.baseutil.StringUtil;
 
 public class MatchTest
 {

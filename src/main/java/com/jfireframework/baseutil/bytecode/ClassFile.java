@@ -4,8 +4,8 @@ import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
-import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
 import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
+import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
 import com.jfireframework.baseutil.bytecode.util.AccessFlags;
 
 import java.util.ArrayList;

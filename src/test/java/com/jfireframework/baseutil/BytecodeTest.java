@@ -1,9 +1,9 @@
 package com.jfireframework.baseutil;
 
+import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
-import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.support.AnnotationContext;
 import com.jfireframework.baseutil.bytecode.support.AnnotationContextFactory;
 import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
@@ -18,7 +18,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static com.jfireframework.baseutil.bytecode.util.BytecodeUtil.parseMethodParamNames;
 import static org.junit.Assert.*;
 
 public class BytecodeTest
@@ -30,7 +29,7 @@ public class BytecodeTest
     public void test() throws NoSuchMethodException
     {
         Method   method     = BytecodeUtil.class.getMethod("loadBytecode", ClassLoader.class, String.class);
-        String[] paramNames = parseMethodParamNames(method);
+        String[] paramNames = BytecodeUtil.parseMethodParamNames(method);
         assertEquals(2, paramNames.length);
         assertEquals("loader", paramNames[0]);
         assertEquals("name", paramNames[1]);
@@ -46,7 +45,7 @@ public class BytecodeTest
         Timewatch timewatch = new Timewatch();
         for (int i = 0; i < 10000; i++)
         {
-            parseMethodParamNames(method);
+            BytecodeUtil.parseMethodParamNames(method);
         }
         timewatch.end();
         System.out.println(timewatch.getTotal());
@@ -61,7 +60,7 @@ public class BytecodeTest
     {
         Method method = BytecodeTest.class.getDeclaredMethod("tt", Class[].class, AnnotationInfo.class);
         assertNotNull(method);
-        String[] paramNames = parseMethodParamNames(method);
+        String[] paramNames = BytecodeUtil.parseMethodParamNames(method);
         assertEquals(2, paramNames.length);
         assertEquals("name1", paramNames[0]);
         assertEquals("name2", paramNames[1]);

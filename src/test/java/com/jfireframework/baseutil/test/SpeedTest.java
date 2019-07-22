@@ -1,10 +1,10 @@
 package com.jfireframework.baseutil.test;
 
+import com.jfireframework.baseutil.Timelog;
+import com.jfireframework.baseutil.collection.StringCache;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.jfireframework.baseutil.Timelog;
-import com.jfireframework.baseutil.collection.StringCache;
 
 public class SpeedTest
 {
@@ -13,10 +13,10 @@ public class SpeedTest
     @Test
     public void StringBuilderAndStringCache()
     {
-        int count = 1000000;
-        Timelog timelog = new Timelog();
+        int           count   = 1000000;
+        Timelog       timelog = new Timelog();
         StringBuilder builder = new StringBuilder(2 * count);
-        StringCache cache = new StringCache(2 * count);
+        StringCache   cache   = new StringCache(2 * count);
         timelog.start();
         for (int i = 0; i < count; i++)
         {

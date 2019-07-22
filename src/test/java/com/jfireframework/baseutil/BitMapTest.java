@@ -1,8 +1,9 @@
 package com.jfireframework.baseutil;
 
 import static org.junit.Assert.*;
-import org.junit.Test;
+
 import com.jfireframework.baseutil.collection.BitMap;
+import org.junit.Test;
 
 public class BitMapTest
 {

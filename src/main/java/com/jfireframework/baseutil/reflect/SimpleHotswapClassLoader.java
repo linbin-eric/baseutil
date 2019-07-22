@@ -8,17 +8,18 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
+
 import com.jfireframework.baseutil.concurrent.ParalLock;
 
 public class SimpleHotswapClassLoader extends URLClassLoader
 {
-    private ClassLoader                         parent;
-    private ConcurrentHashMap<String, Class<?>> classMap                    = new ConcurrentHashMap<String, Class<?>>();
-    private final File                          reloadPathFile;
-    private String[]                            reloadPackages              = new String[0];
-    private String[]                            reloadPackageForClassFiless = new String[0];
-    private String[]                            excludePackages             = new String[0];
-    private static final ParalLock              PARAL_LOCK                  = new ParalLock();
+    private              ClassLoader                         parent;
+    private              ConcurrentHashMap<String, Class<?>> classMap                    = new ConcurrentHashMap<String, Class<?>>();
+    private final        File                                reloadPathFile;
+    private              String[]                            reloadPackages              = new String[0];
+    private              String[]                            reloadPackageForClassFiless = new String[0];
+    private              String[]                            excludePackages             = new String[0];
+    private static final ParalLock                           PARAL_LOCK                  = new ParalLock();
     
     public SimpleHotswapClassLoader(String reloadPath)
     {

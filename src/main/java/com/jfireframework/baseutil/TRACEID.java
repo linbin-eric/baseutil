@@ -2,7 +2,6 @@ package com.jfireframework.baseutil;
 
 import com.jfireframework.baseutil.uniqueid.Uid;
 import com.jfireframework.baseutil.uniqueid.WinterId;
-import com.sun.org.apache.xpath.internal.operations.Lt;
 
 public class TRACEID
 {

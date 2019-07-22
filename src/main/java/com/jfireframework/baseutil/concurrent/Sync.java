@@ -2,6 +2,7 @@ package com.jfireframework.baseutil.concurrent;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+
 import com.jfireframework.baseutil.reflect.UNSAFE;
 
 public abstract class Sync<E>

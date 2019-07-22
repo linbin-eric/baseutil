@@ -1,22 +1,21 @@
 package com.jfireframework.baseutil.smc.model;
 
-import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.smc.SmcHelper;
-import com.jfireframework.baseutil.smc.model.MethodModel.MethodModelKey;
+import com.jfireframework.baseutil.collection.StringCache;
 
 import java.util.*;
 
 public class ClassModel
 {
-    private String                           packageName     = "com.jfireframe.smc.output";
-    private String                           className;
-    private Map<String, FieldModel>          fieldStore      = new HashMap<String, FieldModel>();
-    private Map<MethodModelKey, MethodModel> methodStore     = new HashMap<MethodModelKey, MethodModel>();
-    private Set<String>                      constructors    = new HashSet<String>();
-    private Set<Class<?>>                    imports         = new HashSet<Class<?>>();
-    private Set<Class<?>>                    interfaces      = new HashSet<Class<?>>();
-    private Set<String>                      classSimpleName = new HashSet<String>();
-    private Class<?>                         parentClass;
+    private String                                       packageName     = "com.jfireframe.smc.output";
+    private String                                       className;
+    private Map<String, FieldModel>                      fieldStore      = new HashMap<String, FieldModel>();
+    private Map<MethodModel.MethodModelKey, MethodModel> methodStore     = new HashMap<MethodModel.MethodModelKey, MethodModel>();
+    private Set<String>                                  constructors    = new HashSet<String>();
+    private Set<Class<?>>                                imports         = new HashSet<Class<?>>();
+    private Set<Class<?>>                                interfaces      = new HashSet<Class<?>>();
+    private Set<String>                                  classSimpleName = new HashSet<String>();
+    private Class<?>                                     parentClass;
 
     public ClassModel(String className)
     {
@@ -130,12 +129,12 @@ public class ClassModel
         methodStore.put(methodModel.generateKey(), methodModel);
     }
 
-    public MethodModel getMethodModel(MethodModelKey key)
+    public MethodModel getMethodModel(MethodModel.MethodModelKey key)
     {
         return methodStore.get(key);
     }
 
-    public MethodModel removeMethodModel(MethodModelKey key)
+    public MethodModel removeMethodModel(MethodModel.MethodModelKey key)
     {
         return methodStore.remove(key);
     }
@@ -159,7 +158,7 @@ public class ClassModel
         }
     }
 
-    public Collection<MethodModelKey> methods()
+    public Collection<MethodModel.MethodModelKey> methods()
     {
         return methodStore.keySet();
     }

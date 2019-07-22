@@ -2,8 +2,9 @@ package com.jfireframework.baseutil;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.junit.Test;
+
 import com.jfireframework.baseutil.concurrent.MPMCQueue;
+import org.junit.Test;
 
 public class Mpmcbugtest
 {
@@ -11,9 +12,9 @@ public class Mpmcbugtest
     public void test() throws InterruptedException
     {
         final MPMCQueue<String> queue = new MPMCQueue<String>(true);
-        final int time = 5;
-        final int count = 10;
-        final CountDownLatch latch = new CountDownLatch(count * time * 2);
+        final int               time  = 5;
+        final int               count = 10;
+        final CountDownLatch    latch = new CountDownLatch(count * time * 2);
         new Thread(new Runnable() {
             @Override
             public void run()

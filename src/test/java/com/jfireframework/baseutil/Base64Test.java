@@ -1,10 +1,11 @@
 package com.jfireframework.baseutil;
 
 import java.nio.charset.Charset;
-import org.junit.Assert;
-import org.junit.Test;
+
 import com.jfireframework.baseutil.encrypt.Base64Tool;
 import com.jfireframework.baseutil.time.Timewatch;
+import org.junit.Assert;
+import org.junit.Test;
 import sun.misc.BASE64Encoder;
 
 public class Base64Test
@@ -30,10 +31,10 @@ public class Base64Test
     @Test
     public void speed()
     {
-        int count = 1000000;
+        int           count         = 1000000;
         BASE64Encoder base64Encoder = new BASE64Encoder();
-        Timewatch timewatch = new Timewatch();
-        byte[] name = "我的测试".getBytes();
+        Timewatch     timewatch     = new Timewatch();
+        byte[]        name          = "我的测试".getBytes();
         for (int i = 0; i < 20; i++)
         {
             base64Encoder.encode(name);

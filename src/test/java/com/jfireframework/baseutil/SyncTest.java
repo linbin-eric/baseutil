@@ -2,17 +2,18 @@ package com.jfireframework.baseutil;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+
+import com.jfireframework.baseutil.concurrent.Sync;
 import org.junit.Assert;
 import org.junit.Test;
-import com.jfireframework.baseutil.concurrent.Sync;
 
 public class SyncTest
 {
     class ConcurrentObj
     {
-        private volatile int     i;
-        private volatile boolean flag = false;
-        private Sync<Integer>    sync = new Sync<Integer>() {
+        private volatile int           i;
+        private volatile boolean       flag = false;
+        private          Sync<Integer> sync = new Sync<Integer>() {
                                           
                                           @Override
                                           protected Integer get()

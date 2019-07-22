@@ -4,16 +4,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.CyclicBarrier;
+
+import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
+import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
+import com.jfireframework.baseutil.time.Timewatch;
 import org.jctools.queues.MpscArrayQueue;
 import org.jctools.queues.MpscLinkedQueue7;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import com.jfireframework.baseutil.concurrent.FastMPSCArrayQueue;
-import com.jfireframework.baseutil.concurrent.MPSCArrayQueue;
-import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
-import com.jfireframework.baseutil.time.Timewatch;
 
 @RunWith(Parameterized.class)
 public class ArrayQueueSpeedTest

@@ -36,7 +36,7 @@ public class CodeAttriInfo extends AttributeInfo
         attributeInfos = new AttributeInfo[attributes_count];
         for (int i = 0; i < attributeInfos.length; i++)
         {
-            attributeInfos[i] = AttributeInfo.parse(binaryData, constantInfos);
+            attributeInfos[i] = parse(binaryData, constantInfos);
         }
     }
 

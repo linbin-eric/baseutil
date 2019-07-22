@@ -24,7 +24,8 @@ public class UNSAFE
             // 获取静态属性,Unsafe在启动JVM时随rt.jar装载
             un = (Unsafe) field.get(null);
             hasUnsafe1 = true;
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             un = null;
             hasUnsafe1 = false;
@@ -58,7 +59,8 @@ public class UNSAFE
             field.setAccessible(true);
             Verify.False(Modifier.isStatic(field.getModifiers()), "属性{}.{}是静态属性,不应该使用该方法,请检查{}", field.getDeclaringClass(), field.getName(), CodeLocation.getCodeLocation(2));
             return unsafe.objectFieldOffset(field);
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -98,6 +100,21 @@ public class UNSAFE
     public static void putVolatileInt(Object src, long offset, int value)
     {
         unsafe.putIntVolatile(src, offset, value);
+    }
+
+    public static void putVolatileLong(Object src, long offset, long value)
+    {
+        unsafe.putLongVolatile(src, offset, value);
+    }
+
+    public static void putVolatileShort(Object src, long offset, short value)
+    {
+        unsafe.putShortVolatile(src, offset, value);
+    }
+
+    public static void putVolatileObject(Object src, long offset, Object value)
+    {
+        unsafe.putObjectVolatile(src, offset, value);
     }
 
     public static void putOrderedObject(Object src, long offset, Object value)
@@ -275,7 +292,8 @@ public class UNSAFE
         try
         {
             return unsafe.allocateInstance(type);
-        } catch (InstantiationException e)
+        }
+        catch (InstantiationException e)
         {
             ReflectUtil.throwException(e);
             return null;

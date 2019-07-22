@@ -24,8 +24,8 @@ public class CompilerTest
         methodModel.setBody("return \"hi\";");
         classModel.putMethodModel(methodModel);
         CompileHelper compiler = new CompileHelper(Thread.currentThread().getContextClassLoader());
-        Class<?> compile = compiler.compile(classModel);
-        Ptest instance = (Ptest) compile.newInstance();
+        Class<?>      compile  = compiler.compile(classModel);
+        Ptest         instance = (Ptest) compile.newInstance();
         Assert.assertEquals("hi", instance.sayHello());
     }
 }

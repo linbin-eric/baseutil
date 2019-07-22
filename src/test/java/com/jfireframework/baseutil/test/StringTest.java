@@ -2,9 +2,10 @@ package com.jfireframework.baseutil.test;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.jfireframework.baseutil.StringUtil;
 import org.junit.Assert;
 import org.junit.Test;
-import com.jfireframework.baseutil.StringUtil;
 
 public class StringTest
 {

@@ -3,6 +3,7 @@ package com.jfireframework.baseutil.reflect.copy;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyCopyDescriptorFactory

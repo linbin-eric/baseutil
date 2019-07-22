@@ -3,6 +3,7 @@ package com.jfireframework.baseutil.concurrent;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
+
 import com.jfireframework.baseutil.reflect.UNSAFE;
 
 public class XMPSCLinkQueue<E> implements Queue<E>

@@ -1,7 +1,7 @@
 package com.jfireframework.baseutil;
 
-import org.junit.Test;
 import com.jfireframework.baseutil.uniqueid.AutumnId;
+import org.junit.Test;
 import com.jfireframework.baseutil.uniqueid.SummerId;
 import com.jfireframework.baseutil.uniqueid.Uid;
 

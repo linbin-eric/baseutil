@@ -14,21 +14,22 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
 import com.jfireframework.baseutil.concurrent.ParalLock;
 
 public class HotswapClassLoader extends ClassLoader
 {
-    private final ClassLoader                         parent;
-    private String[]                                  reloadPackages    = new String[0];
-    private File[]                                    reloadPaths       = new File[0];
+    private final        ClassLoader                         parent;
+    private              String[]                            reloadPackages    = new String[0];
+    private              File[]                              reloadPaths       = new File[0];
     // 需要被重载的Class
-    private final ConcurrentHashMap<String, Class<?>> reloadClassMap    = new ConcurrentHashMap<String, Class<?>>();
+    private final        ConcurrentHashMap<String, Class<?>> reloadClassMap    = new ConcurrentHashMap<String, Class<?>>();
     // 不需要被重载的，不可变的Class。无论是自定义的还是系统的，都在这个地方
-    private final ConcurrentHashMap<String, Class<?>> immutableClassMap = new ConcurrentHashMap<String, Class<?>>();
-    private static final Map<String, classInfo>       classInfos        = new HashMap<String, classInfo>();
+    private final        ConcurrentHashMap<String, Class<?>> immutableClassMap = new ConcurrentHashMap<String, Class<?>>();
+    private static final Map<String, classInfo>              classInfos        = new HashMap<String, classInfo>();
     // 排除在外的路径，该路径下的类不会进入自定义的加载流程
-    private final Set<String>                         excludeClasses    = new HashSet<String>();
-    private static final ParalLock                    PARAL_LOCK        = new ParalLock();
+    private final        Set<String>                         excludeClasses    = new HashSet<String>();
+    private static final ParalLock                           PARAL_LOCK        = new ParalLock();
     
     static class classInfo
     {

@@ -6,10 +6,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import com.jfireframework.baseutil.concurrent.MPSCLinkedQueue;
 
 public class MpScTest
 {

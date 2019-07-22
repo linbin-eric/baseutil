@@ -2,9 +2,10 @@ package com.jfireframework.baseutil;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+
+import com.jfireframework.baseutil.concurrent.MPMCQueue;
 import org.junit.Assert;
 import org.junit.Test;
-import com.jfireframework.baseutil.concurrent.MPMCQueue;
 
 /**
  * Created by linbin on 2016/9/19.
@@ -15,11 +16,11 @@ public class MPMCQueueTest
     @Test
     public void test2() throws InterruptedException
     {
-        final MPMCQueue<String> queue = new MPMCQueue<String>(false);
-        final ConcurrentHashMap<String, String> set = new ConcurrentHashMap<String, String>(15000);
-        final int count = 10000;
-        final int countThreadSum = 5;
-        final CountDownLatch latch = new CountDownLatch(countThreadSum);
+        final MPMCQueue<String>                 queue          = new MPMCQueue<String>(false);
+        final ConcurrentHashMap<String, String> set            = new ConcurrentHashMap<String, String>(15000);
+        final int                               count          = 10000;
+        final int                               countThreadSum = 5;
+        final CountDownLatch                    latch          = new CountDownLatch(countThreadSum);
         for (int i = 0; i < countThreadSum; i++)
         {
             Thread countThread = new Thread(new Runnable() {

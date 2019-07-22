@@ -10,7 +10,7 @@ import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public class StringUtil
 {
-    private final static ThreadLocal<StringCache> cacheLocal   = new ThreadLocal<StringCache>() {
+    private final static ThreadLocal<StringCache> cacheLocal = new ThreadLocal<StringCache>() {
                                                                    @Override
                                                                    protected StringCache initialValue()
                                                                    {

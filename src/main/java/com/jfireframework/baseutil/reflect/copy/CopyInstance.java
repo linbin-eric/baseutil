@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public class CopyInstance<S, D> implements Copy<S, D>
@@ -39,10 +40,10 @@ public class CopyInstance<S, D> implements Copy<S, D>
                     continue;
                 }
             }
-            if (toField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class))
+            if (toField.isAnnotationPresent(CopyIgnore.List.class))
             {
-                com.jfireframework.baseutil.reflect.copy.CopyIgnore.List copyIgnoreList = toField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class);
-                boolean ignore = false;
+                CopyIgnore.List copyIgnoreList = toField.getAnnotation(CopyIgnore.List.class);
+                boolean         ignore         = false;
                 for (CopyIgnore copyIgnore : copyIgnoreList.value())
                 {
                     if (copyIgnore.from() == Object.class || copyIgnore.from() == sources)
@@ -57,9 +58,9 @@ public class CopyInstance<S, D> implements Copy<S, D>
                 }
             }
             String sourceProperty = null;
-            if (toField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyFrom.List.class))
+            if (toField.isAnnotationPresent(CopyFrom.List.class))
             {
-                com.jfireframework.baseutil.reflect.copy.CopyFrom.List copyFroms = toField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyFrom.List.class);
+                CopyFrom.List copyFroms = toField.getAnnotation(CopyFrom.List.class);
                 for (CopyFrom copyFrom : copyFroms.value())
                 {
                     if (copyFrom.from() == sources)
@@ -106,10 +107,10 @@ public class CopyInstance<S, D> implements Copy<S, D>
                     continue;
                 }
             }
-            if (fromField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class))
+            if (fromField.isAnnotationPresent(CopyIgnore.List.class))
             {
-                com.jfireframework.baseutil.reflect.copy.CopyIgnore.List copyIgnoreList = fromField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyIgnore.List.class);
-                boolean ignore = false;
+                CopyIgnore.List copyIgnoreList = fromField.getAnnotation(CopyIgnore.List.class);
+                boolean         ignore         = false;
                 for (CopyIgnore copyIgnore : copyIgnoreList.value())
                 {
                     if (copyIgnore.to() == Object.class || copyIgnore.to() == source)
@@ -123,9 +124,9 @@ public class CopyInstance<S, D> implements Copy<S, D>
                     continue;
                 }
             }
-            if (fromField.isAnnotationPresent(com.jfireframework.baseutil.reflect.copy.CopyTo.List.class))
+            if (fromField.isAnnotationPresent(CopyTo.List.class))
             {
-                com.jfireframework.baseutil.reflect.copy.CopyTo.List copyTos = fromField.getAnnotation(com.jfireframework.baseutil.reflect.copy.CopyTo.List.class);
+                CopyTo.List copyTos = fromField.getAnnotation(CopyTo.List.class);
                 for (CopyTo copyTo : copyTos.value())
                 {
                     if (copyTo.to() == des)
