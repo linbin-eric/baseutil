@@ -22,14 +22,7 @@ package com.jfireframework.baseutil;
 public final class MurmurHash3
 {
     public static final int SEED = 0x1234ABCD;
-    
-    /** 128 bits of state */
-    public static final class LongPair
-    {
-        public long val1;
-        public long val2;
-    }
-    
+
     public static final int fmix32(int h)
     {
         h ^= h >>> 16;
@@ -39,7 +32,7 @@ public final class MurmurHash3
         h ^= h >>> 16;
         return h;
     }
-    
+
     public static final long fmix64(long k)
     {
         k ^= k >>> 33;
@@ -49,27 +42,28 @@ public final class MurmurHash3
         k ^= k >>> 33;
         return k;
     }
-    
-    /** Gets a long from a byte buffer in little endian byte order. */
+
+    /**
+     * Gets a long from a byte buffer in little endian byte order.
+     */
     public static final long getLongLittleEndian(byte[] buf, int offset)
     {
         return ((long) buf[offset + 7] << 56) // no mask needed
                 | ((buf[offset + 6] & 0xffL) << 48) | ((buf[offset + 5] & 0xffL) << 40) | ((buf[offset + 4] & 0xffL) << 32) | ((buf[offset + 3] & 0xffL) << 24) | ((buf[offset + 2] & 0xffL) << 16) | ((buf[offset + 1] & 0xffL) << 8) | ((buf[offset] & 0xffL)); // no
-                                                                                                                                                                                                                                                                  // shift
-                                                                                                                                                                                                                                                                  // needed
+        // shift
+        // needed
     }
-    
-    /** Returns the MurmurHash3_x86_32 hash. */
+
+    /**
+     * Returns the MurmurHash3_x86_32 hash.
+     */
     public static int murmurhash3_x86_32(byte[] data, int offset, int len, int seed)
     {
-        
         final int c1 = 0xcc9e2d51;
         final int c2 = 0x1b873593;
-        
-        int h1 = seed;
+        int h1         = seed;
         int roundedEnd = offset + (len & 0xfffffffc); // round down to 4 byte
-                                                      // block
-        
+        // block
         for (int i = offset; i < roundedEnd; i += 4)
         {
             // little endian load order
@@ -77,15 +71,12 @@ public final class MurmurHash3
             k1 *= c1;
             k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
             k1 *= c2;
-            
             h1 ^= k1;
             h1 = (h1 << 13) | (h1 >>> 19); // ROTL32(h1,13);
             h1 = h1 * 5 + 0xe6546b64;
         }
-        
         // tail
         int k1 = 0;
-        
         switch (len & 0x03)
         {
             case 3:
@@ -101,20 +92,17 @@ public final class MurmurHash3
                 k1 *= c2;
                 h1 ^= k1;
         }
-        
         // finalization
         h1 ^= len;
-        
         // fmix(h1);
         h1 ^= h1 >>> 16;
         h1 *= 0x85ebca6b;
         h1 ^= h1 >>> 13;
         h1 *= 0xc2b2ae35;
         h1 ^= h1 >>> 16;
-        
         return h1;
     }
-    
+
     /**
      * Returns the MurmurHash3_x86_32 hash of the UTF-8 bytes of the String
      * without actually encoding the string to a temporary buffer. This is more
@@ -122,20 +110,16 @@ public final class MurmurHash3
      */
     public static int murmurhash3_x86_32(CharSequence data, int offset, int len, int seed)
     {
-        
         final int c1 = 0xcc9e2d51;
         final int c2 = 0x1b873593;
-        
         int h1 = seed;
-        
-        int pos = offset;
-        int end = offset + len;
-        int k1 = 0;
-        int k2 = 0;
-        int shift = 0;
-        int bits = 0;
+        int pos    = offset;
+        int end    = offset + len;
+        int k1     = 0;
+        int k2     = 0;
+        int shift  = 0;
+        int bits   = 0;
         int nBytes = 0; // length in UTF8 bytes
-        
         while (pos < end)
         {
             int code = data.charAt(pos++);
@@ -143,7 +127,6 @@ public final class MurmurHash3
             {
                 k2 = code;
                 bits = 8;
-                
                 /***
                  * // optimized ascii implementation (currently slower!!! code
                  * size?) if (shift == 24) { k1 = k1 | (code << 24); k1 *= c1;
@@ -152,7 +135,6 @@ public final class MurmurHash3
                  * h1*5+0xe6546b64; shift = 0; nBytes += 4; k1 = 0; } else { k1
                  * |= code << shift; shift += 8; } continue;
                  ***/
-                
             }
             else if (code < 0x800)
             {
@@ -170,32 +152,26 @@ public final class MurmurHash3
             {
                 // surrogate pair
                 // int utf32 = pos < end ? (int) data.charAt(pos++) : 0;
-                int utf32 = (int) data.charAt(pos++);
+                int utf32 = data.charAt(pos++);
                 utf32 = ((code - 0xD7C0) << 10) + (utf32 & 0x3FF);
                 k2 = (0xff & (0xF0 | (utf32 >> 18))) | ((0x80 | ((utf32 >> 12) & 0x3F))) << 8 | ((0x80 | ((utf32 >> 6) & 0x3F))) << 16 | (0x80 | (utf32 & 0x3F)) << 24;
                 bits = 32;
             }
-            
             k1 |= k2 << shift;
-            
             // int used_bits = 32 - shift; // how many bits of k2 were used in
             // k1.
             // int unused_bits = bits - used_bits; // (bits-(32-shift)) ==
             // bits+shift-32 == bits-newshift
-            
             shift += bits;
             if (shift >= 32)
             {
                 // mix after we have a complete word
-                
                 k1 *= c1;
                 k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
                 k1 *= c2;
-                
                 h1 ^= k1;
                 h1 = (h1 << 13) | (h1 >>> 19); // ROTL32(h1,13);
                 h1 = h1 * 5 + 0xe6546b64;
-                
                 shift -= 32;
                 // unfortunately, java won't let you shift 32 bits off, so we
                 // need to check for 0
@@ -209,9 +185,7 @@ public final class MurmurHash3
                 }
                 nBytes += 4;
             }
-            
         } // inner
-        
         // handle tail
         if (shift > 0)
         {
@@ -221,21 +195,20 @@ public final class MurmurHash3
             k1 *= c2;
             h1 ^= k1;
         }
-        
         // finalization
         h1 ^= nBytes;
-        
         // fmix(h1);
         h1 ^= h1 >>> 16;
         h1 *= 0x85ebca6b;
         h1 ^= h1 >>> 13;
         h1 *= 0xc2b2ae35;
         h1 ^= h1 >>> 16;
-        
         return h1;
     }
-    
-    /** Returns the MurmurHash3_x64_128 hash, placing the result in "out". */
+
+    /**
+     * Returns the MurmurHash3_x64_128 hash, placing the result in "out".
+     */
     public static void murmurhash3_x64_128(byte[] key, int offset, int len, int seed, LongPair out)
     {
         // The original algorithm does have a 32 bit unsigned seed.
@@ -243,12 +216,10 @@ public final class MurmurHash3
         // prevent sign extension.
         long h1 = seed & 0x00000000FFFFFFFFL;
         long h2 = seed & 0x00000000FFFFFFFFL;
-        
         final long c1 = 0x87c37b91114253d5L;
         final long c2 = 0x4cf5ad432745937fL;
-        
         int roundedEnd = offset + (len & 0xFFFFFFF0); // round down to 16 byte
-                                                      // block
+        // block
         for (int i = offset; i < roundedEnd; i += 16)
         {
             long k1 = getLongLittleEndian(key, i);
@@ -268,10 +239,8 @@ public final class MurmurHash3
             h2 += h1;
             h2 = h2 * 5 + 0x38495ab5;
         }
-        
         long k1 = 0;
         long k2 = 0;
-        
         switch (len & 15)
         {
             case 15:
@@ -313,24 +282,26 @@ public final class MurmurHash3
                 k1 *= c2;
                 h1 ^= k1;
         }
-        
         // ----------
         // finalization
-        
         h1 ^= len;
         h2 ^= len;
-        
         h1 += h2;
         h2 += h1;
-        
         h1 = fmix64(h1);
         h2 = fmix64(h2);
-        
         h1 += h2;
         h2 += h1;
-        
         out.val1 = h1;
         out.val2 = h2;
     }
-    
+
+    /**
+     * 128 bits of state
+     */
+    public static final class LongPair
+    {
+        public long val1;
+        public long val2;
+    }
 }

@@ -6,8 +6,8 @@ import java.util.Map;
 
 public final class ReflectUtil
 {
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static Map<String, ? extends Enum<?>> getAllEnumInstances(Class<? extends Enum<?>> type)
     {
         try
@@ -22,7 +22,7 @@ public final class ReflectUtil
             return null;
         }
     }
-    
+
     public static Class<?> wrapPrimitive(Class<?> type)
     {
         if (type.isPrimitive() == false)
@@ -66,7 +66,7 @@ public final class ReflectUtil
             throw new IllegalArgumentException();
         }
     }
-    
+
     public static void throwException(Throwable t)
     {
         if (UNSAFE.isAvailable())
@@ -82,10 +82,10 @@ public final class ReflectUtil
         }
         else
         {
-            ReflectUtil.<RuntimeException> throwException0(t);
+            ReflectUtil.<RuntimeException>throwException0(t);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private static <E extends Throwable> void throwException0(Throwable t) throws E
     {

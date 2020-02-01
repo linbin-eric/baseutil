@@ -67,6 +67,23 @@ public class UNSAFE
         }
     }
 
+    public static long getFieldOffset(String fieldName)
+    {
+        try
+        {
+            String className = Thread.currentThread().getStackTrace()[2].getClassName();
+            Field  field     = Class.forName(className).getDeclaredField(fieldName);
+            field.setAccessible(true);
+            Verify.False(Modifier.isStatic(field.getModifiers()), "属性{}.{}是静态属性,不应该使用该方法,请检查{}", field.getDeclaringClass(), field.getName(), CodeLocation.getCodeLocation(2));
+            return unsafe.objectFieldOffset(field);
+        }
+        catch (Exception e)
+        {
+            ReflectUtil.throwException(e);
+            return 0;
+        }
+    }
+
     public static long objectFieldOffset(Field field)
     {
         return unsafe.objectFieldOffset(field);

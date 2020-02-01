@@ -28,6 +28,12 @@ public class RuntimeVisibleParameterAnnotationsAttrInfo extends AttributeInfo
         }
     }
 
+    @Override
+    public String toString()
+    {
+        return "RuntimeVisibleParameterAnnotationsAttrInfo{" + "parameterAnnotations=" + Arrays.toString(parameterAnnotations) + '}';
+    }
+
     class ParameterAnnotation
     {
         private int              num_annotations;
@@ -49,11 +55,5 @@ public class RuntimeVisibleParameterAnnotationsAttrInfo extends AttributeInfo
         {
             return "ParameterAnnotation{" + "annotationInfos=" + Arrays.toString(annotationInfos) + '}';
         }
-    }
-
-    @Override
-    public String toString()
-    {
-        return "RuntimeVisibleParameterAnnotationsAttrInfo{" + "parameterAnnotations=" + Arrays.toString(parameterAnnotations) + '}';
     }
 }

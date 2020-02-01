@@ -1,25 +1,25 @@
 package com.jfireframework.baseutil.encrypt;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import com.jfireframework.baseutil.exception.UnSupportException;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 /**
  * DES 加解密工具类，注意，该类是非线程安全的
- * 
+ *
  * @author linbin
- * 
  */
 public class DesUtil implements EnDecrpt
 {
     private Cipher decryptCipher;
     private Cipher encrptCipher;
-    
+
     /**
      * 设置des加密使用的密钥
-     * 
+     *
      * @param key
      */
     @Override
@@ -38,10 +38,10 @@ public class DesUtil implements EnDecrpt
             ReflectUtil.throwException(e);
         }
     }
-    
+
     /**
      * 加密原始信息
-     * 
+     *
      * @param src
      * @return
      */
@@ -58,10 +58,10 @@ public class DesUtil implements EnDecrpt
             return null;
         }
     }
-    
+
     /**
      * 解析加密信息
-     * 
+     *
      * @param src
      * @return
      */
@@ -78,25 +78,25 @@ public class DesUtil implements EnDecrpt
             return null;
         }
     }
-    
+
     @Override
     public void setPublicKey(byte[] publicKeyBytes)
     {
         throw new UnSupportException("DES为对称加密，无公钥");
     }
-    
+
     @Override
     public void setPrivateKey(byte[] privateKeyBytes)
     {
         throw new UnSupportException("DES为对称加密，无私钥");
     }
-    
+
     @Override
     public byte[] sign(byte[] src)
     {
         throw new UnSupportException("des无签名功能");
     }
-    
+
     @Override
     public boolean check(byte[] src, byte[] sign)
     {

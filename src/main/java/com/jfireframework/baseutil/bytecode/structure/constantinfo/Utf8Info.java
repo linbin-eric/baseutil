@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 
 public class Utf8Info extends ConstantInfo
 {
+    private static final Charset CHARSET = Charset.forName("utf8");
     private int    length;
     private String value;
 
@@ -44,6 +45,4 @@ public class Utf8Info extends ConstantInfo
     public void resolve(ConstantInfo[] constant_pool)
     {
     }
-
-    private static final Charset CHARSET = Charset.forName("utf8");
 }

@@ -1,17 +1,17 @@
 package com.jfireframework.baseutil.uniqueid;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.jfireframework.baseutil.StringUtil;
 import com.jfireframework.baseutil.exception.UnSupportException;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class SummerId implements Uid
 {
-    
-    private final AtomicInteger count     = new AtomicInteger(0);
-    private final static int    countMask = 0x0000ffff;
-    private final byte          workedId;
-    
+
+    private final static int           countMask = 0x0000ffff;
+    private final        AtomicInteger count     = new AtomicInteger(0);
+    private final        byte          workedId;
+
     public SummerId(int workerId)
     {
         if (workerId >= 0 && workerId <= 255)
@@ -23,18 +23,18 @@ public class SummerId implements Uid
             throw new UnSupportException("workerid的取值范围为0-255");
         }
     }
-    
+
     @Override
     public String generate()
     {
         return StringUtil.toHexString(generateBytes());
     }
-    
+
     @Override
     public long generateLong()
     {
         byte[] result = generateBytes();
-        long tmp = ((long) result[0] & 0xff) << 56;
+        long   tmp    = ((long) result[0] & 0xff) << 56;
         tmp |= ((long) result[1] & 0xff) << 48;
         tmp |= ((long) result[2] & 0xff) << 40;
         tmp |= ((long) result[3] & 0xff) << 32;
@@ -44,11 +44,11 @@ public class SummerId implements Uid
         tmp |= ((long) result[7] & 0xff);
         return tmp;
     }
-    
+
     @Override
     public String generateDigits()
     {
-        long tmp = generateLong();
+        long   tmp   = generateLong();
         char[] value = new char[11];
         value[0] = ByteTool.toDigit((int) ((tmp >>> 58) & short_mask));
         value[1] = ByteTool.toDigit((int) ((tmp >>> 52) & short_mask));
@@ -63,7 +63,7 @@ public class SummerId implements Uid
         value[10] = ByteTool.toDigit((int) ((tmp) & 0x000000000000000f));
         return String.valueOf(value);
     }
-    
+
     /**
      * 使用64个bit进行id生成 第一个bit不使用，默认为0 2-40bit是为毫秒是时间戳。足够使用17年 41-48bit是workerid的值
      * 49-64bit为序号，最大长度为0x0000ffff。 该算法可以在1毫秒内产生0x0000ffff个id。
@@ -73,7 +73,7 @@ public class SummerId implements Uid
     public byte[] generateBytes()
     {
         byte[] result = new byte[8];
-        long time = System.currentTimeMillis() - base;
+        long   time   = System.currentTimeMillis() - base;
         result[0] = (byte) (time >>> 32);
         result[1] = (byte) (time >>> 24);
         result[2] = (byte) (time >>> 16);
@@ -85,5 +85,4 @@ public class SummerId implements Uid
         result[7] = (byte) (tmp);
         return result;
     }
-    
 }

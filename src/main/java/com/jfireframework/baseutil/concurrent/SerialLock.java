@@ -1,16 +1,18 @@
 package com.jfireframework.baseutil.concurrent;
 
+import sun.misc.Unsafe;
+
 import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.LockSupport;
-import sun.misc.Unsafe;
 
 public class SerialLock<T>
 {
     private final static Unsafe     unsafe;
     private final static long       NEXT_OFF;
     private final static SerialNode TerminationNode = new SerialNode(null);
+
     static
     {
         try
@@ -28,38 +30,9 @@ public class SerialLock<T>
             throw new RuntimeException(e);
         }
     }
-    
-    static class SerialNode
-    {
-        final Runnable      runnable;
-        final Thread        owner;
-        volatile SerialNode next;
-        volatile boolean    current = false;
-        
-        SerialNode(Runnable runnable)
-        {
-            this.runnable = runnable;
-            this.owner = Thread.currentThread();
-        }
-        
-        boolean casTermination()
-        {
-            return unsafe.compareAndSwapObject(this, NEXT_OFF, null, TerminationNode);
-        }
-        
-        void wakeup()
-        {
-            LockSupport.unpark(owner);
-        }
-        
-        boolean casNext(SerialNode ns)
-        {
-            return unsafe.compareAndSwapObject(this, NEXT_OFF, null, ns);
-        }
-    }
-    
+
     private ConcurrentMap<T, SerialNode> store = new ConcurrentHashMap<T, SerialNode>();
-    
+
     public void exec(T key, Runnable task)
     {
         SerialNode ns = new SerialNode(task);
@@ -72,7 +45,7 @@ public class SerialLock<T>
         else
         {
             SerialNode next;
-            boolean exec = false;
+            boolean    exec = false;
             do
             {
                 next = cs.next;
@@ -117,9 +90,8 @@ public class SerialLock<T>
                 exec(key, task);
             }
         }
-        
     }
-    
+
     void processCs(SerialNode cs, T key)
     {
         cs.current = true;
@@ -150,5 +122,33 @@ public class SerialLock<T>
         next.current = true;
         next.wakeup();
     }
-    
+
+    static class SerialNode
+    {
+        final    Runnable   runnable;
+        final    Thread     owner;
+        volatile SerialNode next;
+        volatile boolean    current = false;
+
+        SerialNode(Runnable runnable)
+        {
+            this.runnable = runnable;
+            this.owner = Thread.currentThread();
+        }
+
+        boolean casTermination()
+        {
+            return unsafe.compareAndSwapObject(this, NEXT_OFF, null, TerminationNode);
+        }
+
+        void wakeup()
+        {
+            LockSupport.unpark(owner);
+        }
+
+        boolean casNext(SerialNode ns)
+        {
+            return unsafe.compareAndSwapObject(this, NEXT_OFF, null, ns);
+        }
+    }
 }

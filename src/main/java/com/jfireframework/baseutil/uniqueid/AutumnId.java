@@ -1,42 +1,21 @@
 package com.jfireframework.baseutil.uniqueid;
 
+import com.jfireframework.baseutil.StringUtil;
+
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.jfireframework.baseutil.StringUtil;
-
 public class AutumnId implements Uid
 {
-    private static final int           pid;
-    private static final byte[]        internal = new byte[5];
-    private static final AtomicInteger count    = new AtomicInteger(0);
-    private static final int           mask     = 0x0000ffff;
-    private static volatile AutumnId   INSTANCE;
-    
-    private AutumnId()
-    {
-    }
-    
-    public static final AutumnId instance()
-    {
-        if (INSTANCE != null)
-        {
-            return INSTANCE;
-        }
-        synchronized (count)
-        {
-            if (INSTANCE != null)
-            {
-                return INSTANCE;
-            }
-            INSTANCE = new AutumnId();
-            return INSTANCE;
-        }
-    }
-    
+    private static final    int           pid;
+    private static final    byte[]        internal = new byte[5];
+    private static final    AtomicInteger count    = new AtomicInteger(0);
+    private static final    int           mask     = 0x0000ffff;
+    private static volatile AutumnId      INSTANCE;
+
     static
     {
         String _pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
@@ -57,12 +36,33 @@ public class AutumnId implements Uid
         internal[3] = (byte) (_maxHash >>> 8);
         internal[4] = (byte) (_maxHash);
     }
-    
+
+    private AutumnId()
+    {
+    }
+
+    public static final AutumnId instance()
+    {
+        if (INSTANCE != null)
+        {
+            return INSTANCE;
+        }
+        synchronized (count)
+        {
+            if (INSTANCE != null)
+            {
+                return INSTANCE;
+            }
+            INSTANCE = new AutumnId();
+            return INSTANCE;
+        }
+    }
+
     @Override
     public byte[] generateBytes()
     {
         byte[] result = new byte[12];
-        long time = System.currentTimeMillis() - base;
+        long   time   = System.currentTimeMillis() - base;
         result[0] = (byte) (time >>> 32);
         result[1] = (byte) (time >>> 24);
         result[2] = (byte) (time >>> 16);
@@ -78,24 +78,24 @@ public class AutumnId implements Uid
         result[11] = (byte) (tmp);
         return result;
     }
-    
+
     @Override
     public String generate()
     {
         return StringUtil.toHexString(generateBytes());
     }
-    
+
     @Override
     public long generateLong()
     {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public String generateDigits()
     {
         byte[] result = generateBytes();
-        long tmp = ((long) result[0] & 0xff) << 40;
+        long   tmp    = ((long) result[0] & 0xff) << 40;
         tmp |= ((long) result[1] & 0xff) << 32;
         tmp |= ((long) result[2] & 0xff) << 24;
         tmp |= ((long) result[3] & 0xff) << 16;

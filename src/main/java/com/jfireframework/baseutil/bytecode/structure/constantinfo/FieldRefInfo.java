@@ -8,6 +8,4 @@ public class FieldRefInfo extends RefInfo
     {
         type = ConstantType.FieldRef;
     }
-
-
 }

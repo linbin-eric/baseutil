@@ -1,19 +1,17 @@
 package com.jfireframework.baseutil.encrypt;
 
-import com.jfireframework.baseutil.collection.StringCache;
-
 public class Base64Tool
 {
     static private char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
-    
+
     public static String encode(byte[] src)
     {
-        StringCache cache = new StringCache();
-        for (int i = 0; i < src.length;)
+        StringBuilder cache = new StringBuilder();
+        for (int i = 0; i < src.length; )
         {
-            int hign = i;
+            int hign   = i;
             int middle = hign + 1;
-            int low = middle + 1;
+            int low    = middle + 1;
             if (low < src.length)
             {
                 int base = ((src[hign] & 0xff) << 16) | ((src[middle] & 0xff) << 8) | (src[low] & 0xff);
@@ -44,7 +42,7 @@ public class Base64Tool
         }
         return cache.toString();
     }
-    
+
     public static byte[] decode(String ciphertext)
     {
         char[] charArray = null;
@@ -71,9 +69,9 @@ public class Base64Tool
         }
         byte[] result = charArray[charArray.length - 2] == '=' ? //
                 new byte[charArray.length / 4 * 3 - 2] : charArray[charArray.length - 1] == '=' ? //
-                        new byte[charArray.length / 4 * 3 - 1] : new byte[charArray.length / 4 * 3];
+                new byte[charArray.length / 4 * 3 - 1] : new byte[charArray.length / 4 * 3];
         int j = 0;
-        for (int i = 0; i < charArray.length;)
+        for (int i = 0; i < charArray.length; )
         {
             int h1 = i;
             int h2 = h1 + 1;
@@ -106,7 +104,7 @@ public class Base64Tool
         }
         return result;
     }
-    
+
     private static byte toByte(char c)
     {
         switch (c)
@@ -241,8 +239,6 @@ public class Base64Tool
                 return 63;
             default:
                 throw new UnsupportedOperationException("非标准base64字符:" + c);
-                
         }
     }
-    
 }

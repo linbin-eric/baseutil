@@ -1,136 +1,22 @@
 package com.jfireframework.baseutil;
 
+import com.jfireframework.baseutil.reflect.ReflectUtil;
+
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public class IniReader
 {
-    interface PropertyValueStore
-    {
-        /**
-         * 返回该属性的第一个值
-         * 
-         * @param property
-         * @return
-         */
-        String getValue(String property);
-        
-        /**
-         * 返回一个属性的所有值
-         * 
-         * @param property
-         * @return
-         */
-        String[] getValues(String property);
-        
-        Set<String> keySet();
-    }
-    
-    public interface Section extends PropertyValueStore
-    {
-        String name();
-        
-    }
-    
-    public interface IniFile extends PropertyValueStore
-    {
-        Section getSection(String name);
-        
-    }
-    
-    static class PropertyValueStoreImpl implements PropertyValueStore
-    {
-        Map<String, String[]> store = new HashMap<String, String[]>();
-        
-        @Override
-        public String getValue(String property)
-        {
-            String[] result = store.get(property);
-            if (result != null)
-            {
-                return result[0];
-            }
-            else
-            {
-                return null;
-            }
-        }
-        
-        public void putProperty(String property, String value)
-        {
-            if (store.containsKey(property))
-            {
-                String[] pred = store.get(property);
-                String[] now = new String[pred.length + 1];
-                System.arraycopy(pred, 0, now, 0, pred.length);
-                now[pred.length] = value;
-                store.put(property, now);
-            }
-            else
-            {
-                store.put(property, new String[] { value });
-            }
-        }
-        
-        @Override
-        public Set<String> keySet()
-        {
-            return store.keySet();
-        }
-        
-        @Override
-        public String[] getValues(String property)
-        {
-            return store.get(property);
-        }
-    }
-    
-    static class IniFileImpl extends PropertyValueStoreImpl implements IniFile
-    {
-        Map<String, Section> sections = new HashMap<String, IniReader.Section>();
-        
-        @Override
-        public Section getSection(String name)
-        {
-            return sections.get(name);
-        }
-        
-        void addSection(Section section)
-        {
-            sections.put(section.name(), section);
-        }
-        
-    }
-    
-    static class SectionImpl extends PropertyValueStoreImpl implements Section
-    {
-        final String                    name;
-        protected Map<String, String[]> store = new HashMap<String, String[]>();
-        
-        public SectionImpl(String name)
-        {
-            this.name = name;
-        }
-        
-        @Override
-        public String name()
-        {
-            return name;
-        }
-        
-    }
-    
     public static IniFile read(InputStream inputStream, Charset charset)
     {
         class Helper
         {
             /**
              * 从index位置开始（包含）,找寻/n的坐标。并且返回
-             * 
+             *
              * @param src
              * @param index
              * @return
@@ -154,8 +40,8 @@ public class IniReader
                 return src.length - 1;
             }
         }
-        Helper helper = new Helper();
-        SectionImpl preSection = null;
+        Helper      helper      = new Helper();
+        SectionImpl preSection  = null;
         IniFileImpl iniFileImpl = new IniFileImpl();
         try
         {
@@ -228,6 +114,117 @@ public class IniReader
         {
             ReflectUtil.throwException(e);
             return null;
+        }
+    }
+
+    interface PropertyValueStore
+    {
+        /**
+         * 返回该属性的第一个值
+         *
+         * @param property
+         * @return
+         */
+        String getValue(String property);
+
+        /**
+         * 返回一个属性的所有值
+         *
+         * @param property
+         * @return
+         */
+        String[] getValues(String property);
+
+        Set<String> keySet();
+    }
+
+    public interface Section extends PropertyValueStore
+    {
+        String name();
+    }
+
+    public interface IniFile extends PropertyValueStore
+    {
+        Section getSection(String name);
+    }
+
+    static class PropertyValueStoreImpl implements PropertyValueStore
+    {
+        Map<String, String[]> store = new HashMap<String, String[]>();
+
+        @Override
+        public String getValue(String property)
+        {
+            String[] result = store.get(property);
+            if (result != null)
+            {
+                return result[0];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void putProperty(String property, String value)
+        {
+            if (store.containsKey(property))
+            {
+                String[] pred = store.get(property);
+                String[] now  = new String[pred.length + 1];
+                System.arraycopy(pred, 0, now, 0, pred.length);
+                now[pred.length] = value;
+                store.put(property, now);
+            }
+            else
+            {
+                store.put(property, new String[]{value});
+            }
+        }
+
+        @Override
+        public Set<String> keySet()
+        {
+            return store.keySet();
+        }
+
+        @Override
+        public String[] getValues(String property)
+        {
+            return store.get(property);
+        }
+    }
+
+    static class IniFileImpl extends PropertyValueStoreImpl implements IniFile
+    {
+        Map<String, Section> sections = new HashMap<String, IniReader.Section>();
+
+        @Override
+        public Section getSection(String name)
+        {
+            return sections.get(name);
+        }
+
+        void addSection(Section section)
+        {
+            sections.put(section.name(), section);
+        }
+    }
+
+    static class SectionImpl extends PropertyValueStoreImpl implements Section
+    {
+        final     String                name;
+        protected Map<String, String[]> store = new HashMap<String, String[]>();
+
+        public SectionImpl(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public String name()
+        {
+            return name;
         }
     }
 }

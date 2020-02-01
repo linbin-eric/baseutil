@@ -6,9 +6,9 @@ public class FieldModel
 {
     private final String   name;
     private final Class<?> type;
-    
-    protected String       outSource;
-    
+
+    protected String outSource;
+
     public FieldModel(String name, Class<?> type, ClassModel classModel)
     {
         this.name = name;
@@ -17,7 +17,7 @@ public class FieldModel
         builder.append("public ").append(SmcHelper.getReferenceName(type, classModel)).append(" ").append(name).append(";\r\n");
         outSource = builder.toString();
     }
-    
+
     public FieldModel(String name, Class<?> type, String initStr, ClassModel classModel)
     {
         this.name = name;
@@ -26,17 +26,17 @@ public class FieldModel
         builder.append("public ").append(SmcHelper.getReferenceName(type, classModel)).append(" ").append(name).append(" = ").append(initStr).append(";\r\n");
         outSource = builder.toString();
     }
-    
+
     public String getName()
     {
         return name;
     }
-    
+
     public Class<?> getType()
     {
         return type;
     }
-    
+
     @Override
     public String toString()
     {

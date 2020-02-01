@@ -7,14 +7,14 @@ public class IntegerInfo extends ConstantInfo
 {
     private int value;
 
-    public int getValue()
-    {
-        return value;
-    }
-
     public IntegerInfo()
     {
         type = ConstantType.Integer;
+    }
+
+    public int getValue()
+    {
+        return value;
     }
 
     @Override

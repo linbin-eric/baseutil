@@ -1,12 +1,12 @@
 package com.jfireframework.baseutil;
 
-import java.nio.charset.Charset;
-
 import com.jfireframework.baseutil.encrypt.Base64Tool;
 import com.jfireframework.baseutil.time.Timewatch;
 import org.junit.Assert;
 import org.junit.Test;
 import sun.misc.BASE64Encoder;
+
+import java.nio.charset.Charset;
 
 public class Base64Test
 {
@@ -20,14 +20,14 @@ public class Base64Test
         System.out.println(Base64Tool.encode(name.getBytes(Charset.forName("utf8"))));
         System.out.println(new String(Base64Tool.decode("MTIzNDU"), Charset.forName("utf8")));
     }
-    
+
     @Test
     public void test()
     {
         String name = "我的名字";
         Assert.assertEquals(name, new String(Base64Tool.decode(Base64Tool.encode(name.getBytes()))));
     }
-    
+
     @Test
     public void speed()
     {
@@ -54,6 +54,5 @@ public class Base64Test
         }
         timewatch.end();
         System.out.println("BASE64Encoder:" + timewatch.getTotal());
-        
     }
 }

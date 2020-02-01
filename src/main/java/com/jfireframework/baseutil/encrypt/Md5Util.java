@@ -1,5 +1,10 @@
 package com.jfireframework.baseutil.encrypt;
 
+import com.jfireframework.baseutil.StringUtil;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -9,22 +14,17 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-
-import com.jfireframework.baseutil.StringUtil;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 public class Md5Util
 {
     private static Charset charset = Charset.forName("UTF-8");
-    
+
     public static byte[] md5(byte[] array)
     {
         try
         {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] result = md.digest(array);
+            MessageDigest md     = MessageDigest.getInstance("MD5");
+            byte[]        result = md.digest(array);
             return result;
         }
         catch (NoSuchAlgorithmException e)
@@ -33,7 +33,7 @@ public class Md5Util
             return null;
         }
     }
-    
+
     public static byte[] md5(ByteBuffer array)
     {
         try
@@ -49,7 +49,7 @@ public class Md5Util
             return null;
         }
     }
-    
+
     public static byte[] md5(byte[] array, int off, int length)
     {
         try
@@ -65,26 +65,26 @@ public class Md5Util
             return null;
         }
     }
-    
+
     public static byte[] md5(String str)
     {
         try
         {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] data = str.getBytes(charset);
-            byte[] result = md.digest(data);
+            MessageDigest md     = MessageDigest.getInstance("MD5");
+            byte[]        data   = str.getBytes(charset);
+            byte[]        result = md.digest(data);
             return result;
         }
         catch (Exception e)
         {
             ReflectUtil.throwException(e);
-            throw null;
+            return null;
         }
     }
-    
+
     /**
      * 检查文件的MD5值
-     * 
+     *
      * @param file
      * @param offset
      * @param length
@@ -97,7 +97,7 @@ public class Md5Util
         {
             randomAccessFile = new RandomAccessFile(file, "r");
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] src;
+            byte[]        src;
             if (length > 1024 * 1024)
             {
                 src = new byte[1024 * 1024];
@@ -144,15 +144,15 @@ public class Md5Util
             }
         }
     }
-    
+
     public static String md5Str(String str)
     {
         return StringUtil.toHexString(md5(str));
     }
-    
+
     /**
      * 返回加密后的密码 格式为iterationCount:slat:hash。其中num为迭代次数
-     * 
+     *
      * @param password
      * @return
      * @throws NoSuchAlgorithmException
@@ -162,12 +162,12 @@ public class Md5Util
     {
         try
         {
-            int iterations = 10;
-            char[] chars = password.toCharArray();
-            byte[] salt = getSalt();
-            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] hash = skf.generateSecret(spec).getEncoded();
+            int              iterations = 10;
+            char[]           chars      = password.toCharArray();
+            byte[]           salt       = getSalt();
+            PBEKeySpec       spec       = new PBEKeySpec(chars, salt, iterations, 64 * 8);
+            SecretKeyFactory skf        = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            byte[]           hash       = skf.generateSecret(spec).getEncoded();
             return iterations + ":" + StringUtil.toHexString(salt) + ":" + StringUtil.toHexString(hash);
         }
         catch (Exception e)
@@ -176,34 +176,34 @@ public class Md5Util
             return null;
         }
     }
-    
+
     private static byte[] getSalt() throws NoSuchAlgorithmException
     {
-        SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-        byte[] salt = new byte[16];
+        SecureRandom sr   = SecureRandom.getInstance("SHA1PRNG");
+        byte[]       salt = new byte[16];
         sr.nextBytes(salt);
         return salt;
     }
-    
+
     /**
      * 验证密码的正确性，密码原文的格式为iterationCount:slat:hash。其中num为迭代次数
-     * 
+     *
      * @param originalPassword 待验证的密码
-     * @param storedPassword 存储的加密的密码
+     * @param storedPassword   存储的加密的密码
      * @return
      */
     public static boolean validatePassword(String originalPassword, String storedPassword)
     {
         try
         {
-            String[] parts = storedPassword.split(":");
-            int iterations = Integer.parseInt(parts[0]);
-            byte[] salt = StringUtil.hexStringToBytes(parts[1]);
-            byte[] hash = StringUtil.hexStringToBytes(parts[2]);
-            PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(), salt, iterations, hash.length * 8);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] testHash = skf.generateSecret(spec).getEncoded();
-            int diff = hash.length ^ testHash.length;
+            String[]         parts      = storedPassword.split(":");
+            int              iterations = Integer.parseInt(parts[0]);
+            byte[]           salt       = StringUtil.hexStringToBytes(parts[1]);
+            byte[]           hash       = StringUtil.hexStringToBytes(parts[2]);
+            PBEKeySpec       spec       = new PBEKeySpec(originalPassword.toCharArray(), salt, iterations, hash.length * 8);
+            SecretKeyFactory skf        = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            byte[]           testHash   = skf.generateSecret(spec).getEncoded();
+            int              diff       = hash.length ^ testHash.length;
             for (int i = 0; i < hash.length && i < testHash.length; i++)
             {
                 diff |= hash[i] ^ testHash[i];

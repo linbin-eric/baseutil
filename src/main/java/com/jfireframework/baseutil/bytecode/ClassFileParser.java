@@ -1,8 +1,8 @@
 package com.jfireframework.baseutil.bytecode;
 
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
-import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
+import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
 import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.ConstantType;

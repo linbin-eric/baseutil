@@ -9,12 +9,12 @@ import java.util.Arrays;
 public class CodeAttriInfo extends AttributeInfo
 {
     //2字节长度
-    private int max_stack;
+    private int                max_stack;
     //2字节长度
-    private int max_locals;
-    private int code_length;
+    private int                max_locals;
+    private int                code_length;
     private ExceptionHandler[] exceptionHandlers;
-    private AttributeInfo[] attributeInfos;
+    private AttributeInfo[]    attributeInfos;
 
     public CodeAttriInfo(String name, int length)
     {

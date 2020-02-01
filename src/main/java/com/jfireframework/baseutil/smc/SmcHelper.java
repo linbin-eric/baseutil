@@ -1,6 +1,5 @@
 package com.jfireframework.baseutil.smc;
 
-import com.jfireframework.baseutil.collection.StringCache;
 import com.jfireframework.baseutil.smc.model.ClassModel;
 
 public class SmcHelper
@@ -26,7 +25,7 @@ public class SmcHelper
         }
         else
         {
-            StringCache cache = new StringCache();
+            StringBuilder cache = new StringBuilder();
             while (type.isArray())
             {
                 cache.append("[]");

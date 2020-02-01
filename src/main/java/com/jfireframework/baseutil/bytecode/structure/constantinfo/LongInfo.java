@@ -16,7 +16,7 @@ public class LongInfo extends ConstantInfo
     @Override
     public void resolve(BinaryData binaryData)
     {
-       value = binaryData.readLong();
+        value = binaryData.readLong();
     }
 
     public long getValue()

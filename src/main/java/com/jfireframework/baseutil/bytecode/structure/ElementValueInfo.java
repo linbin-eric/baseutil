@@ -3,10 +3,10 @@ package com.jfireframework.baseutil.bytecode.structure;
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.annotation.ValuePair;
+import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
 import com.jfireframework.baseutil.bytecode.util.BinaryData;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 import com.jfireframework.baseutil.reflect.ReflectUtil;
-import com.jfireframework.baseutil.bytecode.structure.constantinfo.*;
 
 import java.util.Arrays;
 

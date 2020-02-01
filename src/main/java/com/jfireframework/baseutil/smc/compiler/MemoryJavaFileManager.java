@@ -40,7 +40,7 @@ class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager>
     @Override
     public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className, Kind kind, FileObject sibling) throws IOException
     {
-        if ( kind == Kind.CLASS )
+        if (kind == Kind.CLASS)
         {
             return new MemoryOutputJavaFileObject(className);
         }
@@ -97,6 +97,5 @@ class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager>
                 }
             };
         }
-
     }
 }

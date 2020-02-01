@@ -17,11 +17,6 @@ public abstract class AttributeInfo
         this.length = length;
     }
 
-    public int getLength()
-    {
-        return length;
-    }
-
     public static AttributeInfo parse(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
         int           nameIndex = binaryData.readShort();
@@ -54,6 +49,11 @@ public abstract class AttributeInfo
         }
         info.resolve(binaryData, constantInfos);
         return info;
+    }
+
+    public int getLength()
+    {
+        return length;
     }
 
     protected abstract void resolve(BinaryData binaryData, ConstantInfo[] constantInfos);

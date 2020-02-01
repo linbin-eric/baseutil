@@ -6,7 +6,7 @@ public class FatherObject
     {
         return "你好";
     }
-    
+
     public String print2()
     {
         return "2123";

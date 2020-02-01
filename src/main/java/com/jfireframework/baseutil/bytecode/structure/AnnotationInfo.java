@@ -22,36 +22,6 @@ public class AnnotationInfo
     private String               type;
     private element_value_pair[] pairs;
 
-    class element_value_pair
-    {
-        private String           elementName;
-        private ElementValueInfo value;
-
-        void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
-        {
-            int element_name_index = binaryData.readShort();
-            elementName = ((Utf8Info) constantInfos[element_name_index - 1]).getValue();
-            value = new ElementValueInfo();
-            value.resolve(binaryData, constantInfos);
-        }
-
-        String getElementName()
-        {
-            return elementName;
-        }
-
-        ElementValueInfo getValue()
-        {
-            return value;
-        }
-
-        @Override
-        public String toString()
-        {
-            return "element_value_pair{" + "elementName='" + elementName + '\'' + ", value=" + value + '}';
-        }
-    }
-
     public void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
     {
         int type_index = binaryData.readShort();
@@ -112,5 +82,35 @@ public class AnnotationInfo
             elementValues.put(name, value.getValue(classLoader, methodInfoMap.get(name)));
         }
         return new DefaultAnnotationMetadata(type, elementValues, classLoader);
+    }
+
+    class element_value_pair
+    {
+        private String           elementName;
+        private ElementValueInfo value;
+
+        void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
+        {
+            int element_name_index = binaryData.readShort();
+            elementName = ((Utf8Info) constantInfos[element_name_index - 1]).getValue();
+            value = new ElementValueInfo();
+            value.resolve(binaryData, constantInfos);
+        }
+
+        String getElementName()
+        {
+            return elementName;
+        }
+
+        ElementValueInfo getValue()
+        {
+            return value;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "element_value_pair{" + "elementName='" + elementName + '\'' + ", value=" + value + '}';
+        }
     }
 }

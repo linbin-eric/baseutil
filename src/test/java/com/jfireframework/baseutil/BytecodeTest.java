@@ -1,9 +1,9 @@
 package com.jfireframework.baseutil;
 
-import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.ClassFile;
 import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
+import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.support.AnnotationContext;
 import com.jfireframework.baseutil.bytecode.support.AnnotationContextFactory;
 import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
@@ -66,19 +66,6 @@ public class BytecodeTest
         assertEquals("name2", paramNames[1]);
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Level1
-    {
-        String value();
-    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @Level1("level1")
-    @interface Level2
-    {
-        @OverridesAttribute(annotation = Level1.class, name = "value") String value();
-    }
-
     @Test
     @Level2("level2")
     public void test4() throws NoSuchMethodException
@@ -99,6 +86,19 @@ public class BytecodeTest
         ClassFile classFile = BytecodeUtil.loadClassFile(fortest5_2.class.getName().replace('.', '/'));
         assertTrue(classFile.hasInterface(forTest5.class));
         assertTrue(classFile.isSuperClass(fortest5_1.class));
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Level1
+    {
+        String value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Level1("level1")
+    @interface Level2
+    {
+        @OverridesAttribute(annotation = Level1.class, name = "value") String value();
     }
 
     interface forTest5

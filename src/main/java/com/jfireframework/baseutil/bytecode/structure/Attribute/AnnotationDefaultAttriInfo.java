@@ -6,12 +6,12 @@ import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public class AnnotationDefaultAttriInfo extends AttributeInfo
 {
+    private ElementValueInfo elementValueInfo;
+
     public AnnotationDefaultAttriInfo(String name, int length)
     {
         super(name, length);
     }
-
-    private ElementValueInfo elementValueInfo;
 
     @Override
     protected void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)

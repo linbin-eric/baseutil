@@ -1,11 +1,6 @@
 package com.jfireframework.baseutil.bytecode.support;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -14,16 +9,15 @@ public @interface OverridesAttribute
 {
     /**
      * 需要覆盖的注解
-     * 
+     *
      * @return
      */
     Class<? extends Annotation> annotation();
-    
+
     /**
      * 需要覆盖的属性名称
-     * 
+     *
      * @return
      */
     String name();
-    
 }

@@ -4,8 +4,8 @@ import com.jfireframework.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
-import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
+import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.bytecode.util.AccessFlags;
 
 import java.util.ArrayList;
@@ -26,42 +26,9 @@ public class ClassFile
     private AttributeInfo[]          attributeInfos;
     private List<AnnotationMetadata> annotations;
 
-    void setFieldInfos(FieldInfo[] fieldInfos)
-    {
-        this.fieldInfos = fieldInfos;
-    }
-
-    void setMethodInfos(MethodInfo[] methodInfos)
-    {
-        this.methodInfos = methodInfos;
-    }
-
     void setAttributeInfos(AttributeInfo[] attributeInfos)
     {
         this.attributeInfos = attributeInfos;
-    }
-
-    void setInterfaces(String[] interfaces)
-    {
-        this.interfaces = new String[interfaces.length];
-        for (int i = 0; i < this.interfaces.length; i++)
-        {
-            String value = interfaces[i];
-            if (value.indexOf('/') != -1)
-            {
-                value = value.replace('/', '.');
-            }
-            this.interfaces[i] = value;
-        }
-    }
-
-    void setThis_class_name(String this_class_name)
-    {
-        if (this_class_name.indexOf('/') != -1)
-        {
-            this_class_name = this_class_name.replace('/', '.');
-        }
-        this.this_class_name = this_class_name;
     }
 
     void setSuper_class_name(String super_class_name)
@@ -107,6 +74,11 @@ public class ClassFile
         return fieldInfos;
     }
 
+    void setFieldInfos(FieldInfo[] fieldInfos)
+    {
+        this.fieldInfos = fieldInfos;
+    }
+
     public List<AnnotationMetadata> getAnnotations(ClassLoader classLoader)
     {
         if (annotations != null)
@@ -140,6 +112,11 @@ public class ClassFile
         return methodInfos;
     }
 
+    void setMethodInfos(MethodInfo[] methodInfos)
+    {
+        this.methodInfos = methodInfos;
+    }
+
     public boolean isInterface()
     {
         return (access_flags & AccessFlags.ACC_INTERFACE) != 0;
@@ -165,6 +142,20 @@ public class ClassFile
         return interfaces;
     }
 
+    void setInterfaces(String[] interfaces)
+    {
+        this.interfaces = new String[interfaces.length];
+        for (int i = 0; i < this.interfaces.length; i++)
+        {
+            String value = interfaces[i];
+            if (value.indexOf('/') != -1)
+            {
+                value = value.replace('/', '.');
+            }
+            this.interfaces[i] = value;
+        }
+    }
+
     public String getSuperClassName()
     {
         return super_class_name;
@@ -173,6 +164,15 @@ public class ClassFile
     public String getThis_class_name()
     {
         return this_class_name;
+    }
+
+    void setThis_class_name(String this_class_name)
+    {
+        if (this_class_name.indexOf('/') != -1)
+        {
+            this_class_name = this_class_name.replace('/', '.');
+        }
+        this.this_class_name = this_class_name;
     }
 
     public boolean hasInterface(Class<?> ckass)

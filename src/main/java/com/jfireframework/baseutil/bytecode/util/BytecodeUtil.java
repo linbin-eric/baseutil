@@ -9,10 +9,9 @@ import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.CodeAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.LocalVariableTableAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
-import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
-import com.jfireframework.baseutil.collection.StringCache;
-import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.bytecode.structure.FieldInfo;
+import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
+import com.jfireframework.baseutil.reflect.ReflectUtil;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -157,16 +156,46 @@ public class BytecodeUtil
     {
         if (parameterType.isPrimitive())
         {
-            if (parameterType == int.class) return "I";
-            else if (parameterType == short.class) return "S";
-            else if (parameterType == long.class) return "J";
-            else if (parameterType == float.class) return "F";
-            else if (parameterType == double.class) return "D";
-            else if (parameterType == char.class) return "C";
-            else if (parameterType == byte.class) return "B";
-            else if (parameterType == boolean.class) return "Z";
-            else if (parameterType == void.class) return "V";
-            else throw new IllegalArgumentException();
+            if (parameterType == int.class)
+            {
+                return "I";
+            }
+            else if (parameterType == short.class)
+            {
+                return "S";
+            }
+            else if (parameterType == long.class)
+            {
+                return "J";
+            }
+            else if (parameterType == float.class)
+            {
+                return "F";
+            }
+            else if (parameterType == double.class)
+            {
+                return "D";
+            }
+            else if (parameterType == char.class)
+            {
+                return "C";
+            }
+            else if (parameterType == byte.class)
+            {
+                return "B";
+            }
+            else if (parameterType == boolean.class)
+            {
+                return "Z";
+            }
+            else if (parameterType == void.class)
+            {
+                return "V";
+            }
+            else
+            {
+                throw new IllegalArgumentException();
+            }
         }
         else if (parameterType.isArray())
         {
@@ -283,7 +312,7 @@ public class BytecodeUtil
 
     private static String getMethodDescriptor(Method method)
     {
-        StringCache cache = new StringCache();
+        StringBuilder cache = new StringBuilder();
         cache.append('(');
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes)

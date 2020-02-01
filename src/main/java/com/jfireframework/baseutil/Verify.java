@@ -11,7 +11,7 @@ public final class Verify
             throw new VerifyException(StringUtil.format(msg, params));
         }
     }
-    
+
     public static void notNull(Object target, String msg, Object... params)
     {
         if (target == null)
@@ -19,7 +19,7 @@ public final class Verify
             throw new VerifyException(StringUtil.format(msg, params));
         }
     }
-    
+
     public static void False(boolean target, String msg, Object... params)
     {
         if (target)
@@ -27,7 +27,7 @@ public final class Verify
             throw new VerifyException(StringUtil.format(msg, params));
         }
     }
-    
+
     public static void True(boolean target, String msg, Object... params)
     {
         if (target == false)
@@ -35,10 +35,10 @@ public final class Verify
             throw new VerifyException(StringUtil.format(msg, params));
         }
     }
-    
+
     /**
      * 对象target必须是类type的实例，否则抛出异常
-     * 
+     *
      * @param target
      * @param type
      * @param msg
@@ -51,10 +51,10 @@ public final class Verify
             throw new VerifyException(StringUtil.format(msg, params));
         }
     }
-    
+
     /**
      * 两个对象需要相等，否则抛出异常
-     * 
+     *
      * @param o1
      * @param o2
      * @param msg
@@ -67,12 +67,12 @@ public final class Verify
             throw new VerifyException(StringUtil.format(msg, params));
         }
     }
-    
+
     public static void error(String msg, Object... params)
     {
         throw new VerifyException(StringUtil.format(msg, params));
     }
-    
+
     public static void exist(Object entity, String msg, Object... params)
     {
         if (entity == null)

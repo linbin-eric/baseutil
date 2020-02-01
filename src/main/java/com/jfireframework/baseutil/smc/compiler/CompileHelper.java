@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-
 /**
  * In-memory compile Java source code as String.
  *
@@ -22,10 +21,10 @@ import java.util.ServiceLoader;
  */
 public class CompileHelper
 {
-    private final MemoryClassLoader memoryClassLoader;
-    private final JavaCompiler compiler;
-    private final MemoryJavaFileManager manager;
-    private static final Logger logger = LoggerFactory.getLogger(CompileHelper.class);
+    private static final Logger                logger = LoggerFactory.getLogger(CompileHelper.class);
+    private final        MemoryClassLoader     memoryClassLoader;
+    private final        JavaCompiler          compiler;
+    private final        MemoryJavaFileManager manager;
 
     public CompileHelper()
     {
@@ -44,8 +43,8 @@ public class CompileHelper
             compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null)
             {
-                ServiceLoader<JavaCompiler> load = ServiceLoader.load(JavaCompiler.class, classLoader);
-                Iterator<JavaCompiler> iterator = load.iterator();
+                ServiceLoader<JavaCompiler> load     = ServiceLoader.load(JavaCompiler.class, classLoader);
+                Iterator<JavaCompiler>      iterator = load.iterator();
                 if (iterator.hasNext())
                 {
                     compiler = iterator.next();
@@ -65,11 +64,11 @@ public class CompileHelper
     {
         try
         {
-            String source = classModel.toStringWithLineNo();
-            JavaFileObject javaFileObject = manager.makeStringSource(classModel.fileName(), source);
-            StringWriter writer = new StringWriter();
-            CompilationTask task = compiler.getTask(writer, manager, null, null, null, Arrays.asList(javaFileObject));
-            Boolean result = task.call();
+            String          source         = classModel.toStringWithLineNo();
+            JavaFileObject  javaFileObject = manager.makeStringSource(classModel.fileName(), source);
+            StringWriter    writer         = new StringWriter();
+            CompilationTask task           = compiler.getTask(writer, manager, null, null, null, Arrays.asList(javaFileObject));
+            Boolean         result         = task.call();
             if (result == null || !result.booleanValue())
             {
                 throw new RuntimeException("Compilation failed.The error is \r\n" + writer.toString() + "\r\nThe source is \r\n" + source);
@@ -77,7 +76,8 @@ public class CompileHelper
             logger.debug("编译的源代码是:\r\n{}\r\n", source);
             memoryClassLoader.addClassBytes(manager.getClassBytes());
             return memoryClassLoader.loadClass("com.jfireframe.smc.output." + classModel.className());
-        } finally
+        }
+        finally
         {
             manager.clear();
         }

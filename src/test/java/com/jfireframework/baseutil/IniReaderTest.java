@@ -1,9 +1,10 @@
 package com.jfireframework.baseutil;
 
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.InputStream;
+import java.nio.charset.Charset;
 
 public class IniReaderTest
 {

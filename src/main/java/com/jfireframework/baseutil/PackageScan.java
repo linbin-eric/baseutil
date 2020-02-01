@@ -37,9 +37,9 @@ public class PackageScan
             filterNames = packageName.split(":")[1];
             packageName = packageName.split(":")[0];
         }
-        List<String> classNames = new LinkedList<String>();
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String resourceName = packageName.replaceAll("\\.", "/");
+        List<String> classNames   = new LinkedList<String>();
+        ClassLoader  loader       = Thread.currentThread().getContextClassLoader();
+        String       resourceName = packageName.replaceAll("\\.", "/");
         try
         {
             Enumeration<URL> urls = loader.getResources(resourceName);
@@ -53,7 +53,8 @@ public class PackageScan
                         File urlFile = new File(url.toURI());
                         packageName = packageName.substring(0, packageName.lastIndexOf(".") + 1);
                         findClassNamesByFile(packageName, urlFile, classNames);
-                    } catch (URISyntaxException e)
+                    }
+                    catch (URISyntaxException e)
                     {
                         ReflectUtil.throwException(e);
                     }
@@ -63,7 +64,8 @@ public class PackageScan
                     getClassNamesByJar(url, resourceName, classNames);
                 }
             }
-        } catch (IOException e1)
+        }
+        catch (IOException e1)
         {
             ReflectUtil.throwException(e1);
         }
@@ -87,15 +89,16 @@ public class PackageScan
             // 获取正确并且完成的jar路径的url表示
             JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
             jarFile = jarURLConnection.getJarFile();
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException("url地址：'" + url.toString() + "'不正确", e);
         }
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements())
         {
-            JarEntry jarEntry = entries.nextElement();
-            String entryName = jarEntry.getName();
+            JarEntry jarEntry  = entries.nextElement();
+            String   entryName = jarEntry.getName();
             // 将符合条件的class文件的全限定名加入到list中
             if (entryName.endsWith(".class") && entryName.startsWith(packageName))
             {
@@ -122,7 +125,7 @@ public class PackageScan
         }
         else
         {
-            File[] files = packageFile.listFiles();
+            File[] files         = packageFile.listFiles();
             String tmPackageName = packageName + packageFile.getName() + ".";
             for (File f : files)
             {
@@ -159,7 +162,6 @@ public class PackageScan
                 outFilter(filter, classNames);
             }
         }
-
     }
 
     private static void inFilter(String rule, List<String> classNames)

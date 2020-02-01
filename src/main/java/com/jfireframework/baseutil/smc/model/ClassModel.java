@@ -1,7 +1,6 @@
 package com.jfireframework.baseutil.smc.model;
 
 import com.jfireframework.baseutil.smc.SmcHelper;
-import com.jfireframework.baseutil.collection.StringCache;
 
 import java.util.*;
 
@@ -34,7 +33,7 @@ public class ClassModel
 
     private String buildClassDefinition()
     {
-        StringCache cache = new StringCache();
+        StringBuilder cache = new StringBuilder();
         if (parentClass == null || parentClass == Object.class)
         {
             cache.append("public class ").append(className);
@@ -46,13 +45,15 @@ public class ClassModel
         if (interfaces.isEmpty() == false)
         {
             cache.append(" implements ");//
+            boolean hasComma = false;
             for (Class<?> each : interfaces)
             {
-                cache.append(SmcHelper.getReferenceName(each, this)).appendComma();
+                cache.append(SmcHelper.getReferenceName(each, this)).append(',');
+                hasComma = true;
             }
-            if (cache.isCommaLast())
+            if (hasComma)
             {
-                cache.deleteLast();
+                cache.setLength(cache.length() - 1);
             }
         }
         cache.append(" \r\n{\r\n");
@@ -104,7 +105,7 @@ public class ClassModel
 
     public void addConstructor(String initStr, Class<?>... params)
     {
-        StringCache cache = new StringCache();
+        StringBuilder cache = new StringBuilder();
         cache.append("public ").append(className);
         if (params.length == 0)
         {
@@ -118,7 +119,8 @@ public class ClassModel
                 cache.append(SmcHelper.getReferenceName(params[i], this)).append(" ");
                 cache.append("$").append(i).append(",");
             }
-            cache.deleteLast().append(")\r\n{");
+            cache.setLength(cache.length() - 1);
+            cache.append(")\r\n{");
         }
         cache.append(initStr).append("}\r\n");
         constructors.add(cache.toString());
@@ -166,8 +168,7 @@ public class ClassModel
     @Override
     public String toString()
     {
-
-        StringCache cache = new StringCache();
+        StringBuilder cache = new StringBuilder();
         cache.append(buildClassDefinition());
         for (String constructor : constructors)
         {
@@ -183,7 +184,7 @@ public class ClassModel
         }
         cache.append("}");
         String content = cache.toString();
-        cache.clear();
+        cache.setLength(0);
         cache.append("package ").append(packageName).append(';').append("\r\n");
         //将import的部分放在最后，以防止属性或者方法在输出的时候又增加了新的导入项
         for (Class<?> each : imports)
@@ -202,7 +203,7 @@ public class ClassModel
         }
         else
         {
-            StringCache cache = new StringCache();
+            StringBuilder cache = new StringBuilder();
             while (type.isArray())
             {
                 cache.append("[]");
@@ -214,10 +215,10 @@ public class ClassModel
 
     public String toStringWithLineNo()
     {
-        String      source = toString();
-        String[]    tmp    = source.split("\r\n");
-        StringCache cache  = new StringCache(source.length());
-        int         no     = 1;
+        String        source = toString();
+        String[]      tmp    = source.split("\r\n");
+        StringBuilder cache  = new StringBuilder(source.length());
+        int           no     = 1;
         for (String each : tmp)
         {
             if (no < 10)

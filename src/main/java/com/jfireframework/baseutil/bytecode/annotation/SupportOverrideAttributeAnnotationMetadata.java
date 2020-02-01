@@ -1,12 +1,12 @@
 package com.jfireframework.baseutil.bytecode.annotation;
 
+import com.jfireframework.baseutil.bytecode.ClassFile;
+import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.AttributeInfo;
 import com.jfireframework.baseutil.bytecode.structure.Attribute.RuntimeVisibleAnnotationsAttriInfo;
 import com.jfireframework.baseutil.bytecode.structure.MethodInfo;
 import com.jfireframework.baseutil.bytecode.support.OverridesAttribute;
-import com.jfireframework.baseutil.bytecode.ClassFile;
-import com.jfireframework.baseutil.bytecode.ClassFileParser;
 import com.jfireframework.baseutil.bytecode.util.BytecodeUtil;
 
 import java.util.HashMap;

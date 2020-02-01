@@ -7,10 +7,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SpringId implements Uid
 {
+    private final static int           countMask = 0x0000ffff;
     static               byte[]        pid       = new byte[2];
     static               SpringId      instance  = new SpringId();
+
+    static
+    {
+        String _pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+        int    pid  = Integer.valueOf(_pid);
+        SpringId.pid[0] = (byte) (pid >>> 8);
+        SpringId.pid[1] = (byte) pid;
+    }
+
     private final        AtomicInteger count     = new AtomicInteger(0);
-    private final static int           countMask = 0x0000ffff;
 
     private SpringId()
     {
@@ -21,16 +30,9 @@ public class SpringId implements Uid
         return instance;
     }
 
-    static
-    {
-        String _pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-        int    pid  = Integer.valueOf(_pid);
-        SpringId.pid[0] = (byte) (pid >>> 8);
-        SpringId.pid[1] = (byte) pid;
-    }
-
     /**
      * 前四个字节用于表达距离2190101的秒数，紧接着2个字节用于存储pid，然后2个字节是自增数字。这意味着在一秒内最多支撑0x0000ffff的个数。
+     *
      * @return
      */
     @Override
@@ -61,7 +63,7 @@ public class SpringId implements Uid
     public long generateLong()
     {
         byte[] result = generateBytes();
-        long tmp = ((long) result[0] & 0xff) << 56;
+        long   tmp    = ((long) result[0] & 0xff) << 56;
         tmp |= ((long) result[1] & 0xff) << 48;
         tmp |= ((long) result[2] & 0xff) << 40;
         tmp |= ((long) result[3] & 0xff) << 32;
@@ -75,7 +77,7 @@ public class SpringId implements Uid
     @Override
     public String generateDigits()
     {
-        long tmp = generateLong();
+        long   tmp   = generateLong();
         char[] value = new char[11];
         value[0] = ByteTool.toDigit((int) ((tmp >>> 58) & short_mask));
         value[1] = ByteTool.toDigit((int) ((tmp >>> 52) & short_mask));
@@ -90,5 +92,4 @@ public class SpringId implements Uid
         value[10] = ByteTool.toDigit((int) ((tmp) & 0x000000000000000f));
         return String.valueOf(value);
     }
-
 }

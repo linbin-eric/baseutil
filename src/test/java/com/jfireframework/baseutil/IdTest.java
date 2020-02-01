@@ -1,13 +1,13 @@
 package com.jfireframework.baseutil;
 
 import com.jfireframework.baseutil.uniqueid.AutumnId;
-import org.junit.Test;
 import com.jfireframework.baseutil.uniqueid.SummerId;
 import com.jfireframework.baseutil.uniqueid.Uid;
+import org.junit.Test;
 
 public class IdTest
 {
-    
+
     @Test
     public void test2()
     {
@@ -17,7 +17,7 @@ public class IdTest
             System.out.println(uid.generateDigits());
         }
     }
-    
+
     @Test
     public void test34()
     {

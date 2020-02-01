@@ -1,58 +1,33 @@
 package com.jfireframework.baseutil.concurrent;
 
+import com.jfireframework.baseutil.reflect.UNSAFE;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-import com.jfireframework.baseutil.reflect.UNSAFE;
-
 public abstract class Sync<E>
 {
-    private volatile Node     head;
-    private volatile Node     tail;
     private static final long tailOffset = UNSAFE.getFieldOffset("tail", Sync.class);
     private static final int  WAITING    = 1;
     private static final int  CANCELED   = 2;
-    
-    static class Node
-    {
-        private Node              prev;
-        private volatile Thread   successor;
-        private volatile int      status;
-        private static final long statusOffset    = UNSAFE.getFieldOffset("status", Node.class);
-        private static final long successorOffset = UNSAFE.getFieldOffset("successor", Node.class);
-        
-        public Node()
-        {
-            UNSAFE.putInt(this, statusOffset, WAITING);
-        }
-        
-        public void relaxSetSuccessor(Thread next)
-        {
-            UNSAFE.putOrderedObject(this, successorOffset, next);
-        }
-        
-        public void clean()
-        {
-            prev = null;
-            UNSAFE.putObject(this, successorOffset, null);
-        }
-    }
-    
+    private volatile     Node head;
+    private volatile     Node tail;
+
     public Sync()
     {
         head = tail = new Node();
     }
-    
+
     public boolean hasWaiters()
     {
         return head != tail;
     }
-    
+
     private Node enqueue()
     {
-        Thread t = Thread.currentThread();
-        Node insert = new Node();
-        Node pred = tail;
+        Thread t      = Thread.currentThread();
+        Node   insert = new Node();
+        Node   pred   = tail;
         insert.prev = pred;
         if (UNSAFE.compareAndSwapObject(this, tailOffset, pred, insert))
         {
@@ -60,7 +35,7 @@ public abstract class Sync<E>
             pred.relaxSetSuccessor(t);
             return insert;
         }
-        for (;;)
+        for (; ; )
         {
             pred = tail;
             insert.prev = pred;
@@ -72,28 +47,28 @@ public abstract class Sync<E>
             }
         }
     }
-    
+
     public void signal()
     {
         Node h = head;
         unparkSuccessor(h);
     }
-    
+
     /**
      * 获取独占资源
-     * 
+     *
      * @return
      */
     protected abstract E get();
-    
+
     public E take(long time, TimeUnit unit)
     {
-        E result;
-        Node self = enqueue();
-        Node pred = self.prev;
+        E    result;
+        Node self  = enqueue();
+        Node pred  = self.prev;
         Node h;
         long nanos = unit.toNanos(time);
-        long t0 = System.nanoTime();
+        long t0    = System.nanoTime();
         do
         {
             if (pred == (h = head))
@@ -153,12 +128,11 @@ public abstract class Sync<E>
             }
             if (pred.status == CANCELED)
             {
-                while (pred != h && (pred = pred.prev).status == CANCELED)
-                    ;
+                while (pred != h && (pred = pred.prev).status == CANCELED) ;
             }
         } while (true);
     }
-    
+
     public E take()
     {
         Node self = enqueue();
@@ -183,8 +157,7 @@ public abstract class Sync<E>
             else if (pred.status == CANCELED)
             {
                 // 寻找到非取消节点的最靠近的head的节点作为新的前置节点
-                while (pred != h && (pred = pred.prev).status == CANCELED)
-                    ;
+                while (pred != h && (pred = pred.prev).status == CANCELED) ;
             }
             else
             {
@@ -197,10 +170,10 @@ public abstract class Sync<E>
             }
         } while (true);
     }
-    
+
     /**
      * 唤醒后续节点。
-     * 
+     *
      * @param node
      */
     private void unparkSuccessor(Node node)
@@ -210,13 +183,12 @@ public abstract class Sync<E>
         {
             if (nextWaiter == null)
             {
-                while ((nextWaiter = node.successor) == null)
-                    ;
+                while ((nextWaiter = node.successor) == null) ;
             }
             LockSupport.unpark(nextWaiter);
         }
     }
-    
+
     private void cancel(Node node)
     {
         node.status = CANCELED;
@@ -225,5 +197,29 @@ public abstract class Sync<E>
         pred.successor = null;
         unparkSuccessor(node);
     }
-    
+
+    static class Node
+    {
+        private static final long   statusOffset    = UNSAFE.getFieldOffset("status", Node.class);
+        private static final long   successorOffset = UNSAFE.getFieldOffset("successor", Node.class);
+        private              Node   prev;
+        private volatile     Thread successor;
+        private volatile     int    status;
+
+        public Node()
+        {
+            UNSAFE.putInt(this, statusOffset, WAITING);
+        }
+
+        public void relaxSetSuccessor(Thread next)
+        {
+            UNSAFE.putOrderedObject(this, successorOffset, next);
+        }
+
+        public void clean()
+        {
+            prev = null;
+            UNSAFE.putObject(this, successorOffset, null);
+        }
+    }
 }

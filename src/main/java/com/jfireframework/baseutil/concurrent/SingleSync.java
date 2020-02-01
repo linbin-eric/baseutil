@@ -4,10 +4,10 @@ import java.util.concurrent.locks.LockSupport;
 
 public class SingleSync
 {
-    protected Thread           owner;
+    protected          Thread  owner;
     protected volatile boolean finished = false;
     protected volatile boolean await    = false;
-    
+
     public void signal()
     {
         finished = true;
@@ -16,7 +16,7 @@ public class SingleSync
             LockSupport.unpark(owner);
         }
     }
-    
+
     public void await()
     {
         owner = Thread.currentThread();
@@ -26,7 +26,7 @@ public class SingleSync
             LockSupport.park();
         }
     }
-    
+
     @Override
     public String toString()
     {
@@ -40,7 +40,7 @@ public class SingleSync
             return "thread:" + t.getName() + " is waiting";
         }
     }
-    
+
     public void reset()
     {
         owner = null;

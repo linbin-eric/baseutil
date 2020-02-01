@@ -9,25 +9,23 @@ import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.jfireframework.baseutil.concurrent.ParalLock;
-
 public class SimpleHotswapClassLoader extends URLClassLoader
 {
+    private static final ParalLock                           PARAL_LOCK                  = new ParalLock();
+    private final        File                                reloadPathFile;
     private              ClassLoader                         parent;
     private              ConcurrentHashMap<String, Class<?>> classMap                    = new ConcurrentHashMap<String, Class<?>>();
-    private final        File                                reloadPathFile;
     private              String[]                            reloadPackages              = new String[0];
     private              String[]                            reloadPackageForClassFiless = new String[0];
     private              String[]                            excludePackages             = new String[0];
-    private static final ParalLock                           PARAL_LOCK                  = new ParalLock();
-    
+
     public SimpleHotswapClassLoader(String reloadPath)
     {
         super(new URL[0]);
         parent = this.getClass().getClassLoader();
         reloadPathFile = new File(reloadPath);
     }
-    
+
     public void setReloadPackages(String... reloadPackages)
     {
         this.reloadPackages = reloadPackages;
@@ -37,12 +35,12 @@ public class SimpleHotswapClassLoader extends URLClassLoader
             reloadPackageForClassFiless[i] = reloadPackages[i].replace(".", "/");
         }
     }
-    
+
     public void setExcludePackages(String... excludePackages)
     {
         this.excludePackages = excludePackages;
     }
-    
+
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException
     {
@@ -69,13 +67,14 @@ public class SimpleHotswapClassLoader extends URLClassLoader
                     {
                         continue;
                     }
+                    FileInputStream inputStream = null;
                     try
                     {
                         File file = new File(reloadPathFile, name.replace(".", "/") + ".class");
-                        FileInputStream inputStream = new FileInputStream(file);
+                        inputStream = new FileInputStream(file);
                         byte[] src = new byte[inputStream.available()];
                         inputStream.read(src);
-                        inputStream.close();
+                        //inputStream.close();
                         Class<?> c = defineClass(name, src, 0, src.length);
                         classMap.put(name, c);
                         return c;
@@ -83,6 +82,21 @@ public class SimpleHotswapClassLoader extends URLClassLoader
                     catch (Exception e)
                     {
                         ReflectUtil.throwException(e);
+                    }
+                    finally
+                    {
+                        if (inputStream != null)
+                        {
+                            try
+                            {
+                                inputStream.close();
+                            }
+                            catch (IOException e)
+                            {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 }
             }
@@ -106,19 +120,19 @@ public class SimpleHotswapClassLoader extends URLClassLoader
             return c;
         }
     }
-    
+
     @Override
     public URL[] getURLs()
     {
         return ((URLClassLoader) parent).getURLs();
     }
-    
+
     @Override
     public Enumeration<URL> getResources(String name) throws IOException
     {
         return parent.getResources(name);
     }
-    
+
     @Override
     public URL getResource(String name)
     {
@@ -136,7 +150,6 @@ public class SimpleHotswapClassLoader extends URLClassLoader
                     return parent.getResource(name);
                 }
             }
-            
         }
         return parent.getResource(name);
     }

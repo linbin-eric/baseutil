@@ -4,8 +4,8 @@ import com.jfireframework.baseutil.bytecode.util.BinaryData;
 
 public abstract class RefInfo extends ConstantInfo
 {
-    protected int classInfoIndex;
-    protected int nameAndTypeInfoIndex;
+    protected int       classInfoIndex;
+    protected int       nameAndTypeInfoIndex;
     protected ClassInfo classInfo;
 
     @Override
@@ -18,7 +18,6 @@ public abstract class RefInfo extends ConstantInfo
     @Override
     public void resolve(ConstantInfo[] constant_pool)
     {
-        classInfo = (ClassInfo) constant_pool[classInfoIndex-1];
+        classInfo = (ClassInfo) constant_pool[classInfoIndex - 1];
     }
-
 }

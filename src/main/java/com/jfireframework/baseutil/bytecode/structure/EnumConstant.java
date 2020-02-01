@@ -7,7 +7,7 @@ public class EnumConstant
 
     public EnumConstant(String typeName, String enumName)
     {
-        if ( typeName.startsWith("L") )
+        if (typeName.startsWith("L"))
         {
             typeName = typeName.substring(1, typeName.length() - 1);
         }

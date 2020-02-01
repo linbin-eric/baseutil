@@ -3,11 +3,11 @@ package com.jfireframework.baseutil.bytecode.structure;
 public class ConstantValue
 {
     ElementValueType type;
-    int intValue;
-    float floatValue;
-    long longValue;
-    double doubleValue;
-    String stringValue;
+    int              intValue;
+    float            floatValue;
+    long             longValue;
+    double           doubleValue;
+    String           stringValue;
 
     public ConstantValue(ElementValueType type, String stringValue)
     {

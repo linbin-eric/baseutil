@@ -1,31 +1,25 @@
 package com.jfireframework.baseutil.reflect.copy;
 
+import com.jfireframework.baseutil.reflect.ReflectUtil;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import com.jfireframework.baseutil.reflect.ReflectUtil;
+import java.util.*;
 
 public class CopyInstance<S, D> implements Copy<S, D>
 {
     private final Class<S>                       source;
     private final Class<D>                       des;
     private final PropertyCopyDescriptor<S, D>[] copyDescriptors;
-    
+
     @SuppressWarnings("unchecked")
     public CopyInstance(Class<S> sources, Class<D> des, PropertyCopyDescriptorFactory factory)
     {
         this.source = sources;
         this.des = des;
-        Field[] desFields = getAllFields(des);
-        Map<String, Field> sourceFields = generateSourceFields();
-        List<PropertyCopyDescriptor<S, D>> list = new ArrayList<PropertyCopyDescriptor<S, D>>();
+        Field[]                            desFields    = getAllFields(des);
+        Map<String, Field>                 sourceFields = generateSourceFields();
+        List<PropertyCopyDescriptor<S, D>> list         = new ArrayList<PropertyCopyDescriptor<S, D>>();
         for (Field toField : desFields)
         {
             if (Modifier.isFinal(toField.getModifiers()) || Modifier.isStatic(toField.getModifiers()))
@@ -88,11 +82,11 @@ public class CopyInstance<S, D> implements Copy<S, D>
         }
         copyDescriptors = list.toArray(new PropertyCopyDescriptor[list.size()]);
     }
-    
+
     private Map<String, Field> generateSourceFields()
     {
-        Field[] fields = getAllFields(source);
-        Map<String, Field> map = new HashMap<String, Field>();
+        Field[]            fields = getAllFields(source);
+        Map<String, Field> map    = new HashMap<String, Field>();
         for (Field fromField : fields)
         {
             if (Modifier.isFinal(fromField.getModifiers()) || Modifier.isStatic(fromField.getModifiers()))
@@ -143,7 +137,7 @@ public class CopyInstance<S, D> implements Copy<S, D>
         }
         return map;
     }
-    
+
     @Override
     public D copy(S src, D desc)
     {
@@ -165,16 +159,17 @@ public class CopyInstance<S, D> implements Copy<S, D>
         }
         return desc;
     }
-    
+
     /**
      * 获取该类的所有field对象，如果子类重写了父类的field，则只包含子类的field
-     * 
+     *
      * @param entityClass
      * @return
      */
     Field[] getAllFields(Class<?> entityClass)
     {
-        Set<Field> set = new TreeSet<Field>(new Comparator<Field>() {
+        Set<Field> set = new TreeSet<Field>(new Comparator<Field>()
+        {
             // 只需要去重，并且希望父类的field在返回数组中排在后面，所以比较全部返回1
             @Override
             public int compare(Field o1, Field o2)
@@ -199,5 +194,4 @@ public class CopyInstance<S, D> implements Copy<S, D>
         }
         return set.toArray(new Field[set.size()]);
     }
-    
 }

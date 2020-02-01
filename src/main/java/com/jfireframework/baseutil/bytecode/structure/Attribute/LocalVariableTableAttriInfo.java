@@ -43,6 +43,11 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
         });
     }
 
+    public LocalVariableTableEntry[] getEntries()
+    {
+        return entries;
+    }
+
     public class LocalVariableTableEntry
     {
         private int    start_pc;
@@ -80,10 +85,5 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
         {
             return "LocalVariableTableEntry{" + "index=" + index + ", name='" + name + '\'' + '}';
         }
-    }
-
-    public LocalVariableTableEntry[] getEntries()
-    {
-        return entries;
     }
 }

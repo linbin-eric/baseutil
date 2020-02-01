@@ -10,11 +10,6 @@ import java.io.IOException;
 
 public class CompilerTest
 {
-    public interface Ptest
-    {
-        String sayHello();
-    }
-
     @Test
     public void test() throws NoSuchMethodException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException
     {
@@ -27,5 +22,10 @@ public class CompilerTest
         Class<?>      compile  = compiler.compile(classModel);
         Ptest         instance = (Ptest) compile.newInstance();
         Assert.assertEquals("hi", instance.sayHello());
+    }
+
+    public interface Ptest
+    {
+        String sayHello();
     }
 }

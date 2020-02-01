@@ -13,8 +13,6 @@ public class DefaultAnnotationMetadata extends AbstractAnnotationMetadata
         super(typeName, attributes, loader);
     }
 
-
-
     @Override
     public List<AnnotationMetadata> getPresentAnnotations()
     {

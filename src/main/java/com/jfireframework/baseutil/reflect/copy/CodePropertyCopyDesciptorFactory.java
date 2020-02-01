@@ -1,21 +1,21 @@
 package com.jfireframework.baseutil.reflect.copy;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.jfireframework.baseutil.reflect.ReflectUtil;
 import com.jfireframework.baseutil.smc.SmcHelper;
 import com.jfireframework.baseutil.smc.compiler.CompileHelper;
 import com.jfireframework.baseutil.smc.model.ClassModel;
 import com.jfireframework.baseutil.smc.model.MethodModel;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescriptorFactory
 {
+    public static final  CodePropertyCopyDesciptorFactory instance = new CodePropertyCopyDesciptorFactory();
     private static final AtomicInteger                    count    = new AtomicInteger(0);
     private static final CompileHelper                    compiler = new CompileHelper();
-    public static final  CodePropertyCopyDesciptorFactory instance = new CodePropertyCopyDesciptorFactory();
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected <S, D> PropertyCopyDescriptor<S, D> generateEnumCopyPropertyCopyDescriptor(Class<S> s, Class<D> d, Field fromProperty, Field toProperty)
@@ -46,9 +46,8 @@ public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescri
             ReflectUtil.throwException(e);
             return null;
         }
-        
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected <S, D> PropertyCopyDescriptor<S, D> generateDefaultCopyPropertyDescriptor(Class<S> s, Class<D> d, Field fromProperty, Field toProperty)
@@ -56,8 +55,8 @@ public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescri
         ClassModel classModel = new ClassModel("CodePropertyCopyDescriptor_" + count.incrementAndGet(), Object.class, PropertyCopyDescriptor.class);
         try
         {
-            Method fromPropertyMethod = PropertyCopyDescriptor.class.getMethod("fromProperty");
-            MethodModel methodModel = new MethodModel(fromPropertyMethod, classModel);
+            Method      fromPropertyMethod = PropertyCopyDescriptor.class.getMethod("fromProperty");
+            MethodModel methodModel        = new MethodModel(fromPropertyMethod, classModel);
             methodModel.setBody("return \"" + fromProperty.getName() + "\";\r\n");
             classModel.putMethodModel(methodModel);
             Method toPropertyMethod = PropertyCopyDescriptor.class.getMethod("toProperty");
@@ -88,5 +87,4 @@ public class CodePropertyCopyDesciptorFactory extends AbstractPropertyCopyDescri
             return null;
         }
     }
-    
 }

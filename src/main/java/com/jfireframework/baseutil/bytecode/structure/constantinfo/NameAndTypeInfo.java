@@ -5,8 +5,8 @@ import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 public class NameAndTypeInfo extends ConstantInfo
 {
-    private int nameIndex;
-    private int descriptorIndex;
+    private int    nameIndex;
+    private int    descriptorIndex;
     private String name;
     private String descriptor;
 

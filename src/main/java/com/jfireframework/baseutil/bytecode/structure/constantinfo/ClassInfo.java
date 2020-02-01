@@ -5,7 +5,7 @@ import com.jfireframework.baseutil.bytecode.util.ConstantType;
 
 public class ClassInfo extends ConstantInfo
 {
-    private int nameIndex;
+    private int    nameIndex;
     private String name;
 
     public ClassInfo()

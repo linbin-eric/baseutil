@@ -1,41 +1,42 @@
 package com.jfireframework.baseutil.reflect.copy;
 
+import com.jfireframework.baseutil.reflect.ReflectUtil;
+
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.jfireframework.baseutil.reflect.ReflectUtil;
-
 public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyCopyDescriptorFactory
 {
-    
+
     @Override
     public <S, D> PropertyCopyDescriptor<S, D> getInstance(Class<S> s, Class<D> d, String fromProperty, String toProperty)
     {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public <S, D> PropertyCopyDescriptor<S, D> getInstance(Class<S> s, Class<D> d, final Field fromProperty, final Field toProperty)
     {
         boolean hasTransfer = hasTransfer(fromProperty, toProperty);
-        boolean isEnum = canEnumCopy(fromProperty.getType(), toProperty.getType());
+        boolean isEnum      = canEnumCopy(fromProperty.getType(), toProperty.getType());
         if (fromProperty.getType() != toProperty.getType() && hasTransfer == false && isEnum == false)
         {
-            return new PropertyCopyDescriptor<S, D>() {
-                
+            return new PropertyCopyDescriptor<S, D>()
+            {
+
                 @Override
                 public String fromProperty()
                 {
                     return fromProperty.getName();
                 }
-                
+
                 @Override
                 public String toProperty()
                 {
                     return toProperty.getName();
                 }
-                
+
                 @Override
                 public void process(S source, D des) throws Exception
                 {
@@ -53,10 +54,10 @@ public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyC
             return generateDefaultCopyPropertyDescriptor(s, d, fromProperty, toProperty);
         }
     }
-    
+
     /**
      * 是否是基本类到包装类的复制
-     * 
+     *
      * @param fromProperty
      * @param toProperty
      * @return
@@ -101,8 +102,8 @@ public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyC
         }
         return hasTransfer;
     }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private boolean canEnumCopy(Class<?> srcType, Class<?> desType)
     {
         if (Enum.class.isAssignableFrom(srcType) == false || Enum.class.isAssignableFrom(desType) == false)
@@ -110,7 +111,7 @@ public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyC
             return false;
         }
         Map<String, ? extends Enum<?>> allEnumInstances = ReflectUtil.getAllEnumInstances((Class<? extends Enum<?>>) srcType);
-        boolean miss = false;
+        boolean                        miss             = false;
         for (Entry<String, ? extends Enum<?>> entry : allEnumInstances.entrySet())
         {
             try
@@ -125,9 +126,8 @@ public abstract class AbstractPropertyCopyDescriptorFactory implements PropertyC
         }
         return !miss;
     }
-    
+
     protected abstract <S, D> PropertyCopyDescriptor<S, D> generateEnumCopyPropertyCopyDescriptor(Class<S> s, Class<D> d, final Field fromProperty, final Field toProperty);
-    
+
     protected abstract <S, D> PropertyCopyDescriptor<S, D> generateDefaultCopyPropertyDescriptor(Class<S> s, Class<D> d, Field fromProperty, Field toProperty);
-    
 }
