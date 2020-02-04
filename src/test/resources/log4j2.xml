@@ -32,7 +32,7 @@
 	</Appenders>
 
 	<Loggers>
-		<Logger name="com.jfire" level="debug">
+		<Logger name="com.jfireframework" level="debug">
 			<AppenderRef ref="Console" />
 		</Logger>
 	</Loggers>

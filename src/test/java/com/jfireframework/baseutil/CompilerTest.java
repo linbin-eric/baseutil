@@ -15,17 +15,18 @@ public class CompilerTest
     {
         ClassModel classModel = new ClassModel("PtestImpl");
         classModel.addInterface(Ptest.class);
-        MethodModel methodModel = new MethodModel(Ptest.class.getMethod("sayHello"), classModel);
+        MethodModel methodModel = new MethodModel(Ptest.class.getMethod("sayHello",String.class), classModel);
+        methodModel.setParamterNames(new String[]{"arg"});
         methodModel.setBody("return \"hi\";");
         classModel.putMethodModel(methodModel);
         CompileHelper compiler = new CompileHelper(Thread.currentThread().getContextClassLoader());
         Class<?>      compile  = compiler.compile(classModel);
         Ptest         instance = (Ptest) compile.newInstance();
-        Assert.assertEquals("hi", instance.sayHello());
+        Assert.assertEquals("hi", instance.sayHello(""));
     }
 
     public interface Ptest
     {
-        String sayHello();
+        String sayHello(String arg);
     }
 }

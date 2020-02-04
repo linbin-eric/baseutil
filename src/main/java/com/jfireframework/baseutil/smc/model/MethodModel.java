@@ -12,10 +12,13 @@ public class MethodModel
     private Class<?>[]  paramterTypes;
     // 该数组为空时意味着全部属性都不需要用final修饰
     private boolean[]   paramterFinals;
+    //入参名称，没有值的情况下则使用$0,$1,$2,,,,,
+    private String[]    paramterNames;
     private Class<?>[]  throwables;
     private String      methodName;
     private String      body;
     private ClassModel  classModel;
+
     public MethodModel(ClassModel classModel)
     {
         this.classModel = classModel;
@@ -41,6 +44,11 @@ public class MethodModel
         returnType = method.getReturnType();
         paramterTypes = method.getParameterTypes();
         throwables = method.getExceptionTypes();
+        paramterNames = new String[paramterTypes.length];
+        for (int i = 0; i < paramterTypes.length; i++)
+        {
+            paramterNames[i] = "$" + i;
+        }
     }
 
     public MethodModel(MethodModel methodModel)
@@ -50,6 +58,11 @@ public class MethodModel
         paramterTypes = methodModel.paramterTypes;
         throwables = methodModel.throwables;
         returnType = methodModel.returnType;
+        paramterNames = new String[paramterTypes.length];
+        for (int i = 0; i < paramterTypes.length; i++)
+        {
+            paramterNames[i] = "$" + i;
+        }
     }
 
     @Override
@@ -81,7 +94,7 @@ public class MethodModel
                 for (int i = 0; i < paramterTypes.length; i++)
                 {
                     Class<?> each = paramterTypes[i];
-                    cache.append(SmcHelper.getReferenceName(each, classModel)).append(" $").append(i).append(',');
+                    cache.append(SmcHelper.getReferenceName(each, classModel)).append(" ").append(paramterNames[i]).append(',');
                     hasComma = true;
                 }
             }
@@ -94,7 +107,7 @@ public class MethodModel
                     {
                         cache.append("final ");
                     }
-                    cache.append(SmcHelper.getReferenceName(each, classModel)).append(" $").append(i).append(',');
+                    cache.append(SmcHelper.getReferenceName(each, classModel)).append(" ").append(paramterNames[i]).append(',');
                     hasComma = true;
                 }
             }
@@ -182,7 +195,7 @@ public class MethodModel
         boolean hasComma = false;
         for (int i = 0; i < paramterTypes.length; i++)
         {
-            cache.append("$").append(i).append(',');
+            cache.append(paramterNames[i]).append(',');
             hasComma = true;
         }
         if (hasComma)
@@ -256,6 +269,11 @@ public class MethodModel
     public void setParamterFinals(boolean... paramterFinals)
     {
         this.paramterFinals = paramterFinals;
+    }
+
+    public void setParamterNames(String[] paramterNames)
+    {
+        this.paramterNames = paramterNames;
     }
 
     public enum AccessLevel
