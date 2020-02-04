@@ -44,11 +44,6 @@ public class MethodModel
         returnType = method.getReturnType();
         paramterTypes = method.getParameterTypes();
         throwables = method.getExceptionTypes();
-        paramterNames = new String[paramterTypes.length];
-        for (int i = 0; i < paramterTypes.length; i++)
-        {
-            paramterNames[i] = "$" + i;
-        }
     }
 
     public MethodModel(MethodModel methodModel)
@@ -58,11 +53,6 @@ public class MethodModel
         paramterTypes = methodModel.paramterTypes;
         throwables = methodModel.throwables;
         returnType = methodModel.returnType;
-        paramterNames = new String[paramterTypes.length];
-        for (int i = 0; i < paramterTypes.length; i++)
-        {
-            paramterNames[i] = "$" + i;
-        }
     }
 
     @Override
@@ -94,7 +84,14 @@ public class MethodModel
                 for (int i = 0; i < paramterTypes.length; i++)
                 {
                     Class<?> each = paramterTypes[i];
-                    cache.append(SmcHelper.getReferenceName(each, classModel)).append(" ").append(paramterNames[i]).append(',');
+                    if (paramterNames != null)
+                    {
+                        cache.append(SmcHelper.getReferenceName(each, classModel)).append(" ").append(paramterNames[i]).append(',');
+                    }
+                    else
+                    {
+                        cache.append(SmcHelper.getReferenceName(each, classModel)).append(" $").append(i).append(',');
+                    }
                     hasComma = true;
                 }
             }
@@ -195,7 +192,14 @@ public class MethodModel
         boolean hasComma = false;
         for (int i = 0; i < paramterTypes.length; i++)
         {
-            cache.append(paramterNames[i]).append(',');
+            if (paramterNames != null)
+            {
+                cache.append(paramterNames[i]).append(',');
+            }
+            else
+            {
+                cache.append("$" + i).append(',');
+            }
             hasComma = true;
         }
         if (hasComma)
