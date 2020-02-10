@@ -80,11 +80,11 @@ public class ValueAccessor
             {
                 Method      method      = ValueAccessor.class.getDeclaredMethod("get", Object.class);
                 MethodModel methodModel = new MethodModel(method, classModel);
-                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$).get" + toMethodName(field) + "();");
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
                 classModel.putMethodModel(methodModel);
                 method = ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class);
                 methodModel = new MethodModel(method, classModel);
-                methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + "$0).set" + toMethodName(field) + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")$1);");
+                methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")$1);");
                 classModel.putMethodModel(methodModel);
                 return (ValueAccessor) compileHelper.compile(classModel).newInstance();
             }
@@ -102,11 +102,25 @@ public class ValueAccessor
         {
             Method      method      = ValueAccessor.class.getDeclaredMethod(get, Object.class);
             MethodModel methodModel = new MethodModel(method, classModel);
-            methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            if (field.getType() != boolean.class)
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            }
+            else
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).is" + toMethodName(field) + "();");
+            }
             classModel.putMethodModel(methodModel);
             Method getIntObject = ValueAccessor.class.getDeclaredMethod(get + "Object", Object.class);
             methodModel = new MethodModel(getIntObject, classModel);
-            methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            if (field.getType() != boolean.class)
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            }
+            else
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).is" + toMethodName(field) + "();");
+            }
             classModel.putMethodModel(methodModel);
             method = ValueAccessor.class.getDeclaredMethod("set", Object.class, C1);
             methodModel = new MethodModel(method, classModel);
