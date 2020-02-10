@@ -11,22 +11,119 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ValueAccessor
 {
-    private static final int          _UNSAFE    = 0;
-    private static final int          _FIELD     = 1;
-    ////
-    private final        int          accessType = UNSAFE.isAvailable() ? _UNSAFE : _FIELD;
-    private              Field        field;
-    private              long         offset;
-    private              boolean      primitive;
-    private              IntValue     intValue;
-    private              CharValue    charValue;
-    private              ByteValue    byteValue;
-    private              ShortValue   shortValue;
-    private              LongValue    longValue;
-    private              FloatValue   floatValue;
-    private              DoubleValue  doubleValue;
-    private              BooleanValue booleanValue;
-    private              ObjectValue  objectValue;
+    private static final int           _UNSAFE       = 0;
+    private static final int           _FIELD        = 1;
+    private static final int           INT           = 1;
+    private static final int           BYTE          = 2;
+    private static final int           CHAR          = 3;
+    private static final int           BOOLEAN       = 4;
+    private static final int           SHORT         = 5;
+    private static final int           LONG          = 6;
+    private static final int           FLOAT         = 7;
+    private static final int           DOUBLE        = 8;
+    private final        int           accessType;
+    private              Field         field;
+    private              long          offset;
+    private              boolean       primitive;
+    private              int           primitiveType = 0;
+    private static final AtomicInteger count         = new AtomicInteger();
+
+    static String toMethodName(Field field)
+    {
+        return field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+    }
+
+    public ValueAccessor()
+    {
+        accessType = Integer.MIN_VALUE;
+    }
+
+    public static ValueAccessor create(Field field, CompileHelper compileHelper)
+    {
+        ClassModel classModel = new ClassModel("ValueAccessor_" + count.getAndIncrement(), ValueAccessor.class);
+        Class<?>   type       = field.getType();
+        if (type == int.class || type == Integer.class)
+        {
+            return build(field, compileHelper, classModel, "getInt", int.class, Integer.class);
+        }
+        else if (type == short.class || type == Short.class)
+        {
+            return build(field, compileHelper, classModel, "getShort", short.class, Short.class);
+        }
+        else if (type == long.class || type == Long.class)
+        {
+            return build(field, compileHelper, classModel, "getLong", long.class, Long.class);
+        }
+        else if (type == float.class || type == Float.class)
+        {
+            return build(field, compileHelper, classModel, "getFloat", float.class, Float.class);
+        }
+        else if (type == double.class || type == Double.class)
+        {
+            return build(field, compileHelper, classModel, "getDouble", double.class, Double.class);
+        }
+        else if (type == boolean.class || type == Boolean.class)
+        {
+            return build(field, compileHelper, classModel, "getBoolean", boolean.class, Boolean.class);
+        }
+        else if (type == byte.class || type == Byte.class)
+        {
+            return build(field, compileHelper, classModel, "getByte", byte.class, Byte.class);
+        }
+        else if (type == char.class || type == Character.class)
+        {
+            return build(field, compileHelper, classModel, "getChar", char.class, Character.class);
+        }
+        else
+        {
+            try
+            {
+                Method      method      = ValueAccessor.class.getDeclaredMethod("get", Object.class);
+                MethodModel methodModel = new MethodModel(method, classModel);
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$).get" + toMethodName(field) + "();");
+                classModel.putMethodModel(methodModel);
+                method = ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class);
+                methodModel = new MethodModel(method, classModel);
+                methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + "$0).set" + toMethodName(field) + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")$1);");
+                classModel.putMethodModel(methodModel);
+                return (ValueAccessor) compileHelper.compile(classModel).newInstance();
+            }
+            catch (Exception e)
+            {
+                ReflectUtil.throwException(e);
+                return null;
+            }
+        }
+    }
+
+    private static ValueAccessor build(Field field, CompileHelper compileHelper, ClassModel classModel, String get, Class<?> C1, Class<?> C2)
+    {
+        try
+        {
+            Method      method      = ValueAccessor.class.getDeclaredMethod(get, Object.class);
+            MethodModel methodModel = new MethodModel(method, classModel);
+            methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            classModel.putMethodModel(methodModel);
+            Method getIntObject = ValueAccessor.class.getDeclaredMethod(get + "Object", Object.class);
+            methodModel = new MethodModel(getIntObject, classModel);
+            methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            classModel.putMethodModel(methodModel);
+            method = ValueAccessor.class.getDeclaredMethod("set", Object.class, C1);
+            methodModel = new MethodModel(method, classModel);
+            methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "($1);");
+            classModel.putMethodModel(methodModel);
+            method = ValueAccessor.class.getDeclaredMethod("set", Object.class, C2);
+            methodModel = new MethodModel(method, classModel);
+            methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "($1);");
+            classModel.putMethodModel(methodModel);
+            return (ValueAccessor) compileHelper.compile(classModel).newInstance();
+        }
+        catch (Exception e)
+        {
+            ReflectUtil.throwException(e);
+        }
+        return null;
+    }
 
     public interface ObjectValue
     {

@@ -6,7 +6,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jfireframework</groupId>
     <artifactId>baseutil</artifactId>
+<<<<<<< HEAD
     <version>aegean-1.3</version>
+=======
+    <version>aegean-1.4-SNAPSHOT</version>
+>>>>>>> 16f01eb... 尝试另外一种方式来修正ValueAccessor
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
