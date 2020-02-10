@@ -130,42 +130,6 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test = new ValueAccessorTest();
         ValueAccessor     valueAccessor;
-<<<<<<< HEAD
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
-        Assert.assertEquals(test.a, valueAccessor.getInt(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
-        Assert.assertEquals(test.b, valueAccessor.getByte(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c"), compileHelper);
-        Assert.assertEquals(test.c, valueAccessor.getChar(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d"), compileHelper);
-        Assert.assertEquals(test.d, valueAccessor.getDouble(test), 0.000001d);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f"), compileHelper);
-        Assert.assertEquals(test.f, valueAccessor.getFloat(test), 0x000001f);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb"), compileHelper);
-        Assert.assertEquals(test.bb, valueAccessor.getBoolean(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s"), compileHelper);
-        Assert.assertEquals(test.s, valueAccessor.getShort(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l"), compileHelper);
-        Assert.assertEquals(test.l, valueAccessor.getLong(test));
-        ////
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a1"), compileHelper);
-        Assert.assertEquals(test.a1, valueAccessor.getIntObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b1"), compileHelper);
-        Assert.assertEquals(test.b1, valueAccessor.getByteObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c1"), compileHelper);
-        Assert.assertEquals(test.c1, valueAccessor.getCharObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d1"), compileHelper);
-        Assert.assertEquals(test.d1, valueAccessor.getDoubleObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f1"), compileHelper);
-        Assert.assertEquals(test.f1, valueAccessor.getFloatObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb1"), compileHelper);
-        Assert.assertEquals(test.bb1, valueAccessor.getBooleanObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s1"), compileHelper);
-        Assert.assertEquals(test.s1, valueAccessor.getShortObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
-        Assert.assertEquals(test.l1, valueAccessor.getLongObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("name"), compileHelper);
-=======
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
         Assert.assertEquals(test.a, valueAccessor.getInt(test));
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
@@ -200,7 +164,6 @@ public class ValueAccessorTest
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
         Assert.assertEquals(test.l1, valueAccessor.getLongObject(test));
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("name"), compileHelper);
->>>>>>> 1df65bd... 通过直接覆盖ValueAccessor方法的方式进行编译，得到了稳定的性能提升
         Assert.assertEquals(test.name, valueAccessor.get(test));
     }
 
@@ -209,11 +172,7 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test                  = new ValueAccessorTest();
         ValueAccessor     valueAccessor         = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
-<<<<<<< HEAD
-        ValueAccessor     valueAccessor_compile = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
-=======
         ValueAccessor     valueAccessor_compile =ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
->>>>>>> 1df65bd... 通过直接覆盖ValueAccessor方法的方式进行编译，得到了稳定的性能提升
         int               total                 = 2000000000;
         for (int i = 0; i < total; i++)
         {
@@ -242,11 +201,7 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test                  = new ValueAccessorTest();
         ValueAccessor     valueAccessor         = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
-<<<<<<< HEAD
-        ValueAccessor     valueAccessor_compile = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
-=======
         ValueAccessor     valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
->>>>>>> 1df65bd... 通过直接覆盖ValueAccessor方法的方式进行编译，得到了稳定的性能提升
         int               total                 = 2000000000;
         for (int i = 0; i < total; i++)
         {
@@ -257,19 +212,6 @@ public class ValueAccessorTest
         watch.start();
         for (int i = 0; i < total; i++)
         {
-<<<<<<< HEAD
-            valueAccessor.getInt(test);
-        }
-        watch.end();
-        System.out.println("普通模式下耗时:" + watch.getTatol() + "纳秒");
-        watch.start();
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor_compile.getInt(test);
-        }
-        watch.end();
-        System.out.println("编译模式下耗时:" + watch.getTatol() + "纳秒");
-=======
             valueAccessor_compile.getInt(test);
         }
         watch.end();
@@ -281,8 +223,6 @@ public class ValueAccessorTest
         }
         watch.end();
         System.out.println("普通模式下耗时:" + watch.getTatol() + "纳秒");
-
->>>>>>> 1df65bd... 通过直接覆盖ValueAccessor方法的方式进行编译，得到了稳定的性能提升
     }
 
     @Test
@@ -290,55 +230,6 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test = new ValueAccessorTest();
         ValueAccessor     valueAccessor;
-<<<<<<< HEAD
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
-        valueAccessor.set(test, 2);
-        Assert.assertEquals(test.a, 2);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
-        valueAccessor.set(test, (byte) 2);
-        Assert.assertEquals(test.b, 2);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c"), compileHelper);
-        valueAccessor.set(test, 'c');
-        Assert.assertEquals(test.c, 'c');
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d"), compileHelper);
-        valueAccessor.set(test, 2d);
-        Assert.assertEquals(test.d, 2d, 0.000001d);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f"), compileHelper);
-        valueAccessor.set(test, 2f);
-        Assert.assertEquals(test.f, 2f, 0x000001f);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb"), compileHelper);
-        valueAccessor.set(test, true);
-        Assert.assertEquals(test.bb, true);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s"), compileHelper);
-        valueAccessor.set(test, (short) 2);
-        Assert.assertEquals(test.s, 2);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l"), compileHelper);
-        valueAccessor.set(test, 2l);
-        Assert.assertEquals(test.l, 2l);
-        ////
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a1"), compileHelper);
-        valueAccessor.set(test, 2);
-        Assert.assertEquals(test.a1, Integer.valueOf(2));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b1"), compileHelper);
-        valueAccessor.set(test, (byte) 2);
-        Assert.assertEquals(test.b1, Byte.valueOf((byte) 2));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c1"), compileHelper);
-        valueAccessor.set(test, 'c');
-        Assert.assertEquals(test.c1, Character.valueOf('c'));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d1"), compileHelper);
-        valueAccessor.set(test, 2d);
-        Assert.assertEquals(test.d1, 2d, 0.000001d);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f1"), compileHelper);
-        valueAccessor.set(test, 2f);
-        Assert.assertEquals(test.f1, 2f, 0x000001f);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb1"), compileHelper);
-        valueAccessor.set(test, true);
-        Assert.assertEquals(test.bb1, true);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s1"), compileHelper);
-        valueAccessor.set(test, (short) 2);
-        Assert.assertEquals(test.s1, Short.valueOf((short) 2));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
-=======
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
         valueAccessor.set(test, 2);
         Assert.assertEquals(test.a, 2);
@@ -386,7 +277,6 @@ public class ValueAccessorTest
         valueAccessor.set(test, (short) 2);
         Assert.assertEquals(test.s1, Short.valueOf((short) 2));
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
->>>>>>> 1df65bd... 通过直接覆盖ValueAccessor方法的方式进行编译，得到了稳定的性能提升
         valueAccessor.set(test, 2l);
         Assert.assertEquals(test.l1, Long.valueOf(2));
     }
