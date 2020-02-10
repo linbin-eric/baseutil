@@ -1,25 +1,1167 @@
 package com.jfireframework.baseutil.reflect;
 
+import com.jfireframework.baseutil.smc.SmcHelper;
+import com.jfireframework.baseutil.smc.compiler.CompileHelper;
+import com.jfireframework.baseutil.smc.model.ClassModel;
+import com.jfireframework.baseutil.smc.model.MethodModel;
+
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ValueAccessor
 {
-    private static final int     _UNSAFE       = 0;
-    private static final int     _FIELD        = 1;
-    private static final int     INT           = 1;
-    private static final int     BYTE          = 2;
-    private static final int     CHAR          = 3;
-    private static final int     BOOLEAN       = 4;
-    private static final int     SHORT         = 5;
-    private static final int     LONG          = 6;
-    private static final int     FLOAT         = 7;
-    private static final int     DOUBLE        = 8;
+    private static final int          _UNSAFE    = 0;
+    private static final int          _FIELD     = 1;
     ////
-    private final        int     accessType    = UNSAFE.isAvailable() ? _UNSAFE : _FIELD;
-    private              Field   field;
-    private              long    offset;
-    private              boolean primitive;
-    private              int     primitiveType = 0;
+    private final        int          accessType = UNSAFE.isAvailable() ? _UNSAFE : _FIELD;
+    private              Field        field;
+    private              long         offset;
+    private              boolean      primitive;
+    private              IntValue     intValue;
+    private              CharValue    charValue;
+    private              ByteValue    byteValue;
+    private              ShortValue   shortValue;
+    private              LongValue    longValue;
+    private              FloatValue   floatValue;
+    private              DoubleValue  doubleValue;
+    private              BooleanValue booleanValue;
+    private              ObjectValue  objectValue;
+
+    public interface ObjectValue
+    {
+        Object get(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, Object value) throws IllegalAccessException;
+    }
+
+    public interface BooleanValue
+    {
+        boolean get(Object entity) throws IllegalAccessException;
+
+        Boolean getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, boolean value) throws IllegalAccessException;
+
+        void set(Object entity, Boolean value) throws IllegalAccessException;
+    }
+
+    public interface DoubleValue
+    {
+        double get(Object entity) throws IllegalAccessException;
+
+        Double getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, double value) throws IllegalAccessException;
+
+        void set(Object entity, Double value) throws IllegalAccessException;
+    }
+
+    public interface IntValue
+    {
+        int get(Object entity) throws IllegalAccessException;
+
+        Integer getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, int value) throws IllegalAccessException;
+
+        void set(Object entity, Integer value) throws IllegalAccessException;
+    }
+
+    public interface CharValue
+    {
+        char get(Object entity) throws IllegalAccessException;
+
+        Character getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, char value) throws IllegalAccessException;
+
+        void set(Object entity, Character value) throws IllegalAccessException;
+    }
+
+    public interface FloatValue
+    {
+        float get(Object entity) throws IllegalAccessException;
+
+        Float getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, float value) throws IllegalAccessException;
+
+        void set(Object entity, Float value) throws IllegalAccessException;
+    }
+
+    public interface LongValue
+    {
+        long get(Object entity) throws IllegalAccessException;
+
+        Long getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, long value) throws IllegalAccessException;
+
+        void set(Object entity, Long value) throws IllegalAccessException;
+    }
+
+    public interface ShortValue
+    {
+        short get(Object entity) throws IllegalAccessException;
+
+        Short getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, short value) throws IllegalAccessException;
+
+        void set(Object entity, Short value) throws IllegalAccessException;
+    }
+
+    public interface ByteValue
+    {
+        byte get(Object entity) throws IllegalAccessException;
+
+        Byte getObject(Object entity) throws IllegalAccessException;
+
+        void set(Object entity, byte value) throws IllegalAccessException;
+
+        void set(Object entity, Byte value) throws IllegalAccessException;
+    }
+
+    class UnsafeObjectValue implements ObjectValue
+    {
+
+        @Override
+        public Object get(Object entity)
+        {
+            return UNSAFE.getObject(entity, offset);
+        }
+
+        @Override
+        public void set(Object entity, Object value)
+        {
+            UNSAFE.putObject(entity, offset, value);
+        }
+    }
+
+    class FieldObjectValue implements ObjectValue
+    {
+
+        @Override
+        public Object get(Object entity) throws IllegalAccessException
+        {
+            return field.get(entity);
+        }
+
+        @Override
+        public void set(Object entity, Object value) throws IllegalAccessException
+        {
+            field.set(entity, value);
+        }
+    }
+
+    class FieldBooleanValue implements BooleanValue
+    {
+
+        @Override
+        public boolean get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getBoolean(entity);
+            }
+            else
+            {
+                return ((Boolean) field.get(entity));
+            }
+        }
+
+        @Override
+        public Boolean getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getBoolean(entity);
+            }
+            else
+            {
+                return ((Boolean) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, boolean value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setBoolean(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Boolean value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setBoolean(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeBooleanValue implements BooleanValue
+    {
+
+        @Override
+        public boolean get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getBoolean(entity, offset);
+            }
+            else
+            {
+                return ((Boolean) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public Boolean getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getBoolean(entity, offset);
+            }
+            else
+            {
+                return ((Boolean) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, boolean value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putBoolean(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Boolean value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putBoolean(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldIntValue implements IntValue
+    {
+
+        @Override
+        public int get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getInt(entity);
+            }
+            else
+            {
+                return (Integer) field.get(entity);
+            }
+        }
+
+        @Override
+        public Integer getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getInt(entity);
+            }
+            else
+            {
+                return (Integer) field.get(entity);
+            }
+        }
+
+        @Override
+        public void set(Object entity, int value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setInt(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Integer value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setInt(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeIntValue implements IntValue
+    {
+
+        @Override
+        public int get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getInt(entity, offset);
+            }
+            else
+            {
+                return ((Integer) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public Integer getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getInt(entity, offset);
+            }
+            else
+            {
+                return ((Integer) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, int value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putInt(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, Integer.valueOf(value));
+            }
+        }
+
+        @Override
+        public void set(Object entity, Integer value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putInt(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldByteValue implements ByteValue
+    {
+
+        @Override
+        public byte get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getByte(entity);
+            }
+            else
+            {
+                return ((Byte) field.get(entity));
+            }
+        }
+
+        @Override
+        public Byte getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getByte(entity);
+            }
+            else
+            {
+                return ((Byte) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, byte value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setByte(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Byte value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setByte(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeByteValue implements ByteValue
+    {
+
+        @Override
+        public byte get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getByte(entity, offset);
+            }
+            else
+            {
+                return ((Byte) UNSAFE.getObject(entity, offset)).byteValue();
+            }
+        }
+
+        @Override
+        public Byte getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getByte(entity, offset);
+            }
+            else
+            {
+                return ((Byte) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, byte value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putByte(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, Byte.valueOf(value));
+            }
+        }
+
+        @Override
+        public void set(Object entity, Byte value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putByte(entity, offset, value.byteValue());
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldLongValue implements LongValue
+    {
+
+        @Override
+        public long get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getLong(entity);
+            }
+            else
+            {
+                return ((Long) field.get(entity));
+            }
+        }
+
+        @Override
+        public Long getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getLong(entity);
+            }
+            else
+            {
+                return ((Long) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, long value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setLong(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Long value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setLong(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeLongValue implements LongValue
+    {
+
+        @Override
+        public long get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getLong(entity, offset);
+            }
+            else
+            {
+                return ((Long) UNSAFE.getObject(entity, offset)).longValue();
+            }
+        }
+
+        @Override
+        public Long getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getLong(entity, offset);
+            }
+            else
+            {
+                return ((Long) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, long value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putLong(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, Long.valueOf(value));
+            }
+        }
+
+        @Override
+        public void set(Object entity, Long value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putLong(entity, offset, value.longValue());
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldFloatValue implements FloatValue
+    {
+
+        @Override
+        public float get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getFloat(entity);
+            }
+            else
+            {
+                return ((Float) field.get(entity));
+            }
+        }
+
+        @Override
+        public Float getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getFloat(entity);
+            }
+            else
+            {
+                return ((Float) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, float value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setFloat(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Float value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setFloat(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeFloatValue implements FloatValue
+    {
+
+        @Override
+        public float get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getFloat(entity, offset);
+            }
+            else
+            {
+                return ((Float) UNSAFE.getObject(entity, offset)).floatValue();
+            }
+        }
+
+        @Override
+        public Float getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getFloat(entity, offset);
+            }
+            else
+            {
+                return ((Float) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, float value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putFloat(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, Float.valueOf(value));
+            }
+        }
+
+        @Override
+        public void set(Object entity, Float value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putFloat(entity, offset, value.floatValue());
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldDoubleValue implements DoubleValue
+    {
+
+        @Override
+        public double get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getDouble(entity);
+            }
+            else
+            {
+                return ((Double) field.get(entity));
+            }
+        }
+
+        @Override
+        public Double getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getDouble(entity);
+            }
+            else
+            {
+                return ((Double) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, double value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setDouble(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Double value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setDouble(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeDoubleValue implements DoubleValue
+    {
+
+        @Override
+        public double get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getDouble(entity, offset);
+            }
+            else
+            {
+                return ((Double) UNSAFE.getObject(entity, offset)).doubleValue();
+            }
+        }
+
+        @Override
+        public Double getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getDouble(entity, offset);
+            }
+            else
+            {
+                return ((Double) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, double value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putDouble(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, Double.valueOf(value));
+            }
+        }
+
+        @Override
+        public void set(Object entity, Double value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putDouble(entity, offset, value.doubleValue());
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldShortValue implements ShortValue
+    {
+
+        @Override
+        public short get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getShort(entity);
+            }
+            else
+            {
+                return ((Short) field.get(entity));
+            }
+        }
+
+        @Override
+        public Short getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getShort(entity);
+            }
+            else
+            {
+                return ((Short) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, short value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setShort(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Short value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setShort(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeShortValue implements ShortValue
+    {
+
+        @Override
+        public short get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getShort(entity, offset);
+            }
+            else
+            {
+                return ((Short) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public Short getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getShort(entity, offset);
+            }
+            else
+            {
+                return ((Short) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, short value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putShort(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Short value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putShort(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    class FieldCharValue implements CharValue
+    {
+
+        @Override
+        public char get(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getChar(entity);
+            }
+            else
+            {
+                return ((Character) field.get(entity));
+            }
+        }
+
+        @Override
+        public Character getObject(Object entity) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                return field.getChar(entity);
+            }
+            else
+            {
+                return ((Character) field.get(entity));
+            }
+        }
+
+        @Override
+        public void set(Object entity, char value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setChar(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+
+        @Override
+        public void set(Object entity, Character value) throws IllegalAccessException
+        {
+            if (primitive)
+            {
+                field.setChar(entity, value);
+            }
+            else
+            {
+                field.set(entity, value);
+            }
+        }
+    }
+
+    class UnsafeCharValue implements CharValue
+    {
+
+        @Override
+        public char get(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getChar(entity, offset);
+            }
+            else
+            {
+                return ((Character) UNSAFE.getObject(entity, offset)).charValue();
+            }
+        }
+
+        @Override
+        public Character getObject(Object entity)
+        {
+            if (primitive)
+            {
+                return UNSAFE.getChar(entity, offset);
+            }
+            else
+            {
+                return ((Character) UNSAFE.getObject(entity, offset));
+            }
+        }
+
+        @Override
+        public void set(Object entity, char value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putChar(entity, offset, value);
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, Character.valueOf(value));
+            }
+        }
+
+        @Override
+        public void set(Object entity, Character value)
+        {
+            if (primitive)
+            {
+                UNSAFE.putChar(entity, offset, value.charValue());
+            }
+            else
+            {
+                UNSAFE.putObject(entity, offset, value);
+            }
+        }
+    }
+
+    private static final AtomicInteger count = new AtomicInteger();
+
+    private String toMethodName(Field field)
+    {
+        return field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+    }
+
+    public ValueAccessor(Field field, CompileHelper compileHelper)
+    {
+        Class<?> type = field.getType();
+        if (type == int.class || type == Integer.class)
+        {
+            intValue = buildValueInstance(IntValue.class, field, compileHelper, int.class, Integer.class);
+        }
+        else if (type == short.class || type == Short.class)
+        {
+            shortValue = buildValueInstance(ShortValue.class, field, compileHelper, short.class, Short.class);
+        }
+        else if (type == long.class || type == Long.class)
+        {
+            longValue = buildValueInstance(LongValue.class, field, compileHelper, long.class, Long.class);
+        }
+        else if (type == float.class || type == Float.class)
+        {
+            floatValue = buildValueInstance(FloatValue.class, field, compileHelper, float.class, Float.class);
+        }
+        else if (type == double.class || type == Double.class)
+        {
+            doubleValue = buildValueInstance(DoubleValue.class, field, compileHelper, double.class, Double.class);
+        }
+        else if (type == boolean.class || type == Boolean.class)
+        {
+            booleanValue = buildValueInstance(BooleanValue.class, field, compileHelper, boolean.class, Boolean.class);
+        }
+        else if (type == byte.class || type == Byte.class)
+        {
+            byteValue = buildValueInstance(ByteValue.class, field, compileHelper, byte.class, Byte.class);
+        }
+        else if (type == char.class || type == Character.class)
+        {
+            charValue = buildValueInstance(CharValue.class, field, compileHelper, char.class, Character.class);
+        }
+        else
+        {
+            try
+            {
+                ClassModel classModel = new ClassModel("IntValue_" + count.getAndIncrement());
+                classModel.addInterface(ObjectValue.class);
+                Method      get         = ObjectValue.class.getDeclaredMethod("get", Object.class);
+                Method      set         = ObjectValue.class.getDeclaredMethod("set", Object.class, Object.class);
+                MethodModel methodModel = new MethodModel(get, classModel);
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+                classModel.putMethodModel(methodModel);
+                methodModel = new MethodModel(set, classModel);
+                methodModel.setBody(" ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "(("+SmcHelper.getReferenceName(field.getType(),classModel)+")$1);");
+                classModel.putMethodModel(methodModel);
+                Class<?> compile = compileHelper.compile(classModel);
+                objectValue = (ObjectValue) compile.newInstance();
+            }
+            catch (Exception e)
+            {
+                ReflectUtil.throwException(e);
+            }
+        }
+    }
+
+    private <T> T buildValueInstance(Class<T> tClass, Field field, CompileHelper compileHelper, Class c1, Class c2)
+    {
+        try
+        {
+            ClassModel classModel = new ClassModel("IntValue_" + count.getAndIncrement());
+            classModel.addInterface(tClass);
+            Method      get         = tClass.getDeclaredMethod("get", Object.class);
+            Method      getObject   = tClass.getDeclaredMethod("getObject", Object.class);
+            Method      set         = tClass.getDeclaredMethod("set", Object.class, c1);
+            Method      set1        = tClass.getDeclaredMethod("set", Object.class, c2);
+            MethodModel methodModel = new MethodModel(get, classModel);
+            if (field.getType() == boolean.class)
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).is" + toMethodName(field) + "();");
+            }
+            else
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            }
+            classModel.putMethodModel(methodModel);
+            methodModel = new MethodModel(getObject, classModel);
+            if (field.getType() == boolean.class)
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).is" + toMethodName(field) + "();");
+            }
+            else
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            }
+            classModel.putMethodModel(methodModel);
+            methodModel = new MethodModel(set, classModel);
+            methodModel.setBody(" ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "($1);");
+            classModel.putMethodModel(methodModel);
+            methodModel = new MethodModel(set1, classModel);
+            methodModel.setBody(" ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "($1);");
+            classModel.putMethodModel(methodModel);
+            Class<?> compile = compileHelper.compile(classModel);
+            return (T) compile.newInstance();
+        }
+        catch (Exception e)
+        {
+            ReflectUtil.throwException(e);
+            return null;
+        }
+    }
 
     public ValueAccessor(Field field)
     {
@@ -33,627 +1175,309 @@ public class ValueAccessor
         {
             field.setAccessible(true);
         }
-        if (primitive)
+        Class<?> type = field.getType();
+        if (type == int.class || type == Integer.class)
         {
-            Class<?> type = field.getType();
-            if (type == int.class)
+            if (accessType == _UNSAFE)
             {
-                primitiveType = INT;
-            }
-            else if (type == short.class)
-            {
-                primitiveType = SHORT;
-            }
-            else if (type == long.class)
-            {
-                primitiveType = LONG;
-            }
-            else if (type == float.class)
-            {
-                primitiveType = FLOAT;
-            }
-            else if (type == double.class)
-            {
-                primitiveType = DOUBLE;
-            }
-            else if (type == boolean.class)
-            {
-                primitiveType = BOOLEAN;
-            }
-            else if (type == byte.class)
-            {
-                primitiveType = BYTE;
-            }
-            else if (type == char.class)
-            {
-                primitiveType = CHAR;
+                intValue = new UnsafeIntValue();
             }
             else
             {
-                throw new IllegalArgumentException();
+                intValue = new FieldIntValue();
+            }
+        }
+        else if (type == short.class || type == Short.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                shortValue = new UnsafeShortValue();
+            }
+            else
+            {
+                shortValue = new FieldShortValue();
+            }
+        }
+        else if (type == long.class || type == Long.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                longValue = new UnsafeLongValue();
+            }
+            else
+            {
+                longValue = new FieldLongValue();
+            }
+        }
+        else if (type == float.class || type == Float.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                floatValue = new UnsafeFloatValue();
+            }
+            else
+            {
+                floatValue = new FieldFloatValue();
+            }
+        }
+        else if (type == double.class || type == Double.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                doubleValue = new UnsafeDoubleValue();
+            }
+            else
+            {
+                doubleValue = new FieldDoubleValue();
+            }
+        }
+        else if (type == boolean.class || type == Boolean.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                booleanValue = new UnsafeBooleanValue();
+            }
+            else
+            {
+                booleanValue = new FieldBooleanValue();
+            }
+        }
+        else if (type == byte.class || type == Byte.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                byteValue = new UnsafeByteValue();
+            }
+            else
+            {
+                byteValue = new FieldByteValue();
+            }
+        }
+        else if (type == char.class || type == Character.class)
+        {
+            if (accessType == _UNSAFE)
+            {
+                charValue = new UnsafeCharValue();
+            }
+            else
+            {
+                charValue = new FieldCharValue();
+            }
+        }
+        else
+        {
+            if (accessType == _UNSAFE)
+            {
+                objectValue = new UnsafeObjectValue();
+            }
+            else
+            {
+                objectValue = new FieldObjectValue();
             }
         }
     }
 
     public void set(Object entity, int value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putInt(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Integer.valueOf(value));
-            }
+            intValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setInt(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Integer.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Integer value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putInt(entity, offset, value.intValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            intValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setInt(entity, value.intValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, short value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putShort(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Short.valueOf(value));
-            }
+            shortValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setShort(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Short.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Short value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putShort(entity, offset, value.shortValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            shortValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setShort(entity, value.shortValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, long value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putLong(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Long.valueOf(value));
-            }
+            longValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setLong(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Long.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Long value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putLong(entity, offset, value.longValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            longValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setLong(entity, value.longValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, char value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putChar(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Character.valueOf(value));
-            }
+            charValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setChar(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Character.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Character value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putChar(entity, offset, value.charValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            charValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setChar(entity, value.charValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, byte value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putByte(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Byte.valueOf(value));
-            }
+            byteValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setByte(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Byte.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Byte value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putByte(entity, offset, value.byteValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            byteValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setByte(entity, value.byteValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, boolean value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putBoolean(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Boolean.valueOf(value));
-            }
+            booleanValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setBoolean(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Boolean.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Boolean value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putBoolean(entity, offset, value.booleanValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            booleanValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setBoolean(entity, value.booleanValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, float value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putFloat(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Float.valueOf(value));
-            }
+            floatValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setFloat(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Float.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Float value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putFloat(entity, offset, value.floatValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            floatValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setFloat(entity, value.floatValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, double value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putDouble(entity, offset, value);
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, Double.valueOf(value));
-            }
+            doubleValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setDouble(entity, value);
-                }
-                else
-                {
-                    field.set(entity, Double.valueOf(value));
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void set(Object entity, Double value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                UNSAFE.putDouble(entity, offset, value.doubleValue());
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            doubleValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                if (primitive)
-                {
-                    field.setDouble(entity, value.doubleValue());
-                }
-                else
-                {
-                    field.set(entity, value);
-                }
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
     public void setObject(Object entity, Object value)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                switch (primitiveType)
-                {
-                    case INT:
-                        UNSAFE.putInt(entity, offset, ((Integer) value).intValue());
-                        break;
-                    case SHORT:
-                        UNSAFE.putShort(entity, offset, ((Short) value).shortValue());
-                        break;
-                    case LONG:
-                        UNSAFE.putLong(entity, offset, ((Long) value).longValue());
-                        break;
-                    case FLOAT:
-                        UNSAFE.putFloat(entity, offset, ((Float) value).floatValue());
-                        break;
-                    case DOUBLE:
-                        UNSAFE.putDouble(entity, offset, ((Double) value).doubleValue());
-                        break;
-                    case BOOLEAN:
-                        UNSAFE.putBoolean(entity, offset, ((Boolean) value).booleanValue());
-                        break;
-                    case BYTE:
-                        UNSAFE.putByte(entity, offset, ((Byte) value).byteValue());
-                        break;
-                    case CHAR:
-                        UNSAFE.putChar(entity, offset, ((Character) value).charValue());
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
-                }
-            }
-            else
-            {
-                UNSAFE.putObject(entity, offset, value);
-            }
+            objectValue.set(entity, value);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                field.set(entity, value);
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-            }
+            ReflectUtil.throwException(e);
         }
     }
 
@@ -661,11 +1485,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getInt(entity, offset) : (Integer) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getInt(entity) : (Integer) field.get(entity);
+            return intValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -676,11 +1498,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Integer.valueOf(UNSAFE.getInt(entity, offset)) : (Integer) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Integer.valueOf(field.getInt(entity)) : (Integer) field.get(entity);
+            return intValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -691,11 +1511,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getShort(entity, offset) : (Short) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getShort(entity) : (Short) field.get(entity);
+            return shortValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -706,11 +1524,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Short.valueOf(UNSAFE.getShort(entity, offset)) : (Short) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Short.valueOf(field.getShort(entity)) : (Short) field.get(entity);
+            return shortValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -721,11 +1537,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getBoolean(entity, offset) : (Boolean) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getBoolean(entity) : (Boolean) field.get(entity);
+            return booleanValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return false;
@@ -736,11 +1550,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Boolean.valueOf(UNSAFE.getBoolean(entity, offset)) : (Boolean) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Boolean.valueOf(field.getBoolean(entity)) : (Boolean) field.get(entity);
+            return booleanValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return false;
@@ -751,11 +1563,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getLong(entity, offset) : (Long) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getLong(entity) : (Long) field.get(entity);
+            return longValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -766,14 +1576,12 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Long.valueOf(UNSAFE.getLong(entity, offset)) : (Long) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Long.valueOf(field.getLong(entity)) : (Long) field.get(entity);
+            return longValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
-            return 0L;
+            return 0l;
         }
     }
 
@@ -781,11 +1589,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getByte(entity, offset) : (Byte) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getByte(entity) : (Byte) field.get(entity);
+            return byteValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -796,11 +1602,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Byte.valueOf(UNSAFE.getByte(entity, offset)) : (Byte) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Byte.valueOf(field.getByte(entity)) : (Byte) field.get(entity);
+            return byteValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -811,11 +1615,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getChar(entity, offset) : (Character) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getChar(entity) : (Character) field.get(entity);
+            return charValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -826,11 +1628,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Character.valueOf(UNSAFE.getChar(entity, offset)) : (Character) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Character.valueOf(field.getChar(entity)) : (Character) field.get(entity);
+            return charValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -841,11 +1641,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getFloat(entity, offset) : (Float) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getFloat(entity) : (Float) field.get(entity);
+            return floatValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -856,14 +1654,12 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Float.valueOf(UNSAFE.getFloat(entity, offset)) : (Float) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Float.valueOf(field.getFloat(entity)) : (Float) field.get(entity);
+            return floatValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
-            return 0F;
+            return 0f;
         }
     }
 
@@ -871,11 +1667,9 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? UNSAFE.getDouble(entity, offset) : (Double) UNSAFE.getObject(entity, offset) : //
-                    primitive ? field.getDouble(entity) : (Double) field.get(entity);
+            return doubleValue.get(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
             return 0;
@@ -886,61 +1680,25 @@ public class ValueAccessor
     {
         try
         {
-            return accessType == _UNSAFE ? //
-                    primitive ? Double.valueOf(UNSAFE.getDouble(entity, offset)) : (Double) UNSAFE.getObject(entity, offset) : //
-                    primitive ? Double.valueOf(field.getDouble(entity)) : (Double) field.get(entity);
+            return doubleValue.getObject(entity);
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
             ReflectUtil.throwException(e);
-            return 0D;
+            return 0d;
         }
     }
 
     public Object get(Object entity)
     {
-        if (accessType == _UNSAFE)
+        try
         {
-            if (primitive)
-            {
-                switch (primitiveType)
-                {
-                    case INT:
-                        return Integer.valueOf(UNSAFE.getInt(entity, offset));
-                    case SHORT:
-                        return Short.valueOf(UNSAFE.getShort(entity, offset));
-                    case LONG:
-                        return Long.valueOf(UNSAFE.getLong(entity, offset));
-                    case FLOAT:
-                        return Float.valueOf(UNSAFE.getFloat(entity, offset));
-                    case DOUBLE:
-                        return Double.valueOf(UNSAFE.getDouble(entity, offset));
-                    case BOOLEAN:
-                        return Boolean.valueOf(UNSAFE.getBoolean(entity, offset));
-                    case BYTE:
-                        return Byte.valueOf(UNSAFE.getByte(entity, offset));
-                    case CHAR:
-                        return Character.valueOf(UNSAFE.getChar(entity, offset));
-                    default:
-                        throw new UnsupportedOperationException();
-                }
-            }
-            else
-            {
-                return UNSAFE.getObject(entity, offset);
-            }
+            return objectValue.get(entity);
         }
-        else
+        catch (IllegalAccessException e)
         {
-            try
-            {
-                return field.get(entity);
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-                return null;
-            }
+            ReflectUtil.throwException(e);
+            return null;
         }
     }
 

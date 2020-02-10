@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jfireframework</groupId>
     <artifactId>baseutil</artifactId>
-    <version>aegean-1.2</version>
+    <version>aegean-1.3</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
