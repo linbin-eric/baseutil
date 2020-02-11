@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jfireframework</groupId>
     <artifactId>baseutil</artifactId>
-    <version>aegean-1.4</version>
+    <version>aegean-1.5-SNAPSHOT</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
@@ -64,6 +64,19 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.25</version>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <distributionManagement>

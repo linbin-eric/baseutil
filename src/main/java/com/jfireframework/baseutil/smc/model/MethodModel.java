@@ -275,7 +275,7 @@ public class MethodModel
         this.paramterFinals = paramterFinals;
     }
 
-    public void setParamterNames(String[] paramterNames)
+    public void setParamterNames(String... paramterNames)
     {
         this.paramterNames = paramterNames;
     }

@@ -40,7 +40,7 @@ public class ValueAccessor
 
     public static ValueAccessor create(Field field, CompileHelper compileHelper)
     {
-        ClassModel classModel = new ClassModel("ValueAccessor_" + count.getAndIncrement(), ValueAccessor.class);
+        ClassModel classModel = new ClassModel("ValueAccessor_"+field.getName()+"_" + count.getAndIncrement(), ValueAccessor.class);
         Class<?>   type       = field.getType();
         if (type == int.class || type == Integer.class)
         {
@@ -113,6 +113,17 @@ public class ValueAccessor
             classModel.putMethodModel(methodModel);
             Method getIntObject = ValueAccessor.class.getDeclaredMethod(get + "Object", Object.class);
             methodModel = new MethodModel(getIntObject, classModel);
+            if (field.getType() != boolean.class)
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
+            }
+            else
+            {
+                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).is" + toMethodName(field) + "();");
+            }
+            classModel.putMethodModel(methodModel);
+            method = ValueAccessor.class.getDeclaredMethod("get", Object.class);
+            methodModel = new MethodModel(method, classModel);
             if (field.getType() != boolean.class)
             {
                 methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");

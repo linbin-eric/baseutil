@@ -103,6 +103,14 @@ public class ClassModel
         return true;
     }
 
+    public void addConstructor(ConstructorModel... models)
+    {
+        for (ConstructorModel each : models)
+        {
+            constructors.add(each.toString());
+        }
+    }
+
     public void addConstructor(String initStr, Class<?>... params)
     {
         StringBuilder cache = new StringBuilder();
@@ -246,5 +254,10 @@ public class ClassModel
     public void setParentClass(Class<?> ckass)
     {
         parentClass = ckass;
+    }
+
+    public String getClassName()
+    {
+        return className;
     }
 }
