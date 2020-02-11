@@ -4,9 +4,9 @@
         xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jfireframework</groupId>
+    <groupId>com.jfirer</groupId>
     <artifactId>baseutil</artifactId>
-    <version>aegean-1.5-SNAPSHOT</version>
+    <version>1.0</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
