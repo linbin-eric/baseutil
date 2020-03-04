@@ -196,6 +196,10 @@ public class ValueAccessor
             methodModel = new MethodModel(method, classModel);
             methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "($1);");
             classModel.putMethodModel(methodModel);
+            method = ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class);
+            methodModel = new MethodModel(method, classModel);
+            methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")$1);");
+            classModel.putMethodModel(methodModel);
             return (ValueAccessor) compileHelper.compile(classModel).newInstance();
         }
         catch (Exception e)
