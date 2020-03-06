@@ -5,8 +5,11 @@ import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import com.jfirer.baseutil.smc.model.MethodModel;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ValueAccessor
@@ -91,6 +94,68 @@ public class ValueAccessor
     static String toMethodName(Field field)
     {
         return field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+    }
+
+    public static ValueAccessor constructor(Class ckass, CompileHelper compileHelper)
+    {
+        ClassModel classModel = new ClassModel("ValueAccessor_constructor_" + ckass.getSimpleName() + "_" + count.getAndIncrement(), ValueAccessor.class);
+        try
+        {
+            boolean               hasZeroParamConstructor = false;
+            Map<Integer, Class[]> map                     = new HashMap<Integer, Class[]>();
+            for (Constructor constructor : ckass.getConstructors())
+            {
+                Class[] parameterTypes = constructor.getParameterTypes();
+                if (parameterTypes.length == 0)
+                {
+                    hasZeroParamConstructor = true;
+                    continue;
+                }
+                else
+                {
+                    if (map.containsKey(parameterTypes.length))
+                    {
+                        throw new IllegalArgumentException("类：" + ckass.getName() + "存在相同入参个数的重载构造方法，当前只支持入参个数不同的重载构造方法");
+                    }
+                    map.put(parameterTypes.length, parameterTypes);
+                }
+            }
+            if (hasZeroParamConstructor)
+            {
+                Method      method      = ValueAccessor.class.getDeclaredMethod("newInstace");
+                MethodModel methodModel = new MethodModel(method, classModel);
+                methodModel.setBody("return new " + SmcHelper.getReferenceName(ckass, classModel) + "();\r\n");
+                classModel.putMethodModel(methodModel);
+            }
+            if (map.isEmpty() == false)
+            {
+                StringBuilder body = new StringBuilder();
+                for (Map.Entry<Integer, Class[]> each : map.entrySet())
+                {
+                    body.append("if(params.length==" + each.getKey() + "){\r\n");
+                    body.append("\treturn new " + SmcHelper.getReferenceName(ckass, classModel) + "(");
+                    Class[] value = each.getValue();
+                    for (int i = 0; i < value.length; i++)
+                    {
+                        body.append("(").append(SmcHelper.getReferenceName(value[i], classModel)).append(")params[").append(i).append("],");
+                    }
+                    body.setLength(body.length() - 1);
+                    body.append(");\r\n");
+                    body.append("}\r\n");
+                }
+                Method      method      = ValueAccessor.class.getDeclaredMethod("newInstance", Object[].class);
+                MethodModel methodModel = new MethodModel(method, classModel);
+                methodModel.setParamterNames("params");
+                methodModel.setBody(body.toString());
+                classModel.putMethodModel(methodModel);
+            }
+            return (ValueAccessor) compileHelper.compile(classModel).newInstance();
+        }
+        catch (Exception e)
+        {
+            ReflectUtil.throwException(e);
+            return null;
+        }
     }
 
     public static ValueAccessor create(Field field, CompileHelper compileHelper)
@@ -1081,5 +1146,15 @@ public class ValueAccessor
     public Field getField()
     {
         return field;
+    }
+
+    public Object newInstace()
+    {
+        throw new IllegalStateException("还未创建ValueAccessor构造器实例");
+    }
+
+    public Object newInstance(Object... params)
+    {
+        throw new IllegalStateException("还未创建ValueAccessor构造器实例");
     }
 }
