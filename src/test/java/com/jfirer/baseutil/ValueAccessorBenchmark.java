@@ -11,15 +11,14 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
-@Warmup(iterations = 3)
-@Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 1)
+@Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 @Fork(1)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ValueAccessorBenchmark
 {
     static ValueAccessorTest test   = new ValueAccessorTest();
-    static ValueAccessorTest test_2 = new ValueAccessorTest();
     static ValueAccessor     valueAccessor;
     static ValueAccessor     valueAccessor_compile;
 
@@ -27,8 +26,9 @@ public class ValueAccessorBenchmark
     {
         try
         {
-            valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
-            valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), new CompileHelper());
+            String name = "d1";
+            valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
+            valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField(name), new CompileHelper());
         }
         catch (NoSuchFieldException e)
         {
@@ -36,16 +36,18 @@ public class ValueAccessorBenchmark
         }
     }
 
-    @Benchmark
+//    @Benchmark
     public void testOld()
     {
-        valueAccessor.set(test, 2);
+//        valueAccessor.setObject(test, "sadas");
+        valueAccessor.getShort(test);
     }
 
     @Benchmark
     public void testNew()
     {
-        valueAccessor_compile.set(test_2, 2);
+//        valueAccessor_compile.setObject(test_2, "sadas");
+        valueAccessor_compile.get(test);
     }
 
     public static void main(String[] args) throws RunnerException
