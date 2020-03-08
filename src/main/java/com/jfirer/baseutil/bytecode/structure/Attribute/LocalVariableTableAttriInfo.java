@@ -56,6 +56,7 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
         private int    descriptor_index;
         private int    index;
         private String name;
+        private String descriptor;
 
         void resolve(BinaryData binaryData, ConstantInfo[] constantInfos)
         {
@@ -65,8 +66,8 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
             binaryData.addIndex(2);
             name_index = binaryData.readShort();
             name = ((Utf8Info) constantInfos[name_index - 1]).getValue();
-            //忽略descriptor_index
-            binaryData.addIndex(2);
+            descriptor_index = binaryData.readShort();
+            descriptor = ((Utf8Info) constantInfos[descriptor_index - 1]).getValue();
             index = binaryData.readShort();
         }
 
@@ -78,6 +79,11 @@ public class LocalVariableTableAttriInfo extends AttributeInfo
         public String getName()
         {
             return name;
+        }
+
+        public String getDescriptor()
+        {
+            return descriptor;
         }
 
         @Override

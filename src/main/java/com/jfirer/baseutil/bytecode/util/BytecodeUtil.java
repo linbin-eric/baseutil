@@ -14,6 +14,7 @@ import com.jfirer.baseutil.bytecode.structure.MethodInfo;
 import com.jfirer.baseutil.reflect.ReflectUtil;
 
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -86,16 +87,20 @@ public class BytecodeUtil
     }
 
     /**
-     * 获取方法的入参名称，以数组的形式返回。获取方法入参名称依赖于编译器是否编译了入参名称到字节码中，因此可能存在获取失败的情况。如果获取失败，则返回null。
+     * 获取构造方法的入参名称，以数组的形式返回。获取方法入参名称依赖于编译器是否编译了入参名称到字节码中，因此可能存在获取失败的情况。如果获取失败，则返回null。
      *
-     * @param method
      * @return
      */
-    public static String[] parseMethodParamNames(Method method)
+    public static String[] parseConstructorParamNames(Constructor constructor)
     {
-        ClassFile classFile  = getMethodDeclaringClassFile(method);
-        String    descriptor = getMethodDescriptor(method);
-        String    methodName = method.getName();
+        Class     declaringClass = constructor.getDeclaringClass();
+        ClassFile classFile      = loadClassFile(declaringClass.getClassLoader(), declaringClass.getName().replace('.', '/'));
+        String    descriptor     = getConstructDescriptor(constructor);
+        return parseParamNames(classFile, "<init>", descriptor, constructor.getParameterTypes().length, false);
+    }
+
+    private static String[] parseParamNames(ClassFile classFile, String methodName, String descriptor, int numOfName, boolean isStatic)
+    {
         for (MethodInfo methodInfo : classFile.getMethodInfos())
         {
             if (methodInfo.getName().equals(methodName))
@@ -112,8 +117,8 @@ public class BytecodeUtil
                                 {
                                     LocalVariableTableAttriInfo                           localVariableTableAttriInfo = (LocalVariableTableAttriInfo) info;
                                     LocalVariableTableAttriInfo.LocalVariableTableEntry[] entries                     = localVariableTableAttriInfo.getEntries();
-                                    String[]                                              names                       = new String[method.getParameterTypes().length];
-                                    if (Modifier.isStatic(method.getModifiers()))
+                                    String[]                                              names                       = new String[numOfName];
+                                    if (isStatic)
                                     {
                                         for (int i = 0; i < names.length; i++)
                                         {
@@ -136,6 +141,19 @@ public class BytecodeUtil
             }
         }
         return null;
+    }
+
+    /**
+     * 获取方法的入参名称，以数组的形式返回。获取方法入参名称依赖于编译器是否编译了入参名称到字节码中，因此可能存在获取失败的情况。如果获取失败，则返回null。
+     *
+     * @param method
+     * @return
+     */
+    public static String[] parseMethodParamNames(Method method)
+    {
+        ClassFile classFile  = getMethodDeclaringClassFile(method);
+        String    descriptor = getMethodDescriptor(method);
+        return parseParamNames(classFile, method.getName(), descriptor, method.getParameterTypes().length, Modifier.isStatic(method.getModifiers()));
     }
 
     private static ClassFile getMethodDeclaringClassFile(Method method)
@@ -320,6 +338,19 @@ public class BytecodeUtil
             cache.append(getName(parameterType));
         }
         cache.append(')').append(getName(method.getReturnType()));
+        return cache.toString().replace('.', '/');
+    }
+
+    private static String getConstructDescriptor(Constructor constructor)
+    {
+        StringBuilder cache = new StringBuilder();
+        cache.append('(');
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
+        for (Class<?> parameterType : parameterTypes)
+        {
+            cache.append(getName(parameterType));
+        }
+        cache.append(")V");
         return cache.toString().replace('.', '/');
     }
 }

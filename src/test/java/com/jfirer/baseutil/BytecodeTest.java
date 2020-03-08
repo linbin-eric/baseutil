@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -22,6 +23,7 @@ import static org.junit.Assert.*;
 
 public class BytecodeTest
 {
+
     /**
      * 测试获取方法名称的正确性
      */
@@ -33,6 +35,29 @@ public class BytecodeTest
         assertEquals(2, paramNames.length);
         assertEquals("loader", paramNames[0]);
         assertEquals("name", paramNames[1]);
+    }
+
+    static class TestConstructorName
+    {
+        public TestConstructorName(String name, int age)
+        {
+        }
+
+        public TestConstructorName(String name, float age2)
+        {
+        }
+    }
+
+    /**
+     * 测试获取构造方法入参名称的正确性
+     */
+    @Test
+    public void test6() throws NoSuchMethodException
+    {
+        Constructor<TestConstructorName> constructor = TestConstructorName.class.getDeclaredConstructor(String.class, int.class);
+        String[]                         names       = BytecodeUtil.parseConstructorParamNames(constructor);
+        assertEquals("name", names[0]);
+        assertEquals("age", names[1]);
     }
 
     /**
