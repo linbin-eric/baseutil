@@ -104,7 +104,14 @@ public class MethodModel
                     {
                         cache.append("final ");
                     }
-                    cache.append(SmcHelper.getReferenceName(each, classModel)).append(" ").append(paramterNames[i]).append(',');
+                    if (paramterNames != null)
+                    {
+                        cache.append(SmcHelper.getReferenceName(each, classModel)).append(" ").append(paramterNames[i]).append(',');
+                    }
+                    else
+                    {
+                        cache.append(SmcHelper.getReferenceName(each, classModel)).append(" $").append(i).append(',');
+                    }
                     hasComma = true;
                 }
             }

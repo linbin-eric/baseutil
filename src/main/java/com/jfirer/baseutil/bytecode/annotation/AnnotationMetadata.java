@@ -6,6 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
 
+/**
+ * 某个具体注解实例的元数据表达形式
+ */
 public interface AnnotationMetadata
 {
 
@@ -14,28 +17,28 @@ public interface AnnotationMetadata
     String TargetName     = Target.class.getName().replace('.', '/');
 
     /**
-     * 内置的几个元注解需要被忽略，否则会无限循环。
+     * 该注解实例是否应该忽略。内置的几个元注解应该忽略，否则不断分析下去会无限循环。
      *
      * @return
      */
     boolean shouldIgnore();
 
     /**
-     * 返回该注解实例的指定属性
-     *
-     * @return
+     * 该注解实例某个属性的值。
+     * @param name 属性名称
+     * @return 注解实例这个属性的值。
      */
     ValuePair getAttribyte(String name);
 
     /**
-     * 返回该注解的Class对象
+     * 该注解实例对应的Class对象。
      *
      * @return
      */
     Class<?> annotationType();
 
     /**
-     * 返回该实例是否为某一个注解的实例
+     * 该注解实例是否为某一个注解的实例
      *
      * @param name 格式为aa/bb/cc
      * @return
@@ -43,14 +46,14 @@ public interface AnnotationMetadata
     boolean isAnnotation(String name);
 
     /**
-     * 返回该注解类型的资源名，格式为aa/bb/cc
+     * 该注解实例的Class对象的类型的资源名，格式为aa/bb/cc
      *
      * @return
      */
     String type();
 
     /**
-     * 返回注解在该注解上的注解实例
+     * 返回注解在该注解上的注解实例，使用AnnotationMetadata来表达。
      *
      * @return
      */

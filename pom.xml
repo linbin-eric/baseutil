@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jfirer</groupId>
     <artifactId>baseutil</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
@@ -78,18 +78,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <name>Nexus Releases Repository</name>
-            <url>${releasesurl}</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>Nexus Snapshots Repository</name>
-            <url>${snapshoturl}</url>
-        </snapshotRepository>
-    </distributionManagement>
     <profiles>
         <profile>
             <id>release</id>
