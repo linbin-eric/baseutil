@@ -802,25 +802,25 @@ public class ValueAccessor
                 switch (primitiveType)
                 {
                     case INT:
-                        UNSAFE.putInt(entity, offset, ((Integer) value).intValue());
+                        UNSAFE.putInt(entity, offset, ((Number) value).intValue());
                         break;
                     case SHORT:
-                        UNSAFE.putShort(entity, offset, ((Short) value).shortValue());
+                        UNSAFE.putShort(entity, offset, ((Number) value).shortValue());
                         break;
                     case LONG:
-                        UNSAFE.putLong(entity, offset, ((Long) value).longValue());
+                        UNSAFE.putLong(entity, offset, ((Number) value).longValue());
                         break;
                     case FLOAT:
-                        UNSAFE.putFloat(entity, offset, ((Float) value).floatValue());
+                        UNSAFE.putFloat(entity, offset, ((Number) value).floatValue());
                         break;
                     case DOUBLE:
-                        UNSAFE.putDouble(entity, offset, ((Double) value).doubleValue());
+                        UNSAFE.putDouble(entity, offset, ((Number) value).doubleValue());
                         break;
                     case BOOLEAN:
                         UNSAFE.putBoolean(entity, offset, ((Boolean) value).booleanValue());
                         break;
                     case BYTE:
-                        UNSAFE.putByte(entity, offset, ((Byte) value).byteValue());
+                        UNSAFE.putByte(entity, offset, ((Number) value).byteValue());
                         break;
                     case CHAR:
                         UNSAFE.putChar(entity, offset, ((Character) value).charValue());
