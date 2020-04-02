@@ -45,7 +45,7 @@ public final class ReflectUtil
         {
             return Float.class;
         }
-        else if (type == Double.class)
+        else if (type == double.class)
         {
             return Double.class;
         }

@@ -90,6 +90,14 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>nexus</name>
+            <url>https://nexus.ylzpay.com/repository/maven-snapshots/</url>
+        </repository>
+
+    </distributionManagement>
     <profiles>
         <profile>
             <id>release</id>
