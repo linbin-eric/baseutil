@@ -32,8 +32,8 @@
 	</Appenders>
 
 	<Loggers>
-		<Logger name="com.jfireframework" level="debug">
-			<AppenderRef ref="Console" />
+		<Logger name="com.jfirer" level="debug">
+			<AppenderRef ref="Console"/>
 		</Logger>
 	</Loggers>
 </Configuration>

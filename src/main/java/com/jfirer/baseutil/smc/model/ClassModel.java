@@ -260,4 +260,14 @@ public class ClassModel
     {
         return className;
     }
+
+    public String getPackageName()
+    {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName)
+    {
+        this.packageName = packageName;
+    }
 }
