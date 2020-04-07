@@ -14,22 +14,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ValueAccessor
 {
-    private static final int           _UNSAFE       = 0;
-    private static final int           _FIELD        = 1;
-    private static final int           INT           = 1;
-    private static final int           BYTE          = 2;
-    private static final int           CHAR          = 3;
-    private static final int           BOOLEAN       = 4;
-    private static final int           SHORT         = 5;
-    private static final int           LONG          = 6;
-    private static final int           FLOAT         = 7;
-    private static final int           DOUBLE        = 8;
-    private static final AtomicInteger count         = new AtomicInteger();
+    private static final int           _UNSAFE                = 0;
+    private static final int           _FIELD                 = 1;
+    private static final int           INT                    = 1;
+    private static final int           BYTE                   = 2;
+    private static final int           CHAR                   = 3;
+    private static final int           BOOLEAN                = 4;
+    private static final int           SHORT                  = 5;
+    private static final int           LONG                   = 6;
+    private static final int           FLOAT                  = 7;
+    private static final int           DOUBLE                 = 8;
+    private static final AtomicInteger count                  = new AtomicInteger();
     private final        int           accessType;
     private              Field         field;
     private              long          offset;
     private              boolean       primitive;
-    private              int           primitiveType = 0;
+    private              int           primitiveType          = 0;
 
     public ValueAccessor()
     {

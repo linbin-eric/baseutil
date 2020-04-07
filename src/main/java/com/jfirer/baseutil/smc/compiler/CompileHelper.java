@@ -75,7 +75,7 @@ public class CompileHelper
             }
             logger.debug("编译的源代码是:\r\n{}\r\n", source);
             memoryClassLoader.addClassBytes(manager.getClassBytes());
-            return memoryClassLoader.loadClass("com.jfireframe.smc.output." + classModel.className());
+            return memoryClassLoader.loadClass(classModel.getPackageName()+"." + classModel.className());
         }
         finally
         {
