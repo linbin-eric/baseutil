@@ -11,8 +11,6 @@ import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.ServiceLoader;
 
 /**
  * In-memory compile Java source code as String.
@@ -43,16 +41,7 @@ public class CompileHelper
             compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null)
             {
-                ServiceLoader<JavaCompiler> load     = ServiceLoader.load(JavaCompiler.class, classLoader);
-                Iterator<JavaCompiler>      iterator = load.iterator();
-                if (iterator.hasNext())
-                {
-                    compiler = iterator.next();
-                }
-                else
-                {
-                    throw new NullPointerException("当前处于JRE环境并且无法以SPI的形式获得JavaCompiler实例");
-                }
+                throw new NullPointerException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK目录下的tools.jar拷贝到jre目录。如果是linux，将JAVA_HOME设置为jdk的");
             }
         }
         this.compiler = compiler;
@@ -75,7 +64,7 @@ public class CompileHelper
             }
             logger.debug("编译的源代码是:\r\n{}\r\n", source);
             memoryClassLoader.addClassBytes(manager.getClassBytes());
-            return memoryClassLoader.loadClass(classModel.getPackageName()+"." + classModel.className());
+            return memoryClassLoader.loadClass(classModel.getPackageName() + "." + classModel.className());
         }
         finally
         {
