@@ -1,8 +1,6 @@
 package com.jfirer.baseutil.smc.compiler;
 
 import com.jfirer.baseutil.smc.model.ClassModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
@@ -19,7 +17,6 @@ import java.util.Arrays;
  */
 public class CompileHelper
 {
-    private static final Logger                logger = LoggerFactory.getLogger(CompileHelper.class);
     private final        MemoryClassLoader     memoryClassLoader;
     private final        JavaCompiler          compiler;
     private final        MemoryJavaFileManager manager;
@@ -41,7 +38,7 @@ public class CompileHelper
             compiler = ToolProvider.getSystemJavaCompiler();
             if (compiler == null)
             {
-                throw new NullPointerException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK目录下的tools.jar拷贝到jre目录。如果是linux，将JAVA_HOME设置为jdk的");
+                throw new NullPointerException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK/lib目录下的tools.jar拷贝到jre/lib目录。如果是linux，将JAVA_HOME设置为jdk的");
             }
         }
         this.compiler = compiler;
@@ -49,7 +46,7 @@ public class CompileHelper
         manager = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
     }
 
-    public Class<?> compile(ClassModel classModel) throws IOException, ClassNotFoundException
+    public synchronized Class<?> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
         try
         {
@@ -62,7 +59,6 @@ public class CompileHelper
             {
                 throw new RuntimeException("Compilation failed.The error is \r\n" + writer.toString() + "\r\nThe source is \r\n" + source);
             }
-            logger.debug("编译的源代码是:\r\n{}\r\n", source);
             memoryClassLoader.addClassBytes(manager.getClassBytes());
             return memoryClassLoader.loadClass(classModel.getPackageName() + "." + classModel.className());
         }
