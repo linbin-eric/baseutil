@@ -9,54 +9,101 @@ import com.jfirer.baseutil.bytecode.structure.MethodInfo;
 import com.jfirer.baseutil.bytecode.support.OverridesAttribute;
 import com.jfirer.baseutil.bytecode.util.BytecodeUtil;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SupportOverrideAttributeAnnotationMetadata extends AbstractAnnotationMetadata
 {
-    static  String                          name = OverridesAttribute.class.getName().replace('.', '/');
+    static  String                          name = OverridesAttribute.class.getName()
+                                                                           .replace('.', '/');
     private Map<String, List<OverrideItem>> map  = new HashMap<String, List<OverrideItem>>();
 
     private SupportOverrideAttributeAnnotationMetadata(String resourceName, Map<String, ValuePair> attributes, ClassLoader loader)
     {
         super(resourceName, attributes, loader);
-        byte[]    bytecode  = BytecodeUtil.loadBytecode(loader, resourceName);
+        byte[] bytecode = BytecodeUtil.loadBytecode(loader, resourceName);
         ClassFile classFile = new ClassFileParser(bytecode).parse();
-        for (MethodInfo methodInfo : classFile.getMethodInfos())
+        class StreamData
         {
-            for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
+            MethodInfo     methodInfo;
+            AttributeInfo  attributeInfo;
+            AnnotationInfo annotationInfo;
+
+            public StreamData(MethodInfo methodInfo, AttributeInfo attributeInfo)
             {
-                if (attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
-                {
-                    for (AnnotationInfo annotation : ((RuntimeVisibleAnnotationsAttriInfo) attributeInfo).getAnnotations())
-                    {
-                        if (annotation.getType().equals(name))
-                        {
-                            AnnotationMetadata overrideAttribute      = annotation.getAnnotation(loader);
-                            ValuePair          valuePair              = overrideAttribute.getAttribyte("annotation");
-                            String             annotationResourceName = valuePair.getClassName().replace('.', '/');
-                            String             name                   = overrideAttribute.getAttribyte("name").getStringValue();
-                            OverrideItem       overrideItem           = new OverrideItem();
-                            overrideItem.overrideAnnotationName = annotationResourceName;
-                            overrideItem.overrideAttribute = name;
-                            overrideItem.attribute = methodInfo.getName();
-                            overrideItem.valuePair = attributes.get(methodInfo.getName());
-                            List<OverrideItem> overrideItems = map.get(annotationResourceName);
-                            if (overrideItems == null)
-                            {
-                                overrideItems = new LinkedList<OverrideItem>();
-                                map.put(annotationResourceName, overrideItems);
-                            }
-                            overrideItems.add(overrideItem);
-                            break;
-                        }
-                    }
-                    break;
-                }
+                this.methodInfo = methodInfo;
+                this.attributeInfo = attributeInfo;
+            }
+
+            public StreamData(MethodInfo methodInfo, AnnotationInfo annotationInfo)
+            {
+                this.methodInfo = methodInfo;
+                this.annotationInfo = annotationInfo;
             }
         }
+        Arrays.stream(classFile.getMethodInfos())
+              .flatMap(methodInfo -> Arrays.stream(methodInfo.getAttributeInfos())
+                                           .map(attributeInfo -> new StreamData(methodInfo, attributeInfo)))
+              .filter(data -> data.attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
+              .flatMap(data -> Arrays.stream(((RuntimeVisibleAnnotationsAttriInfo) data.attributeInfo).getAnnotations())
+                                     .map(annotation -> new StreamData(data.methodInfo, annotation)))
+              .filter(data -> data.annotationInfo.getType()
+                                                 .equals(name))
+              .forEach(data -> {
+                  AnnotationMetadata overrideAttribute = data.annotationInfo.getAnnotation(loader);
+                  ValuePair valuePair = overrideAttribute.getAttribyte("annotation");
+                  String annotationResourceName = valuePair.getClassName()
+                                                           .replace('.', '/');
+                  String name = overrideAttribute.getAttribyte("name")
+                                                 .getStringValue();
+                  OverrideItem overrideItem = new OverrideItem();
+                  overrideItem.overrideAnnotationName = annotationResourceName;
+                  overrideItem.overrideAttribute = name;
+                  overrideItem.attribute = data.methodInfo.getName();
+                  overrideItem.valuePair = attributes.get(data.methodInfo.getName());
+                  List<OverrideItem> overrideItems = map.get(annotationResourceName);
+                  if (overrideItems == null)
+                  {
+                      overrideItems = new LinkedList<OverrideItem>();
+                      map.put(annotationResourceName, overrideItems);
+                  }
+                  overrideItems.add(overrideItem);
+              });
+//        for (MethodInfo methodInfo : classFile.getMethodInfos())
+//        {
+//            for (AttributeInfo attributeInfo : methodInfo.getAttributeInfos())
+//            {
+//                if (attributeInfo instanceof RuntimeVisibleAnnotationsAttriInfo)
+//                {
+//                    for (AnnotationInfo annotation : ((RuntimeVisibleAnnotationsAttriInfo) attributeInfo).getAnnotations())
+//                    {
+//                        if (annotation.getType()
+//                                .equals(name))
+//                        {
+//                            AnnotationMetadata overrideAttribute = annotation.getAnnotation(loader);
+//                            ValuePair valuePair = overrideAttribute.getAttribyte("annotation");
+//                            String annotationResourceName = valuePair.getClassName()
+//                                    .replace('.', '/');
+//                            String name = overrideAttribute.getAttribyte("name")
+//                                    .getStringValue();
+//                            OverrideItem overrideItem = new OverrideItem();
+//                            overrideItem.overrideAnnotationName = annotationResourceName;
+//                            overrideItem.overrideAttribute = name;
+//                            overrideItem.attribute = methodInfo.getName();
+//                            overrideItem.valuePair = attributes.get(methodInfo.getName());
+//                            List<OverrideItem> overrideItems = map.get(annotationResourceName);
+//                            if (overrideItems == null)
+//                            {
+//                                overrideItems = new LinkedList<OverrideItem>();
+//                                map.put(annotationResourceName, overrideItems);
+//                            }
+//                            overrideItems.add(overrideItem);
+//                            break;
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//        }
     }
 
     public static SupportOverrideAttributeAnnotationMetadata castFrom(DefaultAnnotationMetadata defaultAnnotationMetadata)
@@ -69,7 +116,8 @@ public class SupportOverrideAttributeAnnotationMetadata extends AbstractAnnotati
     {
         if (presentAnnotations == null)
         {
-            List<AnnotationMetadata> tmp = BytecodeUtil.findAnnotationsOnClass(type(), this.getClass().getClassLoader());
+            List<AnnotationMetadata> tmp = BytecodeUtil.findAnnotationsOnClass(type(), this.getClass()
+                                                                                           .getClassLoader());
             presentAnnotations = new LinkedList<AnnotationMetadata>();
             for (AnnotationMetadata annotationMetadata : tmp)
             {
