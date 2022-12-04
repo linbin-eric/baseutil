@@ -2,36 +2,38 @@ package com.jfirer.baseutil.reflect;
 
 import com.jfirer.baseutil.CodeLocation;
 import com.jfirer.baseutil.Verify;
-import sun.misc.Unsafe;
+import jdk.internal.misc.Unsafe;
+
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public class UNSAFE
 {
-    private static final Unsafe  unsafe;
+    private static final Unsafe  unsafe = Unsafe.getUnsafe();
     private static final boolean hasUnsafe;
 
     static
     {
-        Unsafe  un;
-        boolean hasUnsafe1 = false;
-        try
-        {
-            // 由反编译Unsafe类获得的信息
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            // 获取静态属性,Unsafe在启动JVM时随rt.jar装载
-            un = (Unsafe) field.get(null);
-            hasUnsafe1 = true;
-        }
-        catch (Exception e)
-        {
-            un = null;
-            hasUnsafe1 = false;
-        }
-        unsafe = un;
-        hasUnsafe = hasUnsafe1;
+//        Unsafe  un;
+//        boolean hasUnsafe1 = false;
+//        try
+//        {
+//            // 由反编译Unsafe类获得的信息
+//            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+//            field.setAccessible(true);
+//            // 获取静态属性,Unsafe在启动JVM时随rt.jar装载
+//            un = (Unsafe) field.get(null);
+//            hasUnsafe1 = true;
+//        }
+//        catch (Exception e)
+//        {
+//            un = null;
+//            hasUnsafe1 = false;
+//        }
+//        unsafe = un;
+//        hasUnsafe = hasUnsafe1;
+        hasUnsafe = true;
     }
 
     public static boolean isAvailable()
@@ -91,27 +93,27 @@ public class UNSAFE
 
     public static boolean compareAndSwapInt(Object src, long offset, int except, int newValue)
     {
-        return unsafe.compareAndSwapInt(src, offset, except, newValue);
+        return unsafe.compareAndSetInt(src, offset, except, newValue);
     }
 
     public static boolean compareAndSwapLong(Object src, long offset, long except, long newValue)
     {
-        return unsafe.compareAndSwapLong(src, offset, except, newValue);
+        return unsafe.compareAndSetLong(src, offset, except, newValue);
     }
 
     public static boolean compareAndSwapObject(Object src, long offset, Object except, Object newValue)
     {
-        return unsafe.compareAndSwapObject(src, offset, except, newValue);
+        return unsafe.compareAndSetReference(src, offset, except, newValue);
     }
 
     public static void putOrderedLong(Object src, long offset, long value)
     {
-        unsafe.putOrderedLong(src, offset, value);
+        unsafe.putLongVolatile(src, offset, value);
     }
 
     public static void putOrderedInt(Object src, long offset, int value)
     {
-        unsafe.putOrderedInt(src, offset, value);
+        unsafe.putIntVolatile(src, offset, value);
     }
 
     public static void putVolatileInt(Object src, long offset, int value)
@@ -131,12 +133,12 @@ public class UNSAFE
 
     public static void putVolatileObject(Object src, long offset, Object value)
     {
-        unsafe.putObjectVolatile(src, offset, value);
+        unsafe.putReferenceVolatile(src, offset, value);
     }
 
     public static void putOrderedObject(Object src, long offset, Object value)
     {
-        unsafe.putOrderedObject(src, offset, value);
+        unsafe.putReferenceVolatile(src, offset, value);
     }
 
     public static int arrayBaseOffset(Class<?> ckass)
@@ -161,17 +163,17 @@ public class UNSAFE
 
     public static Object getObjectVolatile(Object src, long offset)
     {
-        return unsafe.getObjectVolatile(src, offset);
+        return unsafe.getReferenceVolatile(src, offset);
     }
 
     public static Object getObject(Object src, long offset)
     {
-        return unsafe.getObject(src, offset);
+        return unsafe.getReference(src, offset);
     }
 
     public static void putObject(Object src, long offset, Object value)
     {
-        unsafe.putObject(src, offset, value);
+        unsafe.putReference(src, offset, value);
     }
 
     public static void putInt(Object src, long offset, int value)

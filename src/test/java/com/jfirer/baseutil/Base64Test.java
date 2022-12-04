@@ -4,7 +4,6 @@ import com.jfirer.baseutil.encrypt.Base64Tool;
 import com.jfirer.baseutil.time.Timewatch;
 import org.junit.Assert;
 import org.junit.Test;
-import sun.misc.BASE64Encoder;
 
 import java.nio.charset.Charset;
 
@@ -31,13 +30,11 @@ public class Base64Test
     @Test
     public void speed()
     {
-        int           count         = 1000000;
-        BASE64Encoder base64Encoder = new BASE64Encoder();
-        Timewatch     timewatch     = new Timewatch();
-        byte[]        name          = "我的测试".getBytes();
+        int count = 1000000;
+        Timewatch timewatch = new Timewatch();
+        byte[] name = "我的测试".getBytes();
         for (int i = 0; i < 20; i++)
         {
-            base64Encoder.encode(name);
             Base64Tool.encode(name);
         }
         timewatch.start();
@@ -47,12 +44,5 @@ public class Base64Test
         }
         timewatch.end();
         System.out.println("Base64Util:" + timewatch.getTotal());
-        timewatch.start();
-        for (int i = 0; i < count; i++)
-        {
-            base64Encoder.encode(name);
-        }
-        timewatch.end();
-        System.out.println("BASE64Encoder:" + timewatch.getTotal());
     }
 }

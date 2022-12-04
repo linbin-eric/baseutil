@@ -149,7 +149,7 @@ public class ValueAccessor
                 methodModel.setBody(body.toString());
                 classModel.putMethodModel(methodModel);
             }
-            return (ValueAccessor) compileHelper.compile(classModel).newInstance();
+            return (ValueAccessor) compileHelper.compile(classModel).getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
         {
@@ -206,7 +206,7 @@ public class ValueAccessor
                 methodModel = new MethodModel(method, classModel);
                 methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")$1);");
                 classModel.putMethodModel(methodModel);
-                return (ValueAccessor) compileHelper.compile(classModel).newInstance();
+                return (ValueAccessor) compileHelper.compile(classModel).getDeclaredConstructor().newInstance();
             }
             catch (Exception e)
             {
@@ -226,7 +226,7 @@ public class ValueAccessor
             overrideSetMethod(field, classModel, "set", C1);
             overrideSetMethod(field, classModel, "set", C2);
             overrideSetMethod(field, classModel, "setObject", Object.class);
-            return (ValueAccessor) compileHelper.compile(classModel).newInstance();
+            return (ValueAccessor) compileHelper.compile(classModel).getDeclaredConstructor().newInstance();
         }
         catch (Exception e)
         {
