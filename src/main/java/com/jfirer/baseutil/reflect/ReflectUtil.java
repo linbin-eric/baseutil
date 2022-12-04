@@ -1,11 +1,14 @@
 package com.jfirer.baseutil.reflect;
 
+import io.github.karlatemp.unsafeaccessor.Unsafe;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class ReflectUtil
 {
+    private static final Unsafe UNSAFE = Unsafe.getUnsafe();
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static Map<String, ? extends Enum<?>> getAllEnumInstances(Class<? extends Enum<?>> type)
@@ -69,20 +72,13 @@ public final class ReflectUtil
 
     public static void throwException(Throwable t)
     {
-        if (UNSAFE.isAvailable())
+        if (t == null)
         {
-            if (t == null)
-            {
-                throw new NullPointerException("传入的参数为null");
-            }
-            else
-            {
-                UNSAFE.throwThrowable(t);
-            }
+            throw new NullPointerException("传入的参数为null");
         }
         else
         {
-            ReflectUtil.<RuntimeException>throwException0(t);
+            UNSAFE.throwException(t);
         }
     }
 

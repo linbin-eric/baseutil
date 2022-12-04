@@ -1,6 +1,9 @@
 package com.jfirer.baseutil.concurrent;
 
-import sun.misc.Unsafe;
+
+
+
+import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,19 +12,15 @@ import java.util.concurrent.locks.LockSupport;
 
 public class SerialLock<T>
 {
-    private final static Unsafe     unsafe;
-    private final static long       NEXT_OFF;
+    private final static Unsafe unsafe;
+    private final static long   NEXT_OFF;
     private final static SerialNode TerminationNode = new SerialNode(null);
 
     static
     {
         try
         {
-            // 由反编译Unsafe类获得的信息
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            // 获取静态属性,Unsafe在启动JVM时随rt.jar装载
-            unsafe = (Unsafe) field.get(null);
+            unsafe = Unsafe.getUnsafe();
             Field nextField = SerialNode.class.getDeclaredField("next");
             NEXT_OFF = unsafe.objectFieldOffset(nextField);
         }
@@ -45,7 +44,7 @@ public class SerialLock<T>
         else
         {
             SerialNode next;
-            boolean    exec = false;
+            boolean exec = false;
             do
             {
                 next = cs.next;
@@ -80,7 +79,8 @@ public class SerialLock<T>
                 {
                     cs = next;
                 }
-            } while (true);
+            }
+            while (true);
             if (exec)
             {
                 processCs(ns, key);
@@ -138,7 +138,7 @@ public class SerialLock<T>
 
         boolean casTermination()
         {
-            return unsafe.compareAndSwapObject(this, NEXT_OFF, null, TerminationNode);
+            return unsafe.compareAndSetReference(this, NEXT_OFF, null, TerminationNode);
         }
 
         void wakeup()
@@ -148,7 +148,7 @@ public class SerialLock<T>
 
         boolean casNext(SerialNode ns)
         {
-            return unsafe.compareAndSwapObject(this, NEXT_OFF, null, ns);
+            return unsafe.compareAndSetReference(this, NEXT_OFF, null, ns);
         }
     }
 }
