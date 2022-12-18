@@ -158,21 +158,37 @@ public class Copy<S, D>
         {
             return false;
         }
-        Map<String, ? extends Enum<?>> allEnumInstances = ReflectUtil.getAllEnumInstances((Class<? extends Enum<?>>) srcType);
-        boolean                        miss             = false;
-        for (Map.Entry<String, ? extends Enum<?>> entry : allEnumInstances.entrySet())
-        {
+        Optional<?> any = Arrays.stream(srcType.getEnumConstants()).filter(enumConstant -> {
             try
             {
-                Enum.valueOf((Class<Enum>) desType, entry.getKey());
+                Enum.valueOf((Class<Enum>) desType, ((Enum<?>) enumConstant).name());
+                return false;
             }
             catch (Exception e)
             {
-                miss = true;
-                break;
+                return true;
             }
-        }
-        return !miss;
+        }).findAny();
+        return any.isPresent()?false:true;
+//        for (Object enumConstant : enumConstants)
+//        {
+//
+//        }
+//        Map<String, ? extends Enum<?>> allEnumInstances = ReflectUtil.getAllEnumInstances((Class<? extends Enum<?>>) srcType);
+//        boolean                        miss             = false;
+//        for (Map.Entry<String, ? extends Enum<?>> entry : allEnumInstances.entrySet())
+//        {
+//            try
+//            {
+//                Enum.valueOf((Class<Enum>) desType, entry.getKey());
+//            }
+//            catch (Exception e)
+//            {
+//                miss = true;
+//                break;
+//            }
+//        }
+//        return !miss;
     }
 
     private Map<String, Field> generateSourceFields(Class source, Class des)

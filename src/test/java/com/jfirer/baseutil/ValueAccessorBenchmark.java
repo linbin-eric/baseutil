@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
 @Warmup(iterations = 1)
-@Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 @Fork(1)
 @OutputTimeUnit(TimeUnit.SECONDS)
@@ -36,11 +36,11 @@ public class ValueAccessorBenchmark
         }
     }
 
-//    @Benchmark
+    @Benchmark
     public void testOld()
     {
 //        valueAccessor.setObject(test, "sadas");
-        valueAccessor.getShort(test);
+        valueAccessor.getDoubleObject(test);
     }
 
     @Benchmark

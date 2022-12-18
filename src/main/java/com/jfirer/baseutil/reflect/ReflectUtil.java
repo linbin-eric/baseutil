@@ -10,21 +10,7 @@ public final class ReflectUtil
 {
     private static final Unsafe UNSAFE = Unsafe.getUnsafe();
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static Map<String, ? extends Enum<?>> getAllEnumInstances(Class<? extends Enum<?>> type)
-    {
-        try
-        {
-            Method method = Class.class.getDeclaredMethod("enumConstantDirectory");
-            method.setAccessible(true);
-            return new HashMap((Map<String, ?>) method.invoke(type));
-        }
-        catch (Exception e)
-        {
-            throwException(e);
-            return null;
-        }
-    }
+
 
     public static Class<?> wrapPrimitive(Class<?> type)
     {

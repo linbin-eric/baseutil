@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jfirer</groupId>
     <artifactId>baseutil</artifactId>
-    <version>1.1.6-SNAPSHOT</version>
+    <version>1.1.6</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
@@ -91,14 +91,14 @@
     </dependencies>
     <distributionManagement>
         <repository>
-            <id>nexus</id>
+            <id>nexus3</id>
             <name>nexus</name>
-            <url>http://homenas.club:49159/repository/maven-releases/</url>
+            <url>http://backupnas.jfirer.com:8082/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>nexus-snapshot</id>
+            <id>nexus3</id>
             <name>nexus</name>
-            <url>http://homenas.club:49159/repository/maven-snapshots/</url>
+            <url>http://backupnas.jfirer.com:8082/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
     <profiles>

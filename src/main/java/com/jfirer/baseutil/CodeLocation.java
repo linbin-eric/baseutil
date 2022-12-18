@@ -31,7 +31,7 @@ public class CodeLocation
 
     public static void main(String[] args) throws InterruptedException
     {
-        System.out.println("sdasd");
+        System.out.println(CodeLocation.getCodeLocation());
         ExecutorService poo = Executors.newCachedThreadPool();
         poo.submit(new Runnable()
         {

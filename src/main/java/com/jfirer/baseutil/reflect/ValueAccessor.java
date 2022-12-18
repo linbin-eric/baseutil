@@ -326,7 +326,7 @@ public class ValueAccessor
         }
         else
         {
-            unsafe.putObject(entity, offset, value);
+            unsafe.putReference(entity, offset, value);
         }
     }
 
@@ -726,7 +726,7 @@ public class ValueAccessor
         }
         else
         {
-            return unsafe.getObject(entity, offset);
+            return unsafe.getReference(entity, offset);
         }
     }
 
