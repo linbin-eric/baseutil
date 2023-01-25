@@ -289,7 +289,6 @@ public abstract class AbstractAnnotationMetadata implements AnnotationMetadata
             {
                 annotation = (Annotation) Proxy.newProxyInstance(classLoader, new Class[]{classLoader.loadClass(resourceName.replace('/', '.'))}, new InvocationHandler()
                 {
-
                     @Override
                     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
                     {
