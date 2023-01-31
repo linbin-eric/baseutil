@@ -1,0 +1,25 @@
+logging:
+  config: classpath:logback-dev.xml
+
+
+
+spring:
+  jpa:
+    hibernate:
+#      ddl-auto: update
+
+
+
+
+  datasource:
+    url: jdbc:log4jdbc:mysql://127.0.0.1:3306/drg_medical?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    driver-class-name: net.sf.log4jdbc.DriverSpy
+    hikari:
+      username: root
+      password:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: false
