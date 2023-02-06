@@ -168,64 +168,6 @@ public class ValueAccessorTest
     }
 
     @Test
-    public void speedWrite() throws NoSuchFieldException
-    {
-        ValueAccessorTest test                  = new ValueAccessorTest();
-        ValueAccessor     valueAccessor         = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
-        ValueAccessor     valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
-        int               total                 = 2000000000;
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor.set(test, 2);
-            valueAccessor_compile.set(test, 2);
-        }
-        NanoTimeWatch watch = new NanoTimeWatch();
-        watch.start();
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor_compile.set(test, 2);
-        }
-        watch.end();
-        System.out.println("编译模式下耗时:" + watch.getTatol() + "纳秒");
-        watch.start();
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor.set(test, 2);
-        }
-        watch.end();
-        System.out.println("普通模式下耗时:" + watch.getTatol() + "纳秒");
-    }
-
-    @Test
-    public void speedread() throws NoSuchFieldException
-    {
-        ValueAccessorTest test                  = new ValueAccessorTest();
-        ValueAccessor     valueAccessor         = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
-        ValueAccessor     valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
-        int               total                 = 2000000000;
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor.getInt(test);
-            valueAccessor_compile.getInt(test);
-        }
-        NanoTimeWatch watch = new NanoTimeWatch();
-        watch.start();
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor_compile.getInt(test);
-        }
-        watch.end();
-        System.out.println("编译模式下耗时:" + watch.getTatol() + "纳秒");
-        watch.start();
-        for (int i = 0; i < total; i++)
-        {
-            valueAccessor.getInt(test);
-        }
-        watch.end();
-        System.out.println("普通模式下耗时:" + watch.getTatol() + "纳秒");
-    }
-
-    @Test
     public void testWrite1() throws NoSuchFieldException
     {
         ValueAccessorTest test = new ValueAccessorTest();

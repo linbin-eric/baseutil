@@ -5,6 +5,7 @@ import com.jfirer.baseutil.bytecode.annotation.DefaultAnnotationMetadata;
 import com.jfirer.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
 import com.jfirer.baseutil.bytecode.util.BytecodeUtil;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -43,4 +44,6 @@ public class SupportOverrideAttributeAnnotationContextFactory extends CacheableA
         List<AnnotationMetadata> annotationMetadataList = BytecodeUtil.findAnnotationsOnClass(resourceName, classLoader);
         return castToSupportOverrideContext(annotationMetadataList);
     }
+
+
 }

@@ -7,9 +7,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
+@Deprecated
 public class DefaultAnnotationContextFactory extends CacheableAnnotationContextFactory
 {
-
     @Override
     protected AnnotationContext build(String resourceName, ClassLoader classLoader)
     {

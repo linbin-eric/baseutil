@@ -1,17 +1,16 @@
 package com.jfirer.baseutil.bytecode.support;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class CacheableAnnotationContextFactory implements AnnotationContextFactory
 {
-
-    protected IdentityHashMap<Method, AnnotationContext> methodAnnotationContextStore       = new IdentityHashMap<Method, AnnotationContext>();
-    protected Map<String, AnnotationContext>             resourceNameAnnotationContextStore = new HashMap<String, AnnotationContext>();
-    protected IdentityHashMap<Field, AnnotationContext>  fieldAnnotationContextStore        = new IdentityHashMap<Field, AnnotationContext>();
+    protected Map<Method, AnnotationContext> methodAnnotationContextStore       = new ConcurrentHashMap<>();
+    protected Map<String, AnnotationContext> resourceNameAnnotationContextStore = new ConcurrentHashMap<>();
+    protected Map<Field, AnnotationContext>  fieldAnnotationContextStore        = new ConcurrentHashMap<>();
 
     protected abstract AnnotationContext build(String resourceName, ClassLoader classLoader);
 
@@ -26,40 +25,19 @@ public abstract class CacheableAnnotationContextFactory implements AnnotationCon
     @Override
     public AnnotationContext get(Method method, ClassLoader classLoader)
     {
-        AnnotationContext annotationContext = methodAnnotationContextStore.get(method);
-        if (annotationContext != null)
-        {
-            return annotationContext;
-        }
-        annotationContext = build(method, classLoader);
-        methodAnnotationContextStore.put(method, annotationContext);
-        return annotationContext;
+        return methodAnnotationContextStore.computeIfAbsent(method, m -> build(m, classLoader));
     }
 
     @Override
     public AnnotationContext get(String resourceName, ClassLoader classLoader)
     {
-        AnnotationContext annotationContext = resourceNameAnnotationContextStore.get(resourceName);
-        if (annotationContext != null)
-        {
-            return annotationContext;
-        }
-        annotationContext = build(resourceName, classLoader);
-        resourceNameAnnotationContextStore.put(resourceName, annotationContext);
-        return annotationContext;
+        return resourceNameAnnotationContextStore.computeIfAbsent(resourceName, value -> build(value, classLoader));
     }
 
     @Override
     public AnnotationContext get(Field field, ClassLoader classLoader)
     {
-        AnnotationContext annotationContext = fieldAnnotationContextStore.get(field);
-        if (annotationContext != null)
-        {
-            return annotationContext;
-        }
-        annotationContext = build(field, classLoader);
-        fieldAnnotationContextStore.put(field, annotationContext);
-        return annotationContext;
+        return fieldAnnotationContextStore.computeIfAbsent(field, f -> build(f, classLoader));
     }
 
     protected abstract AnnotationContext build(Field field, ClassLoader classLoader);
@@ -86,5 +64,26 @@ public abstract class CacheableAnnotationContextFactory implements AnnotationCon
     public AnnotationContext get(Field field)
     {
         return get(field, Thread.currentThread().getContextClassLoader());
+    }
+
+    @Override
+    public AnnotationContext get(AnnotatedElement annotatedElement)
+    {
+        if (annotatedElement instanceof Class ckass)
+        {
+            return get(ckass);
+        }
+        else if (annotatedElement instanceof Method method)
+        {
+            return get(method);
+        }
+        else if (annotatedElement instanceof Field field)
+        {
+            return get(field);
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
     }
 }

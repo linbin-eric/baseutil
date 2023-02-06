@@ -1,12 +1,9 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.bytecode.support.AnnotationContext;
-import com.jfirer.baseutil.bytecode.support.AnnotationContextFactory;
 import com.jfirer.baseutil.bytecode.support.OverridesAttribute;
-import com.jfirer.baseutil.bytecode.support.SupportOverrideAttributeAnnotationContextFactory;
 import org.junit.Assert;
 import org.junit.Test;
-
 
 import javax.annotation.Resource;
 import java.lang.annotation.Retention;
@@ -19,9 +16,8 @@ public class AnnoTest
     @Test
     public void test()
     {
-        AnnotationContextFactory annotationContextFactory = new SupportOverrideAttributeAnnotationContextFactory();
         Assert.assertTrue(innrtest.class.isAnnotationPresent(testAnno.class));
-        AnnotationContext annotationContext = annotationContextFactory.get(innrtest.class, Thread.currentThread().getContextClassLoader());
+        AnnotationContext annotationContext = AnnotationContext.getInstance(innrtest.class);
         Assert.assertTrue(annotationContext.isAnnotationPresent(testAnno.class));
         Assert.assertTrue(annotationContext.isAnnotationPresent(level2nest.class));
         Assert.assertTrue(annotationContext.isAnnotationPresent(level2value.class));
@@ -34,9 +30,7 @@ public class AnnoTest
     @Resource
     @Retention(RUNTIME)
     public @interface testAnno
-    {
-
-    }
+    {}
 
     @Retention(RUNTIME)
     public @interface level1value
@@ -49,9 +43,7 @@ public class AnnoTest
     @level2value(value = "levle2-nest", a = "3")
     @Retention(RUNTIME)
     public @interface level2nest
-    {
-
-    }
+    {}
 
     @Retention(RUNTIME)
     @level1value(value = "level1", array = {"1", "2"})
@@ -73,7 +65,5 @@ public class AnnoTest
     @level2nest
     @level2value.list(value = {@level2value(value = "levle2-list-1", a = "3"), @level2value(value = "levle2-list-2", a = "3")})
     public static class innrtest
-    {
-
-    }
+    {}
 }

@@ -1,5 +1,6 @@
 package com.jfirer.baseutil.bytecode.support;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -20,4 +21,6 @@ public interface AnnotationContextFactory
     AnnotationContext get(Method method);
 
     AnnotationContext get(Field field);
+
+    AnnotationContext get(AnnotatedElement annotatedElement);
 }

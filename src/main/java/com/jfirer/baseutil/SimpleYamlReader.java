@@ -3,12 +3,13 @@ package com.jfirer.baseutil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SimpleYamlReader
 {
-    class Element
+    static class Element
     {
         int     level;
         String  name;
@@ -23,11 +24,10 @@ public class SimpleYamlReader
     static final int LIST         = 3;
     static final int LIST_ELEMENT = 4;
 
-    public Map<String, Object> read(File file) throws IOException
+    public static Map<String, Object> read(InputStream inputStream) throws IOException
     {
-        List<Element>   seqence     = new ArrayList<>();
-        FileInputStream inputStream = new FileInputStream(file);
-        byte[]          content     = new byte[inputStream.available()];
+        List<Element> seqence = new ArrayList<>();
+        byte[]        content = new byte[inputStream.available()];
         inputStream.read(content);
         LineHelper helper    = new LineHelper(content);
         int        seqenceId = 0;
@@ -163,7 +163,7 @@ public class SimpleYamlReader
         return map;
     }
 
-    String path(Element element)
+    static String path(Element element)
     {
         List<String> list = new LinkedList<>();
         do
@@ -205,7 +205,7 @@ public class SimpleYamlReader
      * 2、如果是缩进行，首先寻找最近的行，如果其缩进不是自己的父类，则该行的状态变更为确定的状态。重复该过程，直到找到父类的行，指向到正确的行。
      * 3、
      */
-    class LineHelper
+    static class LineHelper
     {
         private byte[] src;
         private int    end   = 0;
@@ -270,8 +270,7 @@ public class SimpleYamlReader
 
     public static void main(String[] args) throws IOException
     {
-        SimpleYamlReader    reader = new SimpleYamlReader();
-        Map<String, Object> map    = reader.read(new File("/Users/linbin/代码空间/baseutil/src/test/resources/test.yml"));
+        Map<String, Object> map = SimpleYamlReader.read(new FileInputStream(new File("/Users/linbin/代码空间/baseutil/src/test/resources/test.yml")));
         map.forEach((name, value) -> {
             System.out.println(name + ":" + value);
         });
