@@ -96,8 +96,7 @@ public class BytecodeTest
     public void test4() throws NoSuchMethodException
     {
         Method                   test4                    = BytecodeTest.class.getDeclaredMethod("test4", null);
-        AnnotationContextFactory annotationContextFactory = new SupportOverrideAttributeAnnotationContextFactory();
-        AnnotationContext        annotationContext        = annotationContextFactory.get(test4, Thread.currentThread().getContextClassLoader());
+        AnnotationContext        annotationContext        = AnnotationContext.getInstance(test4);
         AnnotationMetadata       annotationMetadata       = annotationContext.getAnnotationMetadata(Level1.class);
         assertTrue(annotationMetadata instanceof SupportOverrideAttributeAnnotationMetadata);
         assertEquals("level2", annotationMetadata.getAttribyte("value").getStringValue());
