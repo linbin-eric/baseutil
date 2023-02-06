@@ -11,10 +11,12 @@ public enum ConstantType
     String,//
     FieldRef,//
     MethodRef,//
-    InterfaceMethodref, NameAndType,//
+    InterfaceMethodref,//
+    NameAndType,//
     MethodHandle,//
     MethodType,//
-    InvokeDynamic,
+    InvokeDynamic,//
+
     //
     ;
 
@@ -51,7 +53,7 @@ public enum ConstantType
             case 18:
                 return InvokeDynamic;
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(java.lang.String.valueOf(value));
         }
     }
 }

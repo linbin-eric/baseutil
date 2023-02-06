@@ -18,6 +18,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,14 +42,29 @@ public class BytecodeUtil
             {
                 return null;
             }
-            byte[] content = new byte[resourceAsStream.available()];
-            resourceAsStream.read(content);
-            resourceAsStream.close();
-            return content;
+            int    offset  = 0;
+            byte[] content = new byte[1024];
+            while (true)
+            {
+                int read = resourceAsStream.read(content, offset, content.length-offset);
+                if (read != -1)
+                {
+                    offset += read;
+                    if (offset >= content.length)
+                    {
+                        content = Arrays.copyOf(content, content.length * 2);
+                    }
+                }
+                else
+                {
+                    resourceAsStream.close();
+                    return Arrays.copyOf(content, offset);
+                }
+            }
         }
-        catch (Exception e1)
+        catch (Exception e)
         {
-            ReflectUtil.throwException(e1);
+            ReflectUtil.throwException(e);
             return null;
         }
     }

@@ -14,9 +14,9 @@ public class ClassFileParser
     private int             magic;
     private int             minor_version;
     private int             major_version;
-    private int            constant_pool_count;
-    private ConstantInfo[] constant_pool;
-    private int            access_flags;
+    private int             constant_pool_count;
+    private ConstantInfo[]  constant_pool;
+    private int             access_flags;
     private String          this_class_name;
     private String          super_class_name;
     private String[]        interfaces;
@@ -228,9 +228,9 @@ public class ClassFileParser
     private void readMagic()
     {
         if ((binaryData.readByte() & 0xff) == 0xca//
-                && (binaryData.readByte() & 0xff) == 0xfe//
-                && (binaryData.readByte() & 0xff) == 0xba//
-                && (binaryData.readByte() & 0xff) == 0xbe)
+            && (binaryData.readByte() & 0xff) == 0xfe//
+            && (binaryData.readByte() & 0xff) == 0xba//
+            && (binaryData.readByte() & 0xff) == 0xbe)
         {
             magic = 0xcafebabe;
         }
