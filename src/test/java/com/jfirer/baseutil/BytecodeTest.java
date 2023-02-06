@@ -5,9 +5,7 @@ import com.jfirer.baseutil.bytecode.annotation.AnnotationMetadata;
 import com.jfirer.baseutil.bytecode.annotation.SupportOverrideAttributeAnnotationMetadata;
 import com.jfirer.baseutil.bytecode.structure.AnnotationInfo;
 import com.jfirer.baseutil.bytecode.support.AnnotationContext;
-import com.jfirer.baseutil.bytecode.support.AnnotationContextFactory;
 import com.jfirer.baseutil.bytecode.support.OverridesAttribute;
-import com.jfirer.baseutil.bytecode.support.SupportOverrideAttributeAnnotationContextFactory;
 import com.jfirer.baseutil.bytecode.util.BytecodeUtil;
 import com.jfirer.baseutil.time.Timewatch;
 import org.junit.Test;
@@ -96,7 +94,7 @@ public class BytecodeTest
     public void test4() throws NoSuchMethodException
     {
         Method                   test4                    = BytecodeTest.class.getDeclaredMethod("test4", null);
-        AnnotationContext        annotationContext        = AnnotationContext.getInstance(test4);
+        AnnotationContext        annotationContext        = AnnotationContext.getInstanceOn(test4);
         AnnotationMetadata       annotationMetadata       = annotationContext.getAnnotationMetadata(Level1.class);
         assertTrue(annotationMetadata instanceof SupportOverrideAttributeAnnotationMetadata);
         assertEquals("level2", annotationMetadata.getAttribyte("value").getStringValue());

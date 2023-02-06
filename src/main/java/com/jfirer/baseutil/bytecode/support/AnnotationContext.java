@@ -20,7 +20,7 @@ public interface AnnotationContext
 
     SupportOverrideAttributeAnnotationContextFactory ANNOTATION_CONTEXT_FACTORY = new SupportOverrideAttributeAnnotationContextFactory();
 
-    static AnnotationContext getInstance(AnnotatedElement element)
+    static AnnotationContext getInstanceOn(AnnotatedElement element)
     {
         return ANNOTATION_CONTEXT_FACTORY.get(element);
     }
@@ -49,5 +49,10 @@ public interface AnnotationContext
     static List<AnnotationMetadata> getAnnotationMetadatas(Class<? extends Annotation> ckass, AnnotatedElement annotatedElement)
     {
         return ANNOTATION_CONTEXT_FACTORY.get(annotatedElement).getAnnotationMetadatas(ckass);
+    }
+
+    static AnnotationContext get(String resourceName)
+    {
+        return ANNOTATION_CONTEXT_FACTORY.get(resourceName);
     }
 }

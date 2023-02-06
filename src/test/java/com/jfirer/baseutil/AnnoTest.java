@@ -17,7 +17,7 @@ public class AnnoTest
     public void test()
     {
         Assert.assertTrue(innrtest.class.isAnnotationPresent(testAnno.class));
-        AnnotationContext annotationContext = AnnotationContext.getInstance(innrtest.class);
+        AnnotationContext annotationContext = AnnotationContext.getInstanceOn(innrtest.class);
         Assert.assertTrue(annotationContext.isAnnotationPresent(testAnno.class));
         Assert.assertTrue(annotationContext.isAnnotationPresent(level2nest.class));
         Assert.assertTrue(annotationContext.isAnnotationPresent(level2value.class));
