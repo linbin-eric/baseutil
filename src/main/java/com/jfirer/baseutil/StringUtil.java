@@ -148,6 +148,15 @@ public class StringUtil
     }
 
     /**
+     * @param src
+     * @return
+     */
+    public static boolean isBlank(String src)
+    {
+        return src == null || "".equals(src);
+    }
+
+    /**
      * 对字符串进行参数占位符替换。比如pattern是“你好我是{}”,使用后面的参数替换掉{}. 替换的顺序和参数自身的顺序一致
      *
      * @param pattern

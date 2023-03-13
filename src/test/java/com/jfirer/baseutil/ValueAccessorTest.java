@@ -1,10 +1,12 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.LambdaValueAccessor;
 import com.jfirer.baseutil.reflect.ValueAccessor;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
-import com.jfirer.baseutil.time.NanoTimeWatch;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
 
 public class ValueAccessorTest
 {
@@ -221,6 +223,16 @@ public class ValueAccessorTest
         valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
         valueAccessor.set(test, 2l);
         Assert.assertEquals(test.l1, Long.valueOf(2));
+    }
+
+    @Test
+    public void testLambda() throws NoSuchFieldException
+    {
+        Field               field               = ValueAccessorTest.class.getDeclaredField("a");
+        LambdaValueAccessor lambdaValueAccessor = new LambdaValueAccessor(field);
+        ValueAccessorTest   test                = new ValueAccessorTest();
+        test.setA(2);
+        Assert.assertEquals(2, lambdaValueAccessor.getInt(test));
     }
 
     public int getA()

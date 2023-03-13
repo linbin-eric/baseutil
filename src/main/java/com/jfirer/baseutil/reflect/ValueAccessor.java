@@ -17,19 +17,19 @@ public class ValueAccessor
 {
     private static final int           _UNSAFE       = 0;
     private static final int           _FIELD        = 1;
-    private static final int           INT           = 1;
-    private static final int           BYTE          = 2;
-    private static final int           CHAR          = 3;
-    private static final int           BOOLEAN       = 4;
-    private static final int           SHORT         = 5;
-    private static final int           LONG          = 6;
-    private static final int           FLOAT         = 7;
-    private static final int           DOUBLE        = 8;
-    private static final AtomicInteger count         = new AtomicInteger();
-    private              Field         field;
+    protected static final int           INT           = 1;
+    protected static final int           BYTE          = 2;
+    protected static final int           CHAR          = 3;
+    protected static final int           BOOLEAN       = 4;
+    protected static final int           SHORT         = 5;
+    protected static final int           LONG          = 6;
+    protected static final int           FLOAT         = 7;
+    protected static final int           DOUBLE        = 8;
+    protected static final AtomicInteger count         = new AtomicInteger();
+    protected            Field         field;
     private              long          offset;
-    private              boolean       primitive;
-    private              int           primitiveType = 0;
+    protected            boolean       primitive;
+    protected            int           primitiveType = 0;
     private              Unsafe        unsafe        = Unsafe.getUnsafe();
 
     public ValueAccessor()
@@ -93,8 +93,8 @@ public class ValueAccessor
         ClassModel classModel = new ClassModel("ValueAccessor_constructor_" + ckass.getSimpleName() + "_" + count.getAndIncrement(), ValueAccessor.class);
         try
         {
-            boolean hasZeroParamConstructor = false;
-            Map<Integer, Class[]> map = new HashMap<Integer, Class[]>();
+            boolean               hasZeroParamConstructor = false;
+            Map<Integer, Class[]> map                     = new HashMap<Integer, Class[]>();
             for (Constructor constructor : ckass.getConstructors())
             {
                 Class[] parameterTypes = constructor.getParameterTypes();
@@ -114,7 +114,7 @@ public class ValueAccessor
             }
             if (hasZeroParamConstructor)
             {
-                Method method = ValueAccessor.class.getDeclaredMethod("newInstace");
+                Method      method      = ValueAccessor.class.getDeclaredMethod("newInstace");
                 MethodModel methodModel = new MethodModel(method, classModel);
                 methodModel.setBody("return new " + SmcHelper.getReferenceName(ckass, classModel) + "();\r\n");
                 classModel.putMethodModel(methodModel);
@@ -129,14 +129,13 @@ public class ValueAccessor
                     Class[] value = each.getValue();
                     for (int i = 0; i < value.length; i++)
                     {
-                        body.append("(").append(SmcHelper.getReferenceName(value[i], classModel)).append(")params[")
-                            .append(i).append("],");
+                        body.append("(").append(SmcHelper.getReferenceName(value[i], classModel)).append(")params[").append(i).append("],");
                     }
                     body.setLength(body.length() - 1);
                     body.append(");\r\n");
                     body.append("}\r\n");
                 }
-                Method method = ValueAccessor.class.getDeclaredMethod("newInstance", Object[].class);
+                Method      method      = ValueAccessor.class.getDeclaredMethod("newInstance", Object[].class);
                 MethodModel methodModel = new MethodModel(method, classModel);
                 methodModel.setParamterNames("params");
                 methodModel.setBody(body.toString());
@@ -154,7 +153,7 @@ public class ValueAccessor
     public static ValueAccessor create(Field field, CompileHelper compileHelper)
     {
         ClassModel classModel = new ClassModel("ValueAccessor_" + field.getName() + "_" + count.getAndIncrement(), ValueAccessor.class);
-        Class<?> type = field.getType();
+        Class<?>   type       = field.getType();
         if (type == int.class || type == Integer.class)
         {
             return build(field, compileHelper, classModel, "getInt", int.class, Integer.class);
@@ -191,7 +190,7 @@ public class ValueAccessor
         {
             try
             {
-                Method method = ValueAccessor.class.getDeclaredMethod("get", Object.class);
+                Method      method      = ValueAccessor.class.getDeclaredMethod("get", Object.class);
                 MethodModel methodModel = new MethodModel(method, classModel);
                 methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
                 classModel.putMethodModel(methodModel);
@@ -230,7 +229,7 @@ public class ValueAccessor
 
     private static void overrideSetMethod(Field field, ClassModel classModel, String setMethodName, Class paramType) throws NoSuchMethodException
     {
-        Method method = ValueAccessor.class.getDeclaredMethod(setMethodName, Object.class, paramType);
+        Method      method      = ValueAccessor.class.getDeclaredMethod(setMethodName, Object.class, paramType);
         MethodModel methodModel = new MethodModel(method, classModel);
         if (paramType == Object.class)
         {
@@ -245,7 +244,7 @@ public class ValueAccessor
 
     private static void overrideGetMethod(Field field, ClassModel classModel, String getMethodName) throws NoSuchMethodException
     {
-        Method method = ValueAccessor.class.getDeclaredMethod(getMethodName, Object.class);
+        Method      method      = ValueAccessor.class.getDeclaredMethod(getMethodName, Object.class);
         MethodModel methodModel = new MethodModel(method, classModel);
         if (field.getType() != boolean.class)
         {

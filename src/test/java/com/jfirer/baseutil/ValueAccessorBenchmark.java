@@ -1,5 +1,6 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.LambdaValueAccessor;
 import com.jfirer.baseutil.reflect.ValueAccessor;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import org.openjdk.jmh.annotations.*;
@@ -12,42 +13,48 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
 @Warmup(iterations = 1)
-@Measurement(iterations = 10, time = 3, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 @Fork(1)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ValueAccessorBenchmark
 {
-    static ValueAccessorTest test   = new ValueAccessorTest();
+    static ValueAccessorTest test = new ValueAccessorTest();
     static ValueAccessor     valueAccessor;
     static ValueAccessor     valueAccessor_compile;
-
+    static ValueAccessor     valueAccessor_lambda;
     static
     {
         try
         {
-            String name = "d1";
+            String name = "a";
             valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
             valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField(name), new CompileHelper());
+            valueAccessor_lambda = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
         }
         catch (NoSuchFieldException e)
         {
             e.printStackTrace();
         }
     }
-
     @Benchmark
     public void testOld()
     {
 //        valueAccessor.setObject(test, "sadas");
-        valueAccessor.getDoubleObject(test);
+        valueAccessor.getInt(test);
     }
 
     @Benchmark
     public void testNew()
     {
 //        valueAccessor_compile.setObject(test_2, "sadas");
-        valueAccessor_compile.get(test);
+        valueAccessor_compile.getInt(test);
+    }
+
+    @Benchmark
+    public void testLambda()
+    {
+        valueAccessor_lambda.getInt(test);
     }
 
     public static void main(String[] args) throws RunnerException
