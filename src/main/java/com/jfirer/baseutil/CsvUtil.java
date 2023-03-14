@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class CsvUtil
 {
@@ -25,6 +26,21 @@ public class CsvUtil
 
     public static <T> List<T> read(BufferedReader reader, Class<T> type) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
     {
+        Constructor<T> constructor = type.getConstructor();
+        return read(reader, type, () -> {
+            try
+            {
+                return constructor.newInstance();
+            }
+            catch (InstantiationException | IllegalAccessException | InvocationTargetException e)
+            {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public static <T> List<T> read(BufferedReader reader, Class<T> type, Supplier<T> supplier) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
+    {
         List<T> list   = new LinkedList<>();
         String  header = reader.readLine();
         if (StringUtil.isBlank(header))
@@ -33,16 +49,15 @@ public class CsvUtil
         }
         List<String> content = new ArrayList<>();
         getContent(header, content);
-        CsvEntity[]    csvEntities = defineCsvHeader(type, content);
-        String         line;
-        Constructor<T> constructor = type.getConstructor();
+        CsvEntity[] csvEntities = defineCsvHeader(type, content);
+        String      line;
         while ((line = reader.readLine()) != null)
         {
             if (StringUtil.isNotBlank(line))
             {
                 content.clear();
                 getContent(line, content);
-                T t = constructor.newInstance();
+                T t = supplier.get();
                 for (CsvEntity csvEntity : csvEntities)
                 {
                     csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
