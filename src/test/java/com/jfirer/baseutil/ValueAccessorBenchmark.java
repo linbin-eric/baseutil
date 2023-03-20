@@ -12,18 +12,26 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
-@Warmup(iterations = 1)
+@Warmup(iterations = 1,time=3)
 @Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 @Fork(1)
 @OutputTimeUnit(TimeUnit.SECONDS)
+@State(Scope.Benchmark)
 public class ValueAccessorBenchmark
 {
-    static ValueAccessorTest test = new ValueAccessorTest();
-    static ValueAccessor     valueAccessor;
-    static ValueAccessor     valueAccessor_compile;
-    static ValueAccessor     valueAccessor_lambda;
-    static
+    ValueAccessorTest           test = new ValueAccessorTest();
+    ValueAccessor               valueAccessor;
+    ValueAccessor               valueAccessor_compile;
+    ValueAccessor               valueAccessor_lambda;
+    ApplyInt<ValueAccessorTest> accessorTestApplyInt;
+
+    interface ApplyInt<T>
+    {
+        int apply(T t);
+    }
+
+    public ValueAccessorBenchmark()
     {
         try
         {
@@ -31,12 +39,14 @@ public class ValueAccessorBenchmark
             valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
             valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField(name), new CompileHelper());
             valueAccessor_lambda = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
+            accessorTestApplyInt = ValueAccessorTest::getA;
         }
         catch (NoSuchFieldException e)
         {
             e.printStackTrace();
         }
     }
+
     @Benchmark
     public void testOld()
     {
@@ -55,6 +65,12 @@ public class ValueAccessorBenchmark
     public void testLambda()
     {
         valueAccessor_lambda.getInt(test);
+    }
+
+    @Benchmark
+    public void testLambda2()
+    {
+        accessorTestApplyInt.apply(test);
     }
 
     public static void main(String[] args) throws RunnerException

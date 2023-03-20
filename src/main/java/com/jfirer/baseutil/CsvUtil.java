@@ -1,5 +1,6 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.ValueAccessor;
 
 import java.io.BufferedReader;
@@ -17,9 +18,22 @@ public class CsvUtil
 {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    @interface CsvHeaderName
+    public @interface CsvHeaderName
     {
         String value() default "";
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public @interface CsvHeaderNameStrategy
+    {
+        Class<? extends HeaderName> value();
+    }
+
+    @FunctionalInterface
+    public interface HeaderName
+    {
+        String name(String fieldName);
     }
 
     record CsvEntity(int index, ValueAccessor valueAccessor) {}
@@ -49,18 +63,33 @@ public class CsvUtil
         }
         List<String> content = new ArrayList<>();
         getContent(header, content);
+        int         headerCount = content.size();
         CsvEntity[] csvEntities = defineCsvHeader(type, content);
         String      line;
         while ((line = reader.readLine()) != null)
         {
             if (StringUtil.isNotBlank(line))
             {
-                content.clear();
+                if (content.size() == headerCount)
+                {
+                    content.clear();
+                }
                 getContent(line, content);
+                if (content.size() != headerCount)
+                {
+                    continue;
+                }
                 T t = supplier.get();
                 for (CsvEntity csvEntity : csvEntities)
                 {
-                    csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
+                    try
+                    {
+                        csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
+                    }
+                    catch (Throwable e)
+                    {
+                        ReflectUtil.throwException(e);
+                    }
                 }
                 list.add(t);
             }
@@ -72,6 +101,23 @@ public class CsvUtil
     {
         List<CsvEntity>            csvEntities = new ArrayList<>();
         Map<String, ValueAccessor> map         = new HashMap<>();
+        HeaderName                 headerName;
+        if (type.isAnnotationPresent(CsvHeaderNameStrategy.class))
+        {
+            try
+            {
+                headerName = type.getAnnotation(CsvHeaderNameStrategy.class).value().getConstructor().newInstance();
+            }
+            catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                   NoSuchMethodException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else
+        {
+            headerName = name -> name;
+        }
         Arrays.stream(type.getDeclaredFields()).forEach(field -> {
             if (field.isAnnotationPresent(CsvHeaderName.class))
             {
@@ -79,7 +125,7 @@ public class CsvUtil
             }
             else
             {
-                map.put(field.getName(), new ValueAccessor(field));
+                map.put(headerName.name(field.getName()), new ValueAccessor(field));
             }
         });
         for (int i = 0; i < content.size(); i++)
@@ -122,15 +168,12 @@ public class CsvUtil
                         }
                         lastContentIndex = index + 1;
                     }
-                    else if (state == 1)
+                    else
                     {
                         ;
                     }
                 }
-                case '"' ->
-                {
-                    state = state == 0 ? 1 : 0;
-                }
+                case '"' -> state = state == 0 ? 1 : 0;
             }
             index += 1;
         }
