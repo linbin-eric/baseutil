@@ -1,5 +1,6 @@
 package com.jfirer.baseutil.bytecode.util;
 
+import com.jfirer.baseutil.IoUtil;
 import com.jfirer.baseutil.bytecode.ClassFile;
 import com.jfirer.baseutil.bytecode.ClassFileParser;
 import com.jfirer.baseutil.bytecode.annotation.AnnotationMetadata;
@@ -13,6 +14,7 @@ import com.jfirer.baseutil.bytecode.structure.FieldInfo;
 import com.jfirer.baseutil.bytecode.structure.MethodInfo;
 import com.jfirer.baseutil.reflect.ReflectUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -42,25 +44,7 @@ public class BytecodeUtil
             {
                 return null;
             }
-            int    offset  = 0;
-            byte[] content = new byte[1024];
-            while (true)
-            {
-                int read = resourceAsStream.read(content, offset, content.length-offset);
-                if (read != -1)
-                {
-                    offset += read;
-                    if (offset >= content.length)
-                    {
-                        content = Arrays.copyOf(content, content.length * 2);
-                    }
-                }
-                else
-                {
-                    resourceAsStream.close();
-                    return Arrays.copyOf(content, offset);
-                }
-            }
+            return IoUtil.readAllBytes(resourceAsStream);
         }
         catch (Exception e)
         {

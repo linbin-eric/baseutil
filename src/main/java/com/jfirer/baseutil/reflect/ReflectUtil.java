@@ -10,7 +10,66 @@ public final class ReflectUtil
 {
     private static final Unsafe UNSAFE = Unsafe.getUnsafe();
 
+    public enum Primitive
+    {
+        INT,
+        BOOL,
+        BYTE,
+        SHORT,
+        LONG,
+        CHAR,
+        FLOAT,
+        DOUBLE,
+        STRING,
+        UNKONW
+    }
 
+    public static Primitive ofPrimitive(Class<?> type)
+    {
+        switch (type.getName())
+        {
+            case "int", "java.lang.Integer" ->
+            {
+                return Primitive.INT;
+            }
+            case "boolean", "java.lang.Boolean" ->
+            {
+                return Primitive.BOOL;
+            }
+            case "byte", "java.lang.Byte" ->
+            {
+                return Primitive.BYTE;
+            }
+            case "short", "java.lang.Short" ->
+            {
+                return Primitive.SHORT;
+            }
+            case "long", "java.lang.Long" ->
+            {
+                return Primitive.LONG;
+            }
+            case "char", "java.lang.Character" ->
+            {
+                return Primitive.CHAR;
+            }
+            case "float", "java.lang.Float" ->
+            {
+                return Primitive.FLOAT;
+            }
+            case "double", "java.lang.Double" ->
+            {
+                return Primitive.DOUBLE;
+            }
+            case "java.lang.String" ->
+            {
+                return Primitive.STRING;
+            }
+            default ->
+            {
+                return Primitive.UNKONW;
+            }
+        }
+    }
 
     public static Class<?> wrapPrimitive(Class<?> type)
     {
@@ -52,7 +111,7 @@ public final class ReflectUtil
         }
         else
         {
-            throw new IllegalArgumentException();
+            return null;
         }
     }
 

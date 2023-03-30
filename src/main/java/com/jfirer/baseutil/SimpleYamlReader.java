@@ -1,9 +1,6 @@
 package com.jfirer.baseutil;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,12 +23,11 @@ public class SimpleYamlReader
 
     public static Map<String, Object> read(InputStream inputStream) throws IOException
     {
-        List<Element> seqence = new ArrayList<>();
-        byte[]        content = new byte[inputStream.available()];
-        inputStream.read(content);
-        LineHelper helper    = new LineHelper(content);
-        int        seqenceId = 0;
-        String     currentLine;
+        List<Element> seqence   = new ArrayList<>();
+        byte[]        content   = IoUtil.readAllBytes(inputStream);
+        LineHelper    helper    = new LineHelper(content);
+        int           seqenceId = 0;
+        String        currentLine;
         while ((currentLine = helper.currentLine()) != null)
         {
             if (currentLine.trim().equals(""))
@@ -99,7 +95,7 @@ public class SimpleYamlReader
                 else
                 {
                     element.type = STRING;
-                    element.value = trim.substring(i + 2);
+                    element.value = trim.substring(i + 1).trim();
                 }
                 if (level != 0)
                 {

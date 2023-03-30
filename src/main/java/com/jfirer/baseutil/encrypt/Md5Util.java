@@ -82,6 +82,11 @@ public class Md5Util
         }
     }
 
+    public static String md5(File file)
+    {
+        return md5(file, 0, file.length());
+    }
+
     /**
      * 检查文件的MD5值
      *

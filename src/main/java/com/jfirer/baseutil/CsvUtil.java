@@ -2,6 +2,7 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.ValueAccessor;
+import com.sun.source.tree.CaseTree;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class CsvUtil
         String name(String fieldName);
     }
 
-    record CsvEntity(int index, ValueAccessor valueAccessor) {}
+    record CsvEntity(int index, ValueAccessor valueAccessor, ReflectUtil.Primitive primitive) {}
 
     public static <T> List<T> read(BufferedReader reader, Class<T> type) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
     {
@@ -82,6 +83,26 @@ public class CsvUtil
                 T t = supplier.get();
                 for (CsvEntity csvEntity : csvEntities)
                 {
+                    switch (csvEntity.primitive)
+                    {
+                        case INT ->
+                                csvEntity.valueAccessor.setObject(t, Integer.valueOf(content.get(csvEntity.index())));
+                        case BOOL ->
+                                csvEntity.valueAccessor.setObject(t, Boolean.valueOf(content.get(csvEntity.index())));
+                        case BYTE -> csvEntity.valueAccessor.setObject(t, Byte.valueOf(content.get(csvEntity.index())));
+                        case SHORT ->
+                                csvEntity.valueAccessor.setObject(t, Short.valueOf(content.get(csvEntity.index())));
+                        case LONG -> csvEntity.valueAccessor.setObject(t, Long.valueOf(content.get(csvEntity.index())));
+                        case CHAR -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()).charAt(0));
+                        case FLOAT ->
+                                csvEntity.valueAccessor.setObject(t, Float.valueOf(content.get(csvEntity.index())));
+                        case DOUBLE ->
+                                csvEntity.valueAccessor.setObject(t, Double.valueOf(content.get(csvEntity.index())));
+                        case UNKONW ->
+                        {
+                            throw new IllegalArgumentException("csv文件映射不支持字段:" + csvEntity.valueAccessor.getField().getName() + "的类型，请使用8种基本类型或包装类或String");
+                        }
+                    }
                     try
                     {
                         csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
@@ -134,7 +155,7 @@ public class CsvUtil
             if (map.containsKey(name))
             {
                 ValueAccessor valueAccessor = map.get(name);
-                csvEntities.add(new CsvEntity(i, valueAccessor));
+                csvEntities.add(new CsvEntity(i, valueAccessor, ReflectUtil.ofPrimitive(valueAccessor.getField().getType())));
             }
         }
         return csvEntities.toArray(CsvEntity[]::new);
