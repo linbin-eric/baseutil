@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class CsvUtil
@@ -21,7 +22,7 @@ public class CsvUtil
     @Target(ElementType.FIELD)
     public @interface CsvHeaderName
     {
-        String value() default "";
+        String value();
     }
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -56,6 +57,28 @@ public class CsvUtil
 
     public static <T> List<T> read(BufferedReader reader, Class<T> type, Supplier<T> supplier) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
     {
+        Function<String, String> headerName;
+        if (type.isAnnotationPresent(CsvHeaderNameStrategy.class))
+        {
+            try
+            {
+                headerName = (Function<String, String>) type.getAnnotation(CsvHeaderNameStrategy.class).value().getConstructor().newInstance();
+            }
+            catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                   NoSuchMethodException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else
+        {
+            headerName = name -> name;
+        }
+        return read(reader, type, supplier, headerName);
+    }
+
+    public static <T> List<T> read(BufferedReader reader, Class<T> type, Supplier<T> supplier, Function<String, String> headerNameTransfer) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
+    {
         List<T> list   = new LinkedList<>();
         String  header = reader.readLine();
         if (StringUtil.isBlank(header))
@@ -64,22 +87,22 @@ public class CsvUtil
         }
         List<String> content = new ArrayList<>();
         getContent(header, content);
-        int         headerCount = content.size();
-        CsvEntity[] csvEntities = defineCsvHeader(type, content);
-        String      line;
+        int           headerCount = content.size();
+        CsvEntity[]   csvEntities = defineCsvHeader(type, content, headerNameTransfer);
+        String        line;
+        StringBuilder builder     = new StringBuilder();
         while ((line = reader.readLine()) != null)
         {
             if (StringUtil.isNotBlank(line))
             {
-                if (content.size() == headerCount)
-                {
-                    content.clear();
-                }
-                getContent(line, content);
+                content.clear();
+                builder.append(line);
+                getContent(builder.toString(), content);
                 if (content.size() != headerCount)
                 {
                     continue;
                 }
+                builder.setLength(0);
                 T t = supplier.get();
                 for (CsvEntity csvEntity : csvEntities)
                 {
@@ -98,18 +121,12 @@ public class CsvUtil
                                 csvEntity.valueAccessor.setObject(t, Float.valueOf(content.get(csvEntity.index())));
                         case DOUBLE ->
                                 csvEntity.valueAccessor.setObject(t, Double.valueOf(content.get(csvEntity.index())));
+                        case STRING -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
                         case UNKONW ->
                         {
                             throw new IllegalArgumentException("csv文件映射不支持字段:" + csvEntity.valueAccessor.getField().getName() + "的类型，请使用8种基本类型或包装类或String");
                         }
-                    }
-                    try
-                    {
-                        csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
-                    }
-                    catch (Throwable e)
-                    {
-                        ReflectUtil.throwException(e);
+                        default -> throw new IllegalStateException("Unexpected value: " + csvEntity.primitive);
                     }
                 }
                 list.add(t);
@@ -118,27 +135,10 @@ public class CsvUtil
         return list;
     }
 
-    private static <T> CsvEntity[] defineCsvHeader(Class<T> type, List<String> content)
+    private static <T> CsvEntity[] defineCsvHeader(Class<T> type, List<String> content, Function<String, String> headerName)
     {
         List<CsvEntity>            csvEntities = new ArrayList<>();
         Map<String, ValueAccessor> map         = new HashMap<>();
-        HeaderName                 headerName;
-        if (type.isAnnotationPresent(CsvHeaderNameStrategy.class))
-        {
-            try
-            {
-                headerName = type.getAnnotation(CsvHeaderNameStrategy.class).value().getConstructor().newInstance();
-            }
-            catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                   NoSuchMethodException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-        else
-        {
-            headerName = name -> name;
-        }
         Arrays.stream(type.getDeclaredFields()).forEach(field -> {
             if (field.isAnnotationPresent(CsvHeaderName.class))
             {
@@ -146,7 +146,7 @@ public class CsvUtil
             }
             else
             {
-                map.put(headerName.name(field.getName()), new ValueAccessor(field));
+                map.put(headerName.apply(field.getName()), new ValueAccessor(field));
             }
         });
         for (int i = 0; i < content.size(); i++)
