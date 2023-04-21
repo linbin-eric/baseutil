@@ -4,15 +4,15 @@ public class Base64Tool
 {
     static private char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
-    public static String encode(byte[] src)
+    public static String encode(byte[] src, int length)
     {
         StringBuilder cache = new StringBuilder();
-        for (int i = 0; i < src.length; )
+        for (int i = 0; i < length; )
         {
             int hign   = i;
             int middle = hign + 1;
             int low    = middle + 1;
-            if (low < src.length)
+            if (low < length)
             {
                 int base = ((src[hign] & 0xff) << 16) | ((src[middle] & 0xff) << 8) | (src[low] & 0xff);
                 cache.append(alphabet[(base >> 18) & 0x3f]);
@@ -21,7 +21,7 @@ public class Base64Tool
                 cache.append(alphabet[(base) & 0x3f]);
                 i = low + 1;
             }
-            else if (middle < src.length)
+            else if (middle < length)
             {
                 int base = ((src[hign] & 0xff) << 8) | ((src[middle] & 0xff));
                 cache.append(alphabet[(base >> 10) & 0x3f]);
@@ -41,6 +41,11 @@ public class Base64Tool
             }
         }
         return cache.toString();
+    }
+
+    public static String encode(byte[] src)
+    {
+        return encode(src, src.length);
     }
 
     public static byte[] decode(String ciphertext)

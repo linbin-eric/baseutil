@@ -117,15 +117,25 @@ public class Md5Util
                 throw new IllegalArgumentException();
             }
             long index = 0;
-            for (; index + src.length < length; index += src.length)
+            int  read  = 0;
+            for (; index < length; index += read)
             {
-                randomAccessFile.read(src);
-                md.update(src);
-            }
-            if (length - index > 0)
-            {
-                randomAccessFile.read(src, 0, (int) (length - index));
-                md.update(src, 0, (int) (length - index));
+                if (index + src.length < length)
+                {
+                    read = randomAccessFile.read(src);
+                }
+                else
+                {
+                    read = randomAccessFile.read(src, 0, (int) (length - index));
+                }
+                if (read != -1)
+                {
+                    md.update(src, 0, read);
+                }
+                else
+                {
+                    break;
+                }
             }
             return StringUtil.toHexString(md.digest());
         }

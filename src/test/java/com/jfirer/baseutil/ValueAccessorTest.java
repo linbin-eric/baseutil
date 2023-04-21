@@ -1,5 +1,6 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.CompileValueAccessor;
 import com.jfirer.baseutil.reflect.LambdaValueAccessor;
 import com.jfirer.baseutil.reflect.ValueAccessor;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
@@ -132,40 +133,40 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test = new ValueAccessorTest();
         ValueAccessor     valueAccessor;
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
         Assert.assertEquals(test.a, valueAccessor.getInt(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
         Assert.assertEquals(test.b, valueAccessor.getByte(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c"), compileHelper);
         Assert.assertEquals(test.c, valueAccessor.getChar(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d"), compileHelper);
         Assert.assertEquals(test.d, valueAccessor.getDouble(test), 0.000001d);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f"), compileHelper);
         Assert.assertEquals(test.f, valueAccessor.getFloat(test), 0x000001f);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb"), compileHelper);
         Assert.assertEquals(test.bb, valueAccessor.getBoolean(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s"), compileHelper);
         Assert.assertEquals(test.s, valueAccessor.getShort(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l"), compileHelper);
         Assert.assertEquals(test.l, valueAccessor.getLong(test));
         ////
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a1"), compileHelper);
         Assert.assertEquals(test.a1, valueAccessor.getIntObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b1"), compileHelper);
         Assert.assertEquals(test.b1, valueAccessor.getByteObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c1"), compileHelper);
         Assert.assertEquals(test.c1, valueAccessor.getCharObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d1"), compileHelper);
         Assert.assertEquals(test.d1, valueAccessor.getDoubleObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f1"), compileHelper);
         Assert.assertEquals(test.f1, valueAccessor.getFloatObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb1"), compileHelper);
         Assert.assertEquals(test.bb1, valueAccessor.getBooleanObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s1"), compileHelper);
         Assert.assertEquals(test.s1, valueAccessor.getShortObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
         Assert.assertEquals(test.l1, valueAccessor.getLongObject(test));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("name"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("name"), compileHelper);
         Assert.assertEquals(test.name, valueAccessor.get(test));
     }
 
@@ -174,65 +175,153 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test = new ValueAccessorTest();
         ValueAccessor     valueAccessor;
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a"), compileHelper);
         valueAccessor.set(test, 2);
         Assert.assertEquals(test.a, 2);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b"), compileHelper);
         valueAccessor.set(test, (byte) 2);
         Assert.assertEquals(test.b, 2);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c"), compileHelper);
         valueAccessor.set(test, 'c');
         Assert.assertEquals(test.c, 'c');
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d"), compileHelper);
         valueAccessor.set(test, 2d);
         Assert.assertEquals(test.d, 2d, 0.000001d);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f"), compileHelper);
         valueAccessor.set(test, 2f);
         Assert.assertEquals(test.f, 2f, 0x000001f);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb"), compileHelper);
         valueAccessor.set(test, true);
         Assert.assertEquals(test.bb, true);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s"), compileHelper);
         valueAccessor.set(test, (short) 2);
         Assert.assertEquals(test.s, 2);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l"), compileHelper);
         valueAccessor.set(test, 2l);
         Assert.assertEquals(test.l, 2l);
         ////
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("a1"), compileHelper);
         valueAccessor.set(test, 2);
         Assert.assertEquals(test.a1, Integer.valueOf(2));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("b1"), compileHelper);
         valueAccessor.set(test, (byte) 2);
         Assert.assertEquals(test.b1, Byte.valueOf((byte) 2));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("c1"), compileHelper);
         valueAccessor.set(test, 'c');
         Assert.assertEquals(test.c1, Character.valueOf('c'));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("d1"), compileHelper);
         valueAccessor.set(test, 2d);
         Assert.assertEquals(test.d1, 2d, 0.000001d);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("f1"), compileHelper);
         valueAccessor.set(test, 2f);
         Assert.assertEquals(test.f1, 2f, 0x000001f);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("bb1"), compileHelper);
         valueAccessor.set(test, true);
         Assert.assertEquals(test.bb1, true);
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("s1"), compileHelper);
         valueAccessor.set(test, (short) 2);
         Assert.assertEquals(test.s1, Short.valueOf((short) 2));
-        valueAccessor = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
+        valueAccessor = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField("l1"), compileHelper);
         valueAccessor.set(test, 2l);
         Assert.assertEquals(test.l1, Long.valueOf(2));
     }
 
     @Test
-    public void testLambda() throws NoSuchFieldException
+    public void testread2() throws NoSuchFieldException
     {
-        Field               field               = ValueAccessorTest.class.getDeclaredField("a");
-        LambdaValueAccessor lambdaValueAccessor = new LambdaValueAccessor(field);
-        ValueAccessorTest   test                = new ValueAccessorTest();
-        test.setA(2);
-        Assert.assertEquals(2, lambdaValueAccessor.getInt(test));
+        ValueAccessorTest test = new ValueAccessorTest();
+        ValueAccessor     valueAccessor;
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
+        Assert.assertEquals(test.a, valueAccessor.getInt(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("b"));
+        Assert.assertEquals(test.b, valueAccessor.getByte(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("c"));
+        Assert.assertEquals(test.c, valueAccessor.getChar(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("d"));
+        Assert.assertEquals(test.d, valueAccessor.getDouble(test), 0.000001d);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("f"));
+        Assert.assertEquals(test.f, valueAccessor.getFloat(test), 0x000001f);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("bb"));
+        Assert.assertEquals(test.bb, valueAccessor.getBoolean(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("s"));
+        Assert.assertEquals(test.s, valueAccessor.getShort(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("l"));
+        Assert.assertEquals(test.l, valueAccessor.getLong(test));
+        ////
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("a1"));
+        Assert.assertEquals(test.a1, valueAccessor.getIntObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("b1"));
+        Assert.assertEquals(test.b1, valueAccessor.getByteObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("c1"));
+        Assert.assertEquals(test.c1, valueAccessor.getCharObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("d1"));
+        Assert.assertEquals(test.d1, valueAccessor.getDoubleObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("f1"));
+        Assert.assertEquals(test.f1, valueAccessor.getFloatObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("bb1"));
+        Assert.assertEquals(test.bb1, valueAccessor.getBooleanObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("s1"));
+        Assert.assertEquals(test.s1, valueAccessor.getShortObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("l1"));
+        Assert.assertEquals(test.l1, valueAccessor.getLongObject(test));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("name"));
+        Assert.assertEquals(test.name, valueAccessor.get(test));
+    }
+
+    @Test
+    public void testWrite2() throws NoSuchFieldException
+    {
+        ValueAccessorTest test = new ValueAccessorTest();
+        ValueAccessor     valueAccessor;
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
+        valueAccessor.set(test, 2);
+        Assert.assertEquals(test.a, 2);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("b"));
+        valueAccessor.set(test, (byte) 2);
+        Assert.assertEquals(test.b, 2);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("c"));
+        valueAccessor.set(test, 'c');
+        Assert.assertEquals(test.c, 'c');
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("d"));
+        valueAccessor.set(test, 2d);
+        Assert.assertEquals(test.d, 2d, 0.000001d);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("f"));
+        valueAccessor.set(test, 2f);
+        Assert.assertEquals(test.f, 2f, 0x000001f);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("bb"));
+        valueAccessor.set(test, true);
+        Assert.assertEquals(test.bb, true);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("s"));
+        valueAccessor.set(test, (short) 2);
+        Assert.assertEquals(test.s, 2);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("l"));
+        valueAccessor.set(test, 2l);
+        Assert.assertEquals(test.l, 2l);
+        ////
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("a1"));
+        valueAccessor.set(test, 2);
+        Assert.assertEquals(test.a1, Integer.valueOf(2));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("b1"));
+        valueAccessor.set(test, (byte) 2);
+        Assert.assertEquals(test.b1, Byte.valueOf((byte) 2));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("c1"));
+        valueAccessor.set(test, 'c');
+        Assert.assertEquals(test.c1, Character.valueOf('c'));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("d1"));
+        valueAccessor.set(test, 2d);
+        Assert.assertEquals(test.d1, 2d, 0.000001d);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("f1"));
+        valueAccessor.set(test, 2f);
+        Assert.assertEquals(test.f1, 2f, 0x000001f);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("bb1"));
+        valueAccessor.set(test, true);
+        Assert.assertEquals(test.bb1, true);
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("s1"));
+        valueAccessor.set(test, (short) 2);
+        Assert.assertEquals(test.s1, Short.valueOf((short) 2));
+        valueAccessor = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField("l1"));
+        valueAccessor.set(test, 2l);
+        Assert.assertEquals(test.l1, Long.valueOf(2));
     }
 
     public int getA()

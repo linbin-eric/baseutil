@@ -15,7 +15,7 @@ public class NanoTimeWatch
         t1 = System.nanoTime();
     }
 
-    public long getTatol()
+    public long getTotal()
     {
         return t1 - t0;
     }

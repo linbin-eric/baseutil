@@ -1,5 +1,6 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.CompileValueAccessor;
 import com.jfirer.baseutil.reflect.LambdaValueAccessor;
 import com.jfirer.baseutil.reflect.ValueAccessor;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
@@ -12,7 +13,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
-@Warmup(iterations = 1,time=3)
+@Warmup(iterations = 1, time = 3)
 @Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 @Fork(1)
@@ -23,7 +24,7 @@ public class ValueAccessorBenchmark
     ValueAccessorTest           test = new ValueAccessorTest();
     ValueAccessor               valueAccessor;
     ValueAccessor               valueAccessor_compile;
-    ValueAccessor               valueAccessor_lambda;
+    LambdaValueAccessor         valueAccessor_lambda;
     ApplyInt<ValueAccessorTest> accessorTestApplyInt;
 
     interface ApplyInt<T>
@@ -37,7 +38,7 @@ public class ValueAccessorBenchmark
         {
             String name = "a";
             valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
-            valueAccessor_compile = ValueAccessor.create(ValueAccessorTest.class.getDeclaredField(name), new CompileHelper());
+            valueAccessor_compile = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField(name), new CompileHelper());
             valueAccessor_lambda = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
             accessorTestApplyInt = ValueAccessorTest::getA;
         }
@@ -48,14 +49,14 @@ public class ValueAccessorBenchmark
     }
 
     @Benchmark
-    public void testOld()
+    public void testUnsafe()
     {
 //        valueAccessor.setObject(test, "sadas");
         valueAccessor.getInt(test);
     }
 
     @Benchmark
-    public void testNew()
+    public void testCompile()
     {
 //        valueAccessor_compile.setObject(test_2, "sadas");
         valueAccessor_compile.getInt(test);
@@ -68,7 +69,7 @@ public class ValueAccessorBenchmark
     }
 
     @Benchmark
-    public void testLambda2()
+    public void testOrigin()
     {
         accessorTestApplyInt.apply(test);
     }
