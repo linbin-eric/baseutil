@@ -1,6 +1,9 @@
 package com.jfirer.baseutil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +57,7 @@ public class SimpleYamlReader
                         if (parent.type == UNKNOWN)
                         {
                             parent.type = LIST;
-                            parent.value = new LinkedList<Object>();
+                            parent.value = new LinkedList<String>();
                         }
                         else if (parent.type == LIST)
                         {
@@ -64,8 +67,8 @@ public class SimpleYamlReader
                         {
                             throw new IllegalArgumentException();
                         }
-                        ((List<Object>) parent.value).add(element);
                         element.parent = parent;
+                        ((List<String>) parent.value).add((String) element.value);
                         break;
                     }
                     else if (parent.level >= level)
@@ -108,7 +111,7 @@ public class SimpleYamlReader
                             if (parent.type == UNKNOWN)
                             {
                                 parent.type = MAP;
-                                parent.value = new HashMap<String, Element>();
+                                parent.value = new HashMap<String, String>();
                             }
                             else if (parent.type == MAP)
                             {
@@ -118,8 +121,11 @@ public class SimpleYamlReader
                             {
                                 throw new IllegalArgumentException();
                             }
-                            ((Map<String, Element>) parent.value).put(element.name, element);
                             element.parent = parent;
+                            if (element.type == STRING)
+                            {
+                                ((Map<String, String>) parent.value).put(element.name, ((String) element.value));
+                            }
                             break;
                         }
                         else if (parent.level >= level)
@@ -152,8 +158,11 @@ public class SimpleYamlReader
                     map.put(path(element), "");
                 }
                 case STRING -> map.put(path(element), element.value);
-                case LIST -> map.put(path(element), new LinkedList<String>());
-                case LIST_ELEMENT -> ((List<String>) map.get(path(element.parent))).add((String) element.value);
+                case LIST ->
+                        map.put(path(element), ((List<String>) element.value));
+//                case LIST_ELEMENT -> ((List<String>) map.get(path(element.parent))).add((String) element.value);
+                case MAP ->
+                        map.put(path(element), ((Map<String, String>) element.value));
             }
         }
         return map;
@@ -270,5 +279,10 @@ public class SimpleYamlReader
         map.forEach((name, value) -> {
             System.out.println(name + ":" + value);
         });
+        Object o = map.get("spring.jpa.hibernate");
+        if (o instanceof Map map1)
+        {
+            System.out.println(((Map<String, String>) map1).get("update"));
+        }
     }
 }

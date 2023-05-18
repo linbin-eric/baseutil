@@ -6,6 +6,8 @@ logging:
 spring:
   jpa:
     hibernate:
+      ddl:  auto
+      update:  false
 #      ddl-auto: update
 
 
