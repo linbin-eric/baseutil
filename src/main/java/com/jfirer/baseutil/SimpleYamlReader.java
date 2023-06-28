@@ -1,5 +1,7 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.ReflectUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,13 +26,21 @@ public class SimpleYamlReader
     static final int LIST         = 3;
     static final int LIST_ELEMENT = 4;
 
-    public static Map<String, Object> read(InputStream inputStream) throws IOException
+    public static Map<String, Object> read(InputStream inputStream)
     {
-        List<Element> seqence   = new ArrayList<>();
-        byte[]        content   = IoUtil.readAllBytes(inputStream);
-        LineHelper    helper    = new LineHelper(content);
-        int           seqenceId = 0;
-        String        currentLine;
+        List<Element> seqence = new ArrayList<>();
+        byte[]        content = new byte[0];
+        try
+        {
+            content = IoUtil.readAllBytes(inputStream);
+        }
+        catch (IOException e)
+        {
+            ReflectUtil.throwException(e);
+        }
+        LineHelper helper    = new LineHelper(content);
+        int        seqenceId = 0;
+        String     currentLine;
         while ((currentLine = helper.currentLine()) != null)
         {
             if (currentLine.trim().equals(""))
@@ -46,7 +56,7 @@ public class SimpleYamlReader
             element.level = level;
             if (currentLine.charAt(level) == '-')
             {
-                element.type = LIST_ELEMENT;
+                element.type  = LIST_ELEMENT;
                 element.value = currentLine.trim().substring(2);
                 int parentSeqenceId = seqenceId - 1;
                 while (parentSeqenceId > -1)
@@ -56,7 +66,7 @@ public class SimpleYamlReader
                     {
                         if (parent.type == UNKNOWN)
                         {
-                            parent.type = LIST;
+                            parent.type  = LIST;
                             parent.value = new LinkedList<String>();
                         }
                         else if (parent.type == LIST)
@@ -97,7 +107,7 @@ public class SimpleYamlReader
                 }
                 else
                 {
-                    element.type = STRING;
+                    element.type  = STRING;
                     element.value = trim.substring(i + 1).trim();
                 }
                 if (level != 0)
@@ -110,7 +120,7 @@ public class SimpleYamlReader
                         {
                             if (parent.type == UNKNOWN)
                             {
-                                parent.type = MAP;
+                                parent.type  = MAP;
                                 parent.value = new HashMap<String, String>();
                             }
                             else if (parent.type == MAP)
@@ -154,15 +164,12 @@ public class SimpleYamlReader
                 case UNKNOWN ->
                 {
                     element.value = "";
-                    element.type = STRING;
+                    element.type  = STRING;
                     map.put(path(element), "");
                 }
                 case STRING -> map.put(path(element), element.value);
-                case LIST ->
-                        map.put(path(element), ((List<String>) element.value));
-//                case LIST_ELEMENT -> ((List<String>) map.get(path(element.parent))).add((String) element.value);
-                case MAP ->
-                        map.put(path(element), ((Map<String, String>) element.value));
+                case LIST -> map.put(path(element), ((List<String>) element.value));
+                case MAP -> map.put(path(element), ((Map<String, String>) element.value));
             }
         }
         return map;
@@ -174,8 +181,7 @@ public class SimpleYamlReader
         do
         {
             list.add(element.name);
-        }
-        while ((element = element.parent) != null);
+        } while ((element = element.parent) != null);
         Collections.reverse(list);
         return list.stream().collect(Collectors.joining("."));
     }
@@ -232,17 +238,17 @@ public class SimpleYamlReader
             if (src[end] == '\n')
             {
                 result = new String(src, index, end - index);
-                index = end + 1;
+                index  = end + 1;
             }
             else if (src[end] == '\r')
             {
                 result = new String(src, index, end - index);
-                index = end + 2;
+                index  = end + 2;
             }
             else//结尾，直接没有换行符
             {
                 result = new String(src, index, end - index + 1);
-                index = end;
+                index  = end;
             }
             return result;
         }
@@ -276,9 +282,10 @@ public class SimpleYamlReader
     public static void main(String[] args) throws IOException
     {
         Map<String, Object> map = SimpleYamlReader.read(new FileInputStream(new File("/Users/linbin/代码空间/baseutil/src/test/resources/test.yml")));
-        map.forEach((name, value) -> {
-            System.out.println(name + ":" + value);
-        });
+        map.forEach((name, value) ->
+                    {
+                        System.out.println(name + ":" + value);
+                    });
         Object o = map.get("spring.jpa.hibernate");
         if (o instanceof Map map1)
         {
