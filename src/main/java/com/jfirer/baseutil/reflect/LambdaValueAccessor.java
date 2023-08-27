@@ -252,88 +252,88 @@ public class LambdaValueAccessor extends ValueAccessor
             {
                 case INT ->
                 {
-                    getInt = (GetInt) LambdaMetafactory.metafactory(lookup, //固定参数
-                                                                    "get",//需要实现的函数式接口的方法名
-                                                                    MethodType.methodType(GetInt.class),////固定写法，中间参数是需要实现的函数接口类
-                                                                    MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名
-                                                                    getMethodHandler,//这个函数接口需要引用的类的实例方法
-                                                                    MethodType.methodType(int.class, field.getDeclaringClass())//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
-                                                                   ).getTarget().invoke();
+                    getInt     = (GetInt) LambdaMetafactory.metafactory(lookup, //固定参数
+                                                                        "get",//需要实现的函数式接口的方法名
+                                                                        MethodType.methodType(GetInt.class),////固定写法，中间参数是需要实现的函数接口类
+                                                                        MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名
+                                                                        getMethodHandler,//这个函数接口需要引用的类的实例方法
+                                                                        MethodType.methodType(int.class, field.getDeclaringClass())//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
+                    ).getTarget().invoke();
                     getInteger = (GetInteger) LambdaMetafactory.metafactory(lookup, //固定参数
                                                                             "get",//需要实现的函数式接口的方法名
                                                                             MethodType.methodType(GetInteger.class),////固定写法，中间参数是需要实现的函数接口类
                                                                             MethodType.methodType(Integer.class, Object.class),// 函数式接口的方法签名
                                                                             getMethodHandler,//这个函数接口需要引用的类的实例方法
                                                                             MethodType.methodType(Integer.class, field.getDeclaringClass())//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
-                                                                           ).getTarget().invoke();
-                    setInt = (SetInt) LambdaMetafactory.metafactory(lookup, //固定参数
-                                                                    "set",//需要实现的函数式接口的方法名
-                                                                    MethodType.methodType(SetInt.class),////固定写法，中间参数是需要实现的函数接口类
-                                                                    MethodType.methodType(void.class, Object.class, int.class),// 函数式接口的方法签名
-                                                                    setMethodHandler,//这个函数接口需要引用的类的实例方法
-                                                                    MethodType.methodType(void.class, field.getDeclaringClass(), int.class)//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
-                                                                   ).getTarget().invoke();
+                    ).getTarget().invoke();
+                    setInt     = (SetInt) LambdaMetafactory.metafactory(lookup, //固定参数
+                                                                        "set",//需要实现的函数式接口的方法名
+                                                                        MethodType.methodType(SetInt.class),////固定写法，中间参数是需要实现的函数接口类
+                                                                        MethodType.methodType(void.class, Object.class, int.class),// 函数式接口的方法签名
+                                                                        setMethodHandler,//这个函数接口需要引用的类的实例方法
+                                                                        MethodType.methodType(void.class, field.getDeclaringClass(), int.class)//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
+                    ).getTarget().invoke();
                     setInteger = (SetInteger) LambdaMetafactory.metafactory(lookup, //固定参数
                                                                             "set",//需要实现的函数式接口的方法名
                                                                             MethodType.methodType(SetInteger.class),////固定写法，中间参数是需要实现的函数接口类
                                                                             MethodType.methodType(void.class, Object.class, Integer.class),// 函数式接口的方法签名
                                                                             setMethodHandler,//这个函数接口需要引用的类的实例方法
                                                                             MethodType.methodType(void.class, field.getDeclaringClass(), Integer.class)//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
-                                                                           ).getTarget().invoke();
+                    ).getTarget().invoke();
                 }
                 case BOOL ->
                 {
-                    getBoolean = (GetBoolean) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetBoolean.class), MethodType.methodType(boolean.class, Object.class), getMethodHandler, MethodType.methodType(boolean.class, field.getDeclaringClass())).getTarget().invoke();
-                    setBoolean = (SetBoolean) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetBoolean.class), MethodType.methodType(void.class, Object.class, boolean.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), boolean.class)).getTarget().invoke();
+                    getBoolean    = (GetBoolean) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetBoolean.class), MethodType.methodType(boolean.class, Object.class), getMethodHandler, MethodType.methodType(boolean.class, field.getDeclaringClass())).getTarget().invoke();
+                    setBoolean    = (SetBoolean) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetBoolean.class), MethodType.methodType(void.class, Object.class, boolean.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), boolean.class)).getTarget().invoke();
                     getBooleanObj = (GetBooleanObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetBooleanObj.class), MethodType.methodType(Boolean.class, Object.class), getMethodHandler, MethodType.methodType(Boolean.class, field.getDeclaringClass())).getTarget().invoke();
                     setBooleanObj = (SetBooleanObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetBooleanObj.class), MethodType.methodType(void.class, Object.class, Boolean.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Boolean.class)).getTarget().invoke();
                 }
                 case CHAR ->
                 {
-                    getChar = (GetChar) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetChar.class), MethodType.methodType(char.class, Object.class), getMethodHandler, MethodType.methodType(char.class, field.getDeclaringClass())).getTarget().invoke();
-                    setChar = (SetChar) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetChar.class), MethodType.methodType(void.class, Object.class, char.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), char.class)).getTarget().invoke();
+                    getChar      = (GetChar) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetChar.class), MethodType.methodType(char.class, Object.class), getMethodHandler, MethodType.methodType(char.class, field.getDeclaringClass())).getTarget().invoke();
+                    setChar      = (SetChar) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetChar.class), MethodType.methodType(void.class, Object.class, char.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), char.class)).getTarget().invoke();
                     getCharacter = (GetCharacter) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetCharacter.class), MethodType.methodType(Character.class, Object.class), getMethodHandler, MethodType.methodType(Character.class, field.getDeclaringClass())).getTarget().invoke();
                     setCharacter = (SetCharacter) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetCharacter.class), MethodType.methodType(void.class, Object.class, Character.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Character.class)).getTarget().invoke();
                 }
                 case BYTE ->
                 {
-                    getByte = (GetByte) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetByte.class), MethodType.methodType(byte.class, Object.class), getMethodHandler, MethodType.methodType(byte.class, field.getDeclaringClass())).getTarget().invoke();
-                    setByte = (SetByte) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetByte.class), MethodType.methodType(void.class, Object.class, byte.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), byte.class)).getTarget().invoke();
+                    getByte    = (GetByte) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetByte.class), MethodType.methodType(byte.class, Object.class), getMethodHandler, MethodType.methodType(byte.class, field.getDeclaringClass())).getTarget().invoke();
+                    setByte    = (SetByte) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetByte.class), MethodType.methodType(void.class, Object.class, byte.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), byte.class)).getTarget().invoke();
                     getByteObj = (GetByteObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetByteObj.class), MethodType.methodType(Byte.class, Object.class), getMethodHandler, MethodType.methodType(Byte.class, field.getDeclaringClass())).getTarget().invoke();
                     setByteObj = (SetByteObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetByteObj.class), MethodType.methodType(void.class, Object.class, Byte.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Byte.class)).getTarget().invoke();
                 }
                 case SHORT ->
                 {
-                    getShort = (GetShort) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetShort.class), MethodType.methodType(short.class, Object.class), getMethodHandler, MethodType.methodType(short.class, field.getDeclaringClass())).getTarget().invoke();
-                    setShort = (SetShort) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetShort.class), MethodType.methodType(void.class, Object.class, short.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), short.class)).getTarget().invoke();
+                    getShort    = (GetShort) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetShort.class), MethodType.methodType(short.class, Object.class), getMethodHandler, MethodType.methodType(short.class, field.getDeclaringClass())).getTarget().invoke();
+                    setShort    = (SetShort) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetShort.class), MethodType.methodType(void.class, Object.class, short.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), short.class)).getTarget().invoke();
                     getShortObj = (GetShortObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetShortObj.class), MethodType.methodType(Short.class, Object.class), getMethodHandler, MethodType.methodType(Short.class, field.getDeclaringClass())).getTarget().invoke();
                     setShortObj = (SetShortObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetShortObj.class), MethodType.methodType(void.class, Object.class, Short.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Short.class)).getTarget().invoke();
                 }
                 case LONG ->
                 {
-                    getLong = (GetLong) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetLong.class), MethodType.methodType(long.class, Object.class), getMethodHandler, MethodType.methodType(long.class, field.getDeclaringClass())).getTarget().invoke();
-                    setLong = (SetLong) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetLong.class), MethodType.methodType(void.class, Object.class, long.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), long.class)).getTarget().invoke();
+                    getLong    = (GetLong) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetLong.class), MethodType.methodType(long.class, Object.class), getMethodHandler, MethodType.methodType(long.class, field.getDeclaringClass())).getTarget().invoke();
+                    setLong    = (SetLong) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetLong.class), MethodType.methodType(void.class, Object.class, long.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), long.class)).getTarget().invoke();
                     getLongObj = (GetLongObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetLongObj.class), MethodType.methodType(Long.class, Object.class), getMethodHandler, MethodType.methodType(Long.class, field.getDeclaringClass())).getTarget().invoke();
                     setLongObj = (SetLongObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetLongObj.class), MethodType.methodType(void.class, Object.class, Long.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Long.class)).getTarget().invoke();
                 }
                 case FLOAT ->
                 {
-                    getFloat = (GetFloat) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetFloat.class), MethodType.methodType(float.class, Object.class), getMethodHandler, MethodType.methodType(float.class, field.getDeclaringClass())).getTarget().invoke();
-                    setFloat = (SetFloat) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetFloat.class), MethodType.methodType(void.class, Object.class, float.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), float.class)).getTarget().invoke();
+                    getFloat    = (GetFloat) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetFloat.class), MethodType.methodType(float.class, Object.class), getMethodHandler, MethodType.methodType(float.class, field.getDeclaringClass())).getTarget().invoke();
+                    setFloat    = (SetFloat) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetFloat.class), MethodType.methodType(void.class, Object.class, float.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), float.class)).getTarget().invoke();
                     getFloatObj = (GetFloatObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetFloatObj.class), MethodType.methodType(Float.class, Object.class), getMethodHandler, MethodType.methodType(Float.class, field.getDeclaringClass())).getTarget().invoke();
                     setFloatObj = (SetFloatObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetFloatObj.class), MethodType.methodType(void.class, Object.class, Float.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Float.class)).getTarget().invoke();
                 }
                 case DOUBLE ->
                 {
-                    getDouble = (GetDouble) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetDouble.class), MethodType.methodType(double.class, Object.class), getMethodHandler, MethodType.methodType(double.class, field.getDeclaringClass())).getTarget().invoke();
-                    setDouble = (SetDouble) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetDouble.class), MethodType.methodType(void.class, Object.class, double.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), double.class)).getTarget().invoke();
+                    getDouble    = (GetDouble) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetDouble.class), MethodType.methodType(double.class, Object.class), getMethodHandler, MethodType.methodType(double.class, field.getDeclaringClass())).getTarget().invoke();
+                    setDouble    = (SetDouble) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetDouble.class), MethodType.methodType(void.class, Object.class, double.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), double.class)).getTarget().invoke();
                     getDoubleObj = (GetDoubleObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetDoubleObj.class), MethodType.methodType(Double.class, Object.class), getMethodHandler, MethodType.methodType(Double.class, field.getDeclaringClass())).getTarget().invoke();
                     setDoubleObj = (SetDoubleObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetDoubleObj.class), MethodType.methodType(void.class, Object.class, Double.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Double.class)).getTarget().invoke();
                 }
                 case STRING, UNKONW ->
                 {
                     getObj = (Function<Object, Object>) LambdaMetafactory.metafactory(lookup, "apply", MethodType.methodType(Function.class), MethodType.methodType(Object.class, Object.class), getMethodHandler, MethodType.methodType(field.getType(), field.getDeclaringClass())).getTarget().invoke();
-                    setObj = (BiConsumer<Object, Object>) LambdaMetafactory.metafactory(lookup, "accept", MethodType.methodType(BiConsumer.class), MethodType.methodType(void.class,Object.class, Object.class), setMethodHandler, MethodType.methodType(void.class,field.getDeclaringClass(), field.getType())).getTarget().invoke();
+                    setObj = (BiConsumer<Object, Object>) LambdaMetafactory.metafactory(lookup, "accept", MethodType.methodType(BiConsumer.class), MethodType.methodType(void.class, Object.class, Object.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), field.getType())).getTarget().invoke();
                 }
             }
         }
@@ -538,12 +538,59 @@ public class LambdaValueAccessor extends ValueAccessor
     @Override
     public void setObject(Object entity, Object value)
     {
-        setObj.accept(entity, value);
+        if (primitive)
+        {
+            switch (primitiveType)
+            {
+                case INT -> setInt.set(entity, ((Number) value).intValue());
+                case SHORT -> setShort.set(entity, ((Number) value).shortValue());
+                case LONG -> setLong.set(entity, ((Number) value).longValue());
+                case FLOAT -> setFloat.set(entity, ((Number) value).floatValue());
+                case DOUBLE -> setDouble.set(entity, ((Number) value).doubleValue());
+                case BOOL -> setBoolean.set(entity, ((Boolean) value).booleanValue());
+                case BYTE -> setByte.set(entity, ((Number) value).byteValue());
+                case CHAR -> setChar.set(entity, ((Character) value).charValue());
+                default -> throw new UnsupportedOperationException();
+            }
+        }
+        else
+        {
+            switch (primitiveType)
+            {
+                case INT -> setInteger.set(entity, (Integer) value);
+                case BOOL -> setBooleanObj.set(entity, (Boolean) value);
+                case BYTE -> setByteObj.set(entity, (Byte) value);
+                case SHORT -> setShortObj.set(entity, (Short) value);
+                case LONG -> setLongObj.set(entity, (Long) value);
+                case CHAR -> setCharacter.set(entity, (Character) value);
+                case FLOAT -> setFloatObj.set(entity, (Float) value);
+                case DOUBLE -> setDoubleObj.set(entity, (Double) value);
+                case STRING, UNKONW -> setObj.accept(entity, value);
+            }
+        }
     }
 
     @Override
     public Object get(Object entity)
     {
-        return getObj.apply(entity);
+        if (primitive)
+        {
+            return switch (primitiveType)
+            {
+                case INT -> getInt.get(entity);
+                case SHORT -> getShort.get(entity);
+                case LONG -> getLong.get(entity);
+                case FLOAT -> getFloat.get(entity);
+                case DOUBLE -> getDouble.get(entity);
+                case BOOL -> getBoolean.get(entity);
+                case BYTE -> getByte.get(entity);
+                case CHAR -> getChar.get(entity);
+                default -> throw new UnsupportedOperationException();
+            };
+        }
+        else
+        {
+            return getObj.apply(entity);
+        }
     }
 }
