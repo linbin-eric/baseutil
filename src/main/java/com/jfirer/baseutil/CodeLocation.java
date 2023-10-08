@@ -1,5 +1,7 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.ReflectUtil;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +29,32 @@ public class CodeLocation
         StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[deep];
         int               index             = stackTraceElement.getClassName().lastIndexOf(".") + 1;
         return stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName() + "(" + stackTraceElement.getClassName().substring(index) + ".java:" + stackTraceElement.getLineNumber() + ")";
+    }
+
+    private static volatile Class mainMethodInClass;
+
+    public static void registerMainMethodOfClass()
+    {
+        StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
+        String            className         = stackTraceElement.getClassName();
+        String            methodName        = stackTraceElement.getMethodName();
+        if (methodName.equals("main") == false)
+        {
+            throw new IllegalStateException("当前方法为" + className + "#" + methodName + ",不是启动的 main 方法。");
+        }
+        try
+        {
+            mainMethodInClass = Thread.currentThread().getContextClassLoader().loadClass(className);
+        }
+        catch (ClassNotFoundException e)
+        {
+            ReflectUtil.throwException(e);
+        }
+    }
+
+    public static Class getMainMethodInClass()
+    {
+        return mainMethodInClass;
     }
 
     public static void main(String[] args) throws InterruptedException

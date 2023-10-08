@@ -157,6 +157,17 @@ public class StringUtil
     }
 
     /**
+     * 判断给定的字符串是否为非空。如果非空返回字符串本身，如果是空的，则返回other给定的值
+     *
+     * @param expectNotBlank
+     * @return
+     */
+    public static String notBlankOrElse(String expectNotBlank, String other)
+    {
+        return isNotBlank(expectNotBlank) ? expectNotBlank : other;
+    }
+
+    /**
      * 对字符串进行参数占位符替换。比如pattern是“你好我是{}”,使用后面的参数替换掉{}. 替换的顺序和参数自身的顺序一致
      *
      * @param pattern

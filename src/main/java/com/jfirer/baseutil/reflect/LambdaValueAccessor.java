@@ -590,7 +590,18 @@ public class LambdaValueAccessor extends ValueAccessor
         }
         else
         {
-            return getObj.apply(entity);
+            return switch (primitiveType)
+            {
+                case INT -> getInteger.get(entity);
+                case SHORT -> getShortObj.get(entity);
+                case LONG -> getLongObj.get(entity);
+                case FLOAT -> getFloatObj.get(entity);
+                case DOUBLE -> getDoubleObj.get(entity);
+                case BOOL -> getBooleanObj.get(entity);
+                case BYTE -> getByteObj.get(entity);
+                case CHAR -> getCharacter.get(entity);
+                case STRING, UNKONW -> getObj.apply(entity);
+            };
         }
     }
 }
