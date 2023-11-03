@@ -18,14 +18,18 @@ public class ValueAccessor
 
     public ValueAccessor(Field field)
     {
-        this.field = field;
-        primitive = field.getType().isPrimitive();
-        offset = unsafe.objectFieldOffset(field);
+        this.field    = field;
+        primitive     = field.getType().isPrimitive();
+        offset        = unsafe.objectFieldOffset(field);
         primitiveType = ReflectUtil.ofPrimitive(field.getType());
     }
 
     public void set(Object entity, int value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putInt(entity, offset, value);
@@ -38,6 +42,10 @@ public class ValueAccessor
 
     public void set(Object entity, Integer value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putInt(entity, offset, value.intValue());
@@ -50,6 +58,10 @@ public class ValueAccessor
 
     public void set(Object entity, short value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putShort(entity, offset, value);
@@ -62,6 +74,10 @@ public class ValueAccessor
 
     public void set(Object entity, Short value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putShort(entity, offset, value.shortValue());
@@ -74,6 +90,10 @@ public class ValueAccessor
 
     public void set(Object entity, long value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putLong(entity, offset, value);
@@ -86,6 +106,10 @@ public class ValueAccessor
 
     public void set(Object entity, Long value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putLong(entity, offset, value.longValue());
@@ -98,6 +122,10 @@ public class ValueAccessor
 
     public void set(Object entity, char value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putChar(entity, offset, value);
@@ -110,6 +138,10 @@ public class ValueAccessor
 
     public void set(Object entity, Character value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putChar(entity, offset, value.charValue());
@@ -122,6 +154,10 @@ public class ValueAccessor
 
     public void set(Object entity, byte value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putByte(entity, offset, value);
@@ -134,6 +170,10 @@ public class ValueAccessor
 
     public void set(Object entity, Byte value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putByte(entity, offset, value.byteValue());
@@ -146,6 +186,10 @@ public class ValueAccessor
 
     public void set(Object entity, boolean value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putBoolean(entity, offset, value);
@@ -158,6 +202,10 @@ public class ValueAccessor
 
     public void set(Object entity, Boolean value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putBoolean(entity, offset, value.booleanValue());
@@ -170,6 +218,10 @@ public class ValueAccessor
 
     public void set(Object entity, float value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putFloat(entity, offset, value);
@@ -182,6 +234,10 @@ public class ValueAccessor
 
     public void set(Object entity, Float value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putFloat(entity, offset, value.floatValue());
@@ -194,6 +250,10 @@ public class ValueAccessor
 
     public void set(Object entity, double value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putDouble(entity, offset, value);
@@ -206,6 +266,10 @@ public class ValueAccessor
 
     public void set(Object entity, Double value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             unsafe.putDouble(entity, offset, value.doubleValue());
@@ -218,6 +282,10 @@ public class ValueAccessor
 
     public void setObject(Object entity, Object value)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             switch (primitiveType)
@@ -241,86 +309,154 @@ public class ValueAccessor
 
     public int getInt(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getInt(entity, offset) : (Integer) unsafe.getReference(entity, offset);
     }
 
     public Integer getIntObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Integer.valueOf(unsafe.getInt(entity, offset)) : (Integer) unsafe.getReference(entity, offset);
     }
 
     public short getShort(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getShort(entity, offset) : (Short) unsafe.getReference(entity, offset);
     }
 
     public Short getShortObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Short.valueOf(unsafe.getShort(entity, offset)) : (Short) unsafe.getReference(entity, offset);
     }
 
     public boolean getBoolean(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getBoolean(entity, offset) : (Boolean) unsafe.getReference(entity, offset);
     }
 
     public Boolean getBooleanObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Boolean.valueOf(unsafe.getBoolean(entity, offset)) : (Boolean) unsafe.getReference(entity, offset);
     }
 
     public long getLong(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getLong(entity, offset) : (Long) unsafe.getReference(entity, offset);
     }
 
     public Long getLongObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Long.valueOf(unsafe.getLong(entity, offset)) : (Long) unsafe.getReference(entity, offset);
     }
 
     public byte getByte(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getByte(entity, offset) : (Byte) unsafe.getReference(entity, offset);
     }
 
     public Byte getByteObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Byte.valueOf(unsafe.getByte(entity, offset)) : (Byte) unsafe.getReference(entity, offset);
     }
 
     public char getChar(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getChar(entity, offset) : (Character) unsafe.getReference(entity, offset);
     }
 
     public Character getCharObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Character.valueOf(unsafe.getChar(entity, offset)) : (Character) unsafe.getReference(entity, offset);
     }
 
     public float getFloat(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getFloat(entity, offset) : (Float) unsafe.getReference(entity, offset);
     }
 
     public Float getFloatObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Float.valueOf(unsafe.getFloat(entity, offset)) : (Float) unsafe.getReference(entity, offset);
     }
 
     public double getDouble(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? unsafe.getDouble(entity, offset) : (Double) unsafe.getReference(entity, offset);
     }
 
     public Double getDoubleObject(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         return primitive ? Double.valueOf(unsafe.getDouble(entity, offset)) : (Double) unsafe.getReference(entity, offset);
     }
 
     public Object get(Object entity)
     {
+        if (entity == null)
+        {
+            throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
+        }
         if (primitive)
         {
             return switch (primitiveType)
