@@ -240,6 +240,17 @@ public class CsvUtil
                 }
             }
         }
+        if (line.charAt(end) == ',')
+        {
+            list.add("");
+        }
+        else
+        {
+            if (mode == 2)
+            {
+                list.add(line.substring(readBegin, end + 1));
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
