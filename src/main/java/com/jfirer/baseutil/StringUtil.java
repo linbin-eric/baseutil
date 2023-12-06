@@ -23,7 +23,7 @@ public class StringUtil
         char[] result = new char[src.length * 2];
         for (int i = 0; i < src.length; i++)
         {
-            result[i * 2] = DIGITS_LOWER[(src[i] & 0xf0) >>> 4];
+            result[i * 2]     = DIGITS_LOWER[(src[i] & 0xf0) >>> 4];
             result[i * 2 + 1] = DIGITS_LOWER[src[i] & 0x0f];
         }
         return new String(result);
@@ -35,7 +35,7 @@ public class StringUtil
         length = off + length;
         for (int i = off; i < length; i++)
         {
-            result[i * 2] = DIGITS_LOWER[(src[i] & 0xf0) >>> 4];
+            result[i * 2]     = DIGITS_LOWER[(src[i] & 0xf0) >>> 4];
             result[i * 2 + 1] = DIGITS_LOWER[src[i] & 0x0f];
         }
         return new String(result);
@@ -69,7 +69,7 @@ public class StringUtil
         for (int i = 0; i < hexChars.length; i += 2)
         {
             int f = toDigit(hexChars[i]) << 4;
-            f = f | toDigit(hexChars[i + 1]);
+            f              = f | toDigit(hexChars[i + 1]);
             result[i >> 1] = (byte) f;
         }
         return result;
@@ -157,14 +157,14 @@ public class StringUtil
     }
 
     /**
-     * 判断给定的字符串是否为非空。如果非空返回字符串本身，如果是空的，则返回other给定的值
+     * 判断给定的字符串是否为非空。如果非空返回字符串本身，如果是空的，则返回defaultValue给定的值
      *
      * @param expectNotBlank
      * @return
      */
-    public static String notBlankOrElse(String expectNotBlank, String other)
+    public static String notBlankOrDefault(String expectNotBlank, String defaultValue)
     {
-        return isNotBlank(expectNotBlank) ? expectNotBlank : other;
+        return isNotBlank(expectNotBlank) ? expectNotBlank : defaultValue;
     }
 
     /**
@@ -282,7 +282,7 @@ public class StringUtil
         int    index  = 0;
         for (int i = 0; i < length; i++)
         {
-            c = array[i];
+            c            = array[i];
             tmp[index++] = (byte) (c >>> 8);
             tmp[index++] = (byte) c;
         }

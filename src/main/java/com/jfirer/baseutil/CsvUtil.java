@@ -2,9 +2,10 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.ValueAccessor;
-import com.sun.source.tree.CaseTree;
+import com.jfirer.baseutil.time.Timewatch;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,6 +13,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,7 +40,9 @@ public class CsvUtil
         String name(String fieldName);
     }
 
-    record CsvEntity(int index, ValueAccessor valueAccessor, ReflectUtil.Primitive primitive) {}
+    record CsvEntity(int index, ValueAccessor valueAccessor, ReflectUtil.Primitive primitive)
+    {
+    }
 
     public static <T> List<T> read(BufferedReader reader, Class<T> type) throws IOException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
     {
@@ -64,8 +68,7 @@ public class CsvUtil
             {
                 headerName = (Function<String, String>) type.getAnnotation(CsvHeaderNameStrategy.class).value().getConstructor().newInstance();
             }
-            catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                   NoSuchMethodException e)
+            catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
             {
                 throw new RuntimeException(e);
             }
@@ -91,6 +94,7 @@ public class CsvUtil
         CsvEntity[]   csvEntities = defineCsvHeader(type, content, headerNameTransfer);
         String        line;
         StringBuilder builder     = new StringBuilder();
+        int           count       = 0;
         while ((line = reader.readLine()) != null)
         {
             if (StringUtil.isNotBlank(line))
@@ -108,19 +112,14 @@ public class CsvUtil
                 {
                     switch (csvEntity.primitive)
                     {
-                        case INT ->
-                                csvEntity.valueAccessor.setObject(t, Integer.valueOf(content.get(csvEntity.index())));
-                        case BOOL ->
-                                csvEntity.valueAccessor.setObject(t, Boolean.valueOf(content.get(csvEntity.index())));
+                        case INT -> csvEntity.valueAccessor.setObject(t, Integer.valueOf(content.get(csvEntity.index())));
+                        case BOOL -> csvEntity.valueAccessor.setObject(t, Boolean.valueOf(content.get(csvEntity.index())));
                         case BYTE -> csvEntity.valueAccessor.setObject(t, Byte.valueOf(content.get(csvEntity.index())));
-                        case SHORT ->
-                                csvEntity.valueAccessor.setObject(t, Short.valueOf(content.get(csvEntity.index())));
+                        case SHORT -> csvEntity.valueAccessor.setObject(t, Short.valueOf(content.get(csvEntity.index())));
                         case LONG -> csvEntity.valueAccessor.setObject(t, Long.valueOf(content.get(csvEntity.index())));
                         case CHAR -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()).charAt(0));
-                        case FLOAT ->
-                                csvEntity.valueAccessor.setObject(t, Float.valueOf(content.get(csvEntity.index())));
-                        case DOUBLE ->
-                                csvEntity.valueAccessor.setObject(t, Double.valueOf(content.get(csvEntity.index())));
+                        case FLOAT -> csvEntity.valueAccessor.setObject(t, Float.valueOf(content.get(csvEntity.index())));
+                        case DOUBLE -> csvEntity.valueAccessor.setObject(t, Double.valueOf(content.get(csvEntity.index())));
                         case STRING -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
                         case UNKONW ->
                         {
@@ -163,49 +162,96 @@ public class CsvUtil
 
     private static void getContent(String line, List<String> list)
     {
-        int end   = line.length();
-        int index = 0;
-        //0代表正常，1代表遇到文本
-        int  state            = 0;
-        int  lastContentIndex = 0;
-        char c;
-        while (index < end)
+        /**
+         *  1、如果起始位置是"，则要遇到另外一个"才算结束。并且这个"后面要么是该行的结束，要么是,否则这个"就不是结束的。
+         *  2、如果起始位置不是",则遇到另外一个,或者该行结束就算完成。
+         */
+        int index     = 0;
+        int readBegin = 0;
+        int end       = line.length() - 1;
+        //0 ：未启动；1：模式 1；2：模式 2
+        int mode = 0;
+        while (index <= end)
         {
-            c = line.charAt(index);
-            switch (c)
+            switch (mode)
             {
-                case ',' ->
+                case 0 ->
                 {
-                    if (state == 0)
+                    char c = line.charAt(index);
+                    if (c == '"')
                     {
-                        String content = line.substring(lastContentIndex, index);
-                        if (content.length() == 0)
-                        {
-                            list.add("");
-                        }
-                        else
-                        {
-                            list.add(content.charAt(0) == '"' ? content.substring(1, content.length() - 1) : content);
-                        }
-                        lastContentIndex = index + 1;
+                        mode      = 1;
+                        readBegin = index + 1;
+                        index++;
+                    }
+                    else if (c == ',')
+                    {
+                        list.add("");
+                        index++;
                     }
                     else
                     {
-                        ;
+                        mode      = 2;
+                        readBegin = index;
+                        index++;
                     }
                 }
-                case '"' -> state = state == 0 ? 1 : 0;
+                case 1 ->
+                {
+                    if (line.charAt(index) == '"')
+                    {
+                        if (index < end)
+                        {
+                            if (line.charAt(index + 1) == ',')
+                            {
+                                list.add(line.substring(readBegin, index));
+                                mode = 0;
+                                index += 2;
+                            }
+                            else
+                            {
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            list.add(line.substring(readBegin, index));
+                            mode = 0;
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        index++;
+                    }
+                }
+                case 2 ->
+                {
+                    if (line.charAt(index) == ',')
+                    {
+                        list.add(line.substring(readBegin, index));
+                        mode = 0;
+                        index++;
+                    }
+                    else
+                    {
+                        index++;
+                    }
+                }
             }
-            index += 1;
         }
-        String content = line.substring(lastContentIndex, index);
-        if (content.length() == 0)
+    }
+
+    public static void main(String[] args) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
+    {
+        class Data
         {
-            list.add("");
+            String A01;
         }
-        else
-        {
-            list.add(content.charAt(0) == '"' ? content.substring(1, content.length() - 1) : content);
-        }
+        Timewatch timewatch = new Timewatch();
+        timewatch.start();
+        List<Data> read = CsvUtil.read(IoUtil.getReader(new FileInputStream("/Users/linbin/Downloads/HQMS202301-10.csv"), StandardCharsets.UTF_8), Data.class, Data::new);
+        timewatch.end();
+        System.out.println(timewatch.getTotal());
     }
 }
