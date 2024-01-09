@@ -483,6 +483,11 @@ public class ValueAccessor
         return field;
     }
 
+    public ReflectUtil.Primitive getPrimitiveType()
+    {
+        return primitiveType;
+    }
+
     public Object newInstace()
     {
         throw new IllegalStateException("还未创建ValueAccessor构造器实例");
