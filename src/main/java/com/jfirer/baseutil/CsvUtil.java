@@ -12,6 +12,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -138,7 +139,14 @@ public class CsvUtil
     {
         List<CsvEntity>            csvEntities = new ArrayList<>();
         Map<String, ValueAccessor> map         = new HashMap<>();
-        Arrays.stream(type.getDeclaredFields()).forEach(field -> {
+        Class ckass = type;
+        List<Field> fields =new ArrayList<>();
+        while (ckass != Object.class)
+        {
+            fields.addAll(Arrays.stream(ckass.getDeclaredFields()).toList());
+            ckass = ckass.getSuperclass();
+        }
+        fields.forEach(field -> {
             if (field.isAnnotationPresent(CsvHeaderName.class))
             {
                 map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), new ValueAccessor(field));
