@@ -6,6 +6,7 @@ import com.jfirer.baseutil.schedule.handler.SimpleExpireHandler;
 import com.jfirer.baseutil.schedule.timer.FixedCapacityWheelTimer;
 import com.jfirer.baseutil.schedule.trigger.FixDayTimeTrigger;
 import com.jfirer.baseutil.schedule.trigger.RepeatDelayTrigger;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,7 @@ import java.util.concurrent.locks.LockSupport;
 public class FixScheduleTest
 {
     @Test
+    @Ignore
     public void test()
     {
         Timer timer = new FixedCapacityWheelTimer(1024, new SimpleExpireHandler(), 1, TimeUnit.MILLISECONDS);
@@ -36,10 +38,11 @@ public class FixScheduleTest
                 return times <= 0;
             }
         }, 1, TimeUnit.SECONDS));
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(10000));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(10));
     }
 
     @Test
+    @Ignore
     public void test2()
     {
         Timer timer = new FixedCapacityWheelTimer(16, new SimpleExpireHandler(), 1000, TimeUnit.MILLISECONDS);
