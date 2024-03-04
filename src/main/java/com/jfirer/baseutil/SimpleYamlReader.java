@@ -107,8 +107,16 @@ public class SimpleYamlReader
                 }
                 else
                 {
-                    element.type  = STRING;
-                    element.value = trim.substring(i + 1).trim();
+                    element.type = STRING;
+                    String value = trim.substring(i + 1).trim();
+                    if (value.indexOf("#") == -1)
+                    {
+                        element.value = value;
+                    }
+                    else
+                    {
+                        element.value = value.substring(0, value.indexOf("#"));
+                    }
                 }
                 if (level != 0)
                 {
@@ -282,10 +290,9 @@ public class SimpleYamlReader
     public static void main(String[] args) throws IOException
     {
         Map<String, Object> map = SimpleYamlReader.read(new FileInputStream(new File("/Users/linbin/代码空间/baseutil/src/test/resources/test.yml")));
-        map.forEach((name, value) ->
-                    {
-                        System.out.println(name + ":" + value);
-                    });
+        map.forEach((name, value) -> {
+            System.out.println(name + ":" + value);
+        });
         Object o = map.get("spring.jpa.hibernate");
         if (o instanceof Map map1)
         {
