@@ -115,7 +115,7 @@ public class SimpleYamlReader
                     }
                     else
                     {
-                        element.value = value.substring(0, value.indexOf("#"));
+                        element.value = value.substring(0, value.indexOf("#")).trim();
                     }
                 }
                 if (level != 0)
