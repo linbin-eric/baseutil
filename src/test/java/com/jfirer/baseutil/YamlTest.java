@@ -26,14 +26,7 @@ public class YamlTest
         YamlReader.YmlElement ymlElement = elementsWithFullPath.get("spring.jpa.hibernate");
         Assert.assertEquals("false", ((YamlReader.StringYmlElement) ((YamlReader.MapYmlElement) ymlElement).getValue().get("update")).getValue());
         Assert.assertEquals("false", ((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.jpa.hibernate.update")).getValue());
-//        Map<String, Object> map = SimpleYamlReader.read(new FileInputStream(new File("/Users/linbin/代码空间/baseutil/src/test/resources/test.yml")));
-//        map.forEach((name, value) -> {
-//            System.out.println(name + ":" + value);
-//        });
-//        Object o = map.get("spring.jpa.hibernate");
-//        if (o instanceof Map map1)
-//        {
-//            System.out.println(((Map<String, String>) map1).get("update"));
-//        }
+        Assert.assertEquals("root", ((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.datasource.hikari.username")).getValue());
+        Assert.assertNull(((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.datasource.hikari.password")).getValue());
     }
 }
