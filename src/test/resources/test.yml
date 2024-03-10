@@ -7,7 +7,7 @@ spring:
   jpa:
     hibernate:
       ddl:  auto
-      update:  false
+      update:  false # 这个是注释
 #      ddl-auto: update
 
 
