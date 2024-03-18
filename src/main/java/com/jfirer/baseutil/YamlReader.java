@@ -199,7 +199,7 @@ public class YamlReader
             line = line.contains("#") ? line.substring(0, line.indexOf("#")).trim() : line.trim();
             if (line.startsWith("-"))
             {
-                line = line.substring(1);
+                line = line.substring(1).trim();
                 if (parent == null)
                 {
                     throw new IllegalStateException("节点内容:" + line + "是字符串列表节点，需要有上级节点，当前格式不吻合");
