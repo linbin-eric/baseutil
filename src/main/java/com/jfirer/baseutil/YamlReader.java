@@ -54,7 +54,10 @@ public class YamlReader
         {
             if (element instanceof StringYmlElement stringYmlElement)
             {
-                map.put(parsePath(element), stringYmlElement.getValue());
+                if (stringYmlElement.getValue() != null)
+                {
+                    map.put(parsePath(element), stringYmlElement.getValue());
+                }
             }
             else if (element instanceof ListYmlElement listYmlElement)
             {
