@@ -164,7 +164,10 @@ public class YamlReader
             {
                 if (each.getValue() instanceof StringYmlElement ymlElement)
                 {
-                    ordinary.put(each.getKey(), ymlElement.getValue());
+                    if (ymlElement.getValue() != null)
+                    {
+                        ordinary.put(each.getKey(), ymlElement.getValue());
+                    }
                 }
                 else if (each.getValue() instanceof ListYmlElement ymlElement)
                 {
