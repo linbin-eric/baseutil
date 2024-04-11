@@ -2,10 +2,6 @@ package com.jfirer.baseutil.reflect;
 
 import io.github.karlatemp.unsafeaccessor.Unsafe;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
 public final class ReflectUtil
 {
     private static final Unsafe UNSAFE           = Unsafe.getUnsafe();
@@ -142,6 +138,12 @@ public final class ReflectUtil
     private static <E extends Throwable> void throwException0(Throwable t) throws E
     {
         throw (E) t;
+    }
+
+    public static boolean isPrimitiveBox(Class clazz)
+    {
+        int classId = getClassId(clazz);
+        return classId >= 10 && classId <= 17;
     }
 
     public static int getClassId(Class clazz)
