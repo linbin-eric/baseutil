@@ -10,6 +10,7 @@ public class ValueAccessor
     private   long                  offset;
     protected boolean               primitive;
     protected ReflectUtil.Primitive primitiveType;
+    protected int                   classId;
     private   Unsafe                unsafe = Unsafe.getUnsafe();
 
     public ValueAccessor()
@@ -22,6 +23,7 @@ public class ValueAccessor
         primitive     = field.getType().isPrimitive();
         offset        = unsafe.objectFieldOffset(field);
         primitiveType = ReflectUtil.ofPrimitive(field.getType());
+        classId       = ReflectUtil.getClassId(field.getType());
     }
 
     public void set(Object entity, int value)
@@ -286,24 +288,17 @@ public class ValueAccessor
         {
             throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
         }
-        if (primitive)
+        switch (classId)
         {
-            switch (primitiveType)
-            {
-                case INT -> unsafe.putInt(entity, offset, ((Number) value).intValue());
-                case SHORT -> unsafe.putShort(entity, offset, ((Number) value).shortValue());
-                case LONG -> unsafe.putLong(entity, offset, ((Number) value).longValue());
-                case FLOAT -> unsafe.putFloat(entity, offset, ((Number) value).floatValue());
-                case DOUBLE -> unsafe.putDouble(entity, offset, ((Number) value).doubleValue());
-                case BOOL -> unsafe.putBoolean(entity, offset, ((Boolean) value).booleanValue());
-                case BYTE -> unsafe.putByte(entity, offset, ((Number) value).byteValue());
-                case CHAR -> unsafe.putChar(entity, offset, ((Character) value).charValue());
-                default -> throw new UnsupportedOperationException();
-            }
-        }
-        else
-        {
-            unsafe.putReference(entity, offset, value);
+            case ReflectUtil.PRIMITIVE_BOOL -> unsafe.putBoolean(entity, offset, ((Boolean) value).booleanValue());
+            case ReflectUtil.PRIMITIVE_BYTE -> unsafe.putByte(entity, offset, ((Number) value).byteValue());
+            case ReflectUtil.PRIMITIVE_CHAR -> unsafe.putChar(entity, offset, ((Character) value).charValue());
+            case ReflectUtil.PRIMITIVE_SHORT -> unsafe.putShort(entity, offset, ((Number) value).shortValue());
+            case ReflectUtil.PRIMITIVE_INT -> unsafe.putInt(entity, offset, ((Number) value).intValue());
+            case ReflectUtil.PRIMITIVE_LONG -> unsafe.putLong(entity, offset, ((Number) value).longValue());
+            case ReflectUtil.PRIMITIVE_FLOAT -> unsafe.putFloat(entity, offset, ((Number) value).floatValue());
+            case ReflectUtil.PRIMITIVE_DOUBLE -> unsafe.putDouble(entity, offset, ((Number) value).doubleValue());
+            default -> unsafe.putReference(entity, offset, value);
         }
     }
 
@@ -457,25 +452,18 @@ public class ValueAccessor
         {
             throw new NullPointerException("ValueAccessor get Property from entity fail,entity is null");
         }
-        if (primitive)
+        return switch (classId)
         {
-            return switch (primitiveType)
-            {
-                case INT -> unsafe.getInt(entity, offset);
-                case SHORT -> unsafe.getShort(entity, offset);
-                case LONG -> unsafe.getLong(entity, offset);
-                case FLOAT -> unsafe.getFloat(entity, offset);
-                case DOUBLE -> unsafe.getDouble(entity, offset);
-                case BOOL -> unsafe.getBoolean(entity, offset);
-                case BYTE -> unsafe.getByte(entity, offset);
-                case CHAR -> unsafe.getChar(entity, offset);
-                default -> throw new UnsupportedOperationException();
-            };
-        }
-        else
-        {
-            return unsafe.getReference(entity, offset);
-        }
+            case ReflectUtil.PRIMITIVE_INT -> unsafe.getInt(entity, offset);
+            case ReflectUtil.PRIMITIVE_SHORT -> unsafe.getShort(entity, offset);
+            case ReflectUtil.PRIMITIVE_LONG -> unsafe.getLong(entity, offset);
+            case ReflectUtil.PRIMITIVE_FLOAT -> unsafe.getFloat(entity, offset);
+            case ReflectUtil.PRIMITIVE_DOUBLE -> unsafe.getDouble(entity, offset);
+            case ReflectUtil.PRIMITIVE_BOOL -> unsafe.getBoolean(entity, offset);
+            case ReflectUtil.PRIMITIVE_BYTE -> unsafe.getByte(entity, offset);
+            case ReflectUtil.PRIMITIVE_CHAR -> unsafe.getChar(entity, offset);
+            default -> unsafe.getReference(entity, offset);
+        };
     }
 
     public Field getField()
