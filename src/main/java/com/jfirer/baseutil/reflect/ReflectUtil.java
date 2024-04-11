@@ -140,6 +140,12 @@ public final class ReflectUtil
         throw (E) t;
     }
 
+    public static boolean isPrimitive(Class clazz)
+    {
+        int classId = getClassId(clazz);
+        return classId <= 8;
+    }
+
     public static boolean isPrimitiveBox(Class clazz)
     {
         int classId = getClassId(clazz);
