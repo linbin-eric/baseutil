@@ -256,10 +256,10 @@ public class LambdaValueAccessor extends ValueAccessor
                 {
                     getInt     = (GetInt) LambdaMetafactory.metafactory(lookup, //固定参数
                                                                         "get",//需要实现的函数式接口的方法名
-                                                                        MethodType.methodType(GetInt.class),////固定写法，中间参数是需要实现的函数接口类
-                                                                        MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名
-                                                                        getMethodHandler,//这个函数接口需要引用的类的实例方法
-                                                                        MethodType.methodType(int.class, field.getDeclaringClass())//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
+                                                                        MethodType.methodType(GetInt.class),//固定参数，本方法最终返回的函数式接口的类
+                                                                        MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名，如果是泛型的，用 Object.class代替
+                                                                        getMethodHandler,//这个函数接口需要引用的类的方法
+                                                                        MethodType.methodType(int.class, field.getDeclaringClass())//实际运行时候传入的参数类型，也就是泛型信息在运行的时候对应的实际的类型。
                     ).getTarget().invoke();
                     getInteger = (GetInteger) LambdaMetafactory.metafactory(lookup, //固定参数
                                                                             "get",//需要实现的函数式接口的方法名
