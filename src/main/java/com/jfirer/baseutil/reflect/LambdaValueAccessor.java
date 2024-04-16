@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static com.jfirer.baseutil.reflect.ReflectUtil.*;
+
 public class LambdaValueAccessor extends ValueAccessor
 {
     @FunctionalInterface
@@ -248,9 +250,9 @@ public class LambdaValueAccessor extends ValueAccessor
             MethodHandle         getMethodHandler = lookup.findVirtual(field.getDeclaringClass(), getMethodName, MethodType.methodType(field.getType()));
             String               setMethodName    = "set" + field.getName().toUpperCase().charAt(0) + field.getName().substring(1);
             MethodHandle         setMethodHandler = lookup.findVirtual(field.getDeclaringClass(), setMethodName, MethodType.methodType(void.class, field.getType()));
-            switch (primitiveType)
+            switch (classId)
             {
-                case INT ->
+                case PRIMITIVE_INT, CLASS_INT ->
                 {
                     getInt     = (GetInt) LambdaMetafactory.metafactory(lookup, //固定参数
                                                                         "get",//需要实现的函数式接口的方法名
@@ -281,56 +283,56 @@ public class LambdaValueAccessor extends ValueAccessor
                                                                             MethodType.methodType(void.class, field.getDeclaringClass(), Integer.class)//实际运行的时候，这个函数式接口的方法签名。也就是将泛型的信息补充上
                     ).getTarget().invoke();
                 }
-                case BOOL ->
+                case PRIMITIVE_BOOL, CLASS_BOOL ->
                 {
                     getBoolean    = (GetBoolean) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetBoolean.class), MethodType.methodType(boolean.class, Object.class), getMethodHandler, MethodType.methodType(boolean.class, field.getDeclaringClass())).getTarget().invoke();
                     setBoolean    = (SetBoolean) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetBoolean.class), MethodType.methodType(void.class, Object.class, boolean.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), boolean.class)).getTarget().invoke();
                     getBooleanObj = (GetBooleanObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetBooleanObj.class), MethodType.methodType(Boolean.class, Object.class), getMethodHandler, MethodType.methodType(Boolean.class, field.getDeclaringClass())).getTarget().invoke();
                     setBooleanObj = (SetBooleanObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetBooleanObj.class), MethodType.methodType(void.class, Object.class, Boolean.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Boolean.class)).getTarget().invoke();
                 }
-                case CHAR ->
+                case PRIMITIVE_CHAR, CLASS_CHAR ->
                 {
                     getChar      = (GetChar) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetChar.class), MethodType.methodType(char.class, Object.class), getMethodHandler, MethodType.methodType(char.class, field.getDeclaringClass())).getTarget().invoke();
                     setChar      = (SetChar) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetChar.class), MethodType.methodType(void.class, Object.class, char.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), char.class)).getTarget().invoke();
                     getCharacter = (GetCharacter) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetCharacter.class), MethodType.methodType(Character.class, Object.class), getMethodHandler, MethodType.methodType(Character.class, field.getDeclaringClass())).getTarget().invoke();
                     setCharacter = (SetCharacter) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetCharacter.class), MethodType.methodType(void.class, Object.class, Character.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Character.class)).getTarget().invoke();
                 }
-                case BYTE ->
+                case PRIMITIVE_BYTE, CLASS_BYTE ->
                 {
                     getByte    = (GetByte) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetByte.class), MethodType.methodType(byte.class, Object.class), getMethodHandler, MethodType.methodType(byte.class, field.getDeclaringClass())).getTarget().invoke();
                     setByte    = (SetByte) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetByte.class), MethodType.methodType(void.class, Object.class, byte.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), byte.class)).getTarget().invoke();
                     getByteObj = (GetByteObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetByteObj.class), MethodType.methodType(Byte.class, Object.class), getMethodHandler, MethodType.methodType(Byte.class, field.getDeclaringClass())).getTarget().invoke();
                     setByteObj = (SetByteObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetByteObj.class), MethodType.methodType(void.class, Object.class, Byte.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Byte.class)).getTarget().invoke();
                 }
-                case SHORT ->
+                case PRIMITIVE_SHORT, CLASS_SHORT ->
                 {
                     getShort    = (GetShort) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetShort.class), MethodType.methodType(short.class, Object.class), getMethodHandler, MethodType.methodType(short.class, field.getDeclaringClass())).getTarget().invoke();
                     setShort    = (SetShort) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetShort.class), MethodType.methodType(void.class, Object.class, short.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), short.class)).getTarget().invoke();
                     getShortObj = (GetShortObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetShortObj.class), MethodType.methodType(Short.class, Object.class), getMethodHandler, MethodType.methodType(Short.class, field.getDeclaringClass())).getTarget().invoke();
                     setShortObj = (SetShortObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetShortObj.class), MethodType.methodType(void.class, Object.class, Short.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Short.class)).getTarget().invoke();
                 }
-                case LONG ->
+                case PRIMITIVE_LONG, CLASS_LONG ->
                 {
                     getLong    = (GetLong) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetLong.class), MethodType.methodType(long.class, Object.class), getMethodHandler, MethodType.methodType(long.class, field.getDeclaringClass())).getTarget().invoke();
                     setLong    = (SetLong) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetLong.class), MethodType.methodType(void.class, Object.class, long.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), long.class)).getTarget().invoke();
                     getLongObj = (GetLongObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetLongObj.class), MethodType.methodType(Long.class, Object.class), getMethodHandler, MethodType.methodType(Long.class, field.getDeclaringClass())).getTarget().invoke();
                     setLongObj = (SetLongObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetLongObj.class), MethodType.methodType(void.class, Object.class, Long.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Long.class)).getTarget().invoke();
                 }
-                case FLOAT ->
+                case PRIMITIVE_FLOAT, CLASS_FLOAT ->
                 {
                     getFloat    = (GetFloat) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetFloat.class), MethodType.methodType(float.class, Object.class), getMethodHandler, MethodType.methodType(float.class, field.getDeclaringClass())).getTarget().invoke();
                     setFloat    = (SetFloat) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetFloat.class), MethodType.methodType(void.class, Object.class, float.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), float.class)).getTarget().invoke();
                     getFloatObj = (GetFloatObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetFloatObj.class), MethodType.methodType(Float.class, Object.class), getMethodHandler, MethodType.methodType(Float.class, field.getDeclaringClass())).getTarget().invoke();
                     setFloatObj = (SetFloatObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetFloatObj.class), MethodType.methodType(void.class, Object.class, Float.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Float.class)).getTarget().invoke();
                 }
-                case DOUBLE ->
+                case CLASS_DOUBLE, PRIMITIVE_DOUBLE ->
                 {
                     getDouble    = (GetDouble) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetDouble.class), MethodType.methodType(double.class, Object.class), getMethodHandler, MethodType.methodType(double.class, field.getDeclaringClass())).getTarget().invoke();
                     setDouble    = (SetDouble) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetDouble.class), MethodType.methodType(void.class, Object.class, double.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), double.class)).getTarget().invoke();
                     getDoubleObj = (GetDoubleObj) LambdaMetafactory.metafactory(lookup, "get", MethodType.methodType(GetDoubleObj.class), MethodType.methodType(Double.class, Object.class), getMethodHandler, MethodType.methodType(Double.class, field.getDeclaringClass())).getTarget().invoke();
                     setDoubleObj = (SetDoubleObj) LambdaMetafactory.metafactory(lookup, "set", MethodType.methodType(SetDoubleObj.class), MethodType.methodType(void.class, Object.class, Double.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), Double.class)).getTarget().invoke();
                 }
-                case STRING, UNKONW ->
+                case CLASS_STRING, CLASS_OBJECT ->
                 {
                     getObj = (Function<Object, Object>) LambdaMetafactory.metafactory(lookup, "apply", MethodType.methodType(Function.class), MethodType.methodType(Object.class, Object.class), getMethodHandler, MethodType.methodType(field.getType(), field.getDeclaringClass())).getTarget().invoke();
                     setObj = (BiConsumer<Object, Object>) LambdaMetafactory.metafactory(lookup, "accept", MethodType.methodType(BiConsumer.class), MethodType.methodType(void.class, Object.class, Object.class), setMethodHandler, MethodType.methodType(void.class, field.getDeclaringClass(), field.getType())).getTarget().invoke();
@@ -339,7 +341,7 @@ public class LambdaValueAccessor extends ValueAccessor
         }
         catch (Throwable e)
         {
-            ReflectUtil.throwException(e);
+            throwException(e);
         }
     }
 
@@ -538,70 +540,52 @@ public class LambdaValueAccessor extends ValueAccessor
     @Override
     public void setObject(Object entity, Object value)
     {
-        if (primitive)
+        switch (classId)
         {
-            switch (primitiveType)
-            {
-                case INT -> setInt.set(entity, ((Number) value).intValue());
-                case SHORT -> setShort.set(entity, ((Number) value).shortValue());
-                case LONG -> setLong.set(entity, ((Number) value).longValue());
-                case FLOAT -> setFloat.set(entity, ((Number) value).floatValue());
-                case DOUBLE -> setDouble.set(entity, ((Number) value).doubleValue());
-                case BOOL -> setBoolean.set(entity, ((Boolean) value).booleanValue());
-                case BYTE -> setByte.set(entity, ((Number) value).byteValue());
-                case CHAR -> setChar.set(entity, ((Character) value).charValue());
-                default -> throw new UnsupportedOperationException();
-            }
-        }
-        else
-        {
-            switch (primitiveType)
-            {
-                case INT -> setInteger.set(entity, (Integer) value);
-                case BOOL -> setBooleanObj.set(entity, (Boolean) value);
-                case BYTE -> setByteObj.set(entity, (Byte) value);
-                case SHORT -> setShortObj.set(entity, (Short) value);
-                case LONG -> setLongObj.set(entity, (Long) value);
-                case CHAR -> setCharacter.set(entity, (Character) value);
-                case FLOAT -> setFloatObj.set(entity, (Float) value);
-                case DOUBLE -> setDoubleObj.set(entity, (Double) value);
-                case STRING, UNKONW -> setObj.accept(entity, value);
-            }
+            case PRIMITIVE_INT -> setInt.set(entity, (Integer) value);
+            case PRIMITIVE_SHORT -> setShort.set(entity, (Short) value);
+            case PRIMITIVE_LONG -> setLong.set(entity, (Long) value);
+            case PRIMITIVE_FLOAT -> setFloat.set(entity, (Float) value);
+            case PRIMITIVE_DOUBLE -> setDouble.set(entity, (Double) value);
+            case PRIMITIVE_BOOL -> setBoolean.set(entity, (Boolean) value);
+            case PRIMITIVE_BYTE -> setByte.set(entity, (Byte) value);
+            case PRIMITIVE_CHAR -> setChar.set(entity, (Character) value);
+            case CLASS_INT -> setInteger.set(entity, (Integer) value);
+            case CLASS_SHORT -> setShortObj.set(entity, (Short) value);
+            case CLASS_LONG -> setLongObj.set(entity, (Long) value);
+            case CLASS_FLOAT -> setFloatObj.set(entity, (Float) value);
+            case CLASS_DOUBLE -> setDoubleObj.set(entity, (Double) value);
+            case CLASS_BOOL -> setBooleanObj.set(entity, (Boolean) value);
+            case CLASS_BYTE -> setByteObj.set(entity, (Byte) value);
+            case CLASS_CHAR -> setCharacter.set(entity, (Character) value);
+            case CLASS_STRING, CLASS_OBJECT -> setObj.accept(entity, value);
+            default -> throw new UnsupportedOperationException();
         }
     }
 
     @Override
     public Object get(Object entity)
     {
-        if (primitive)
+        return switch (classId)
         {
-            return switch (primitiveType)
-            {
-                case INT -> getInt.get(entity);
-                case SHORT -> getShort.get(entity);
-                case LONG -> getLong.get(entity);
-                case FLOAT -> getFloat.get(entity);
-                case DOUBLE -> getDouble.get(entity);
-                case BOOL -> getBoolean.get(entity);
-                case BYTE -> getByte.get(entity);
-                case CHAR -> getChar.get(entity);
-                default -> throw new UnsupportedOperationException();
-            };
-        }
-        else
-        {
-            return switch (primitiveType)
-            {
-                case INT -> getInteger.get(entity);
-                case SHORT -> getShortObj.get(entity);
-                case LONG -> getLongObj.get(entity);
-                case FLOAT -> getFloatObj.get(entity);
-                case DOUBLE -> getDoubleObj.get(entity);
-                case BOOL -> getBooleanObj.get(entity);
-                case BYTE -> getByteObj.get(entity);
-                case CHAR -> getCharacter.get(entity);
-                case STRING, UNKONW -> getObj.apply(entity);
-            };
-        }
+            case PRIMITIVE_INT -> getInt.get(entity);
+            case PRIMITIVE_SHORT -> getShort.get(entity);
+            case PRIMITIVE_LONG -> getLong.get(entity);
+            case PRIMITIVE_FLOAT -> getFloat.get(entity);
+            case PRIMITIVE_DOUBLE -> getDouble.get(entity);
+            case PRIMITIVE_BOOL -> getBoolean.get(entity);
+            case PRIMITIVE_BYTE -> getByte.get(entity);
+            case PRIMITIVE_CHAR -> getChar.get(entity);
+            case CLASS_INT -> getInteger.get(entity);
+            case CLASS_SHORT -> getShortObj.get(entity);
+            case CLASS_LONG -> getLongObj.get(entity);
+            case CLASS_FLOAT -> getFloatObj.get(entity);
+            case CLASS_DOUBLE -> getDoubleObj.get(entity);
+            case CLASS_BOOL -> getBooleanObj.get(entity);
+            case CLASS_BYTE -> getByteObj.get(entity);
+            case CLASS_CHAR -> getCharacter.get(entity);
+            case CLASS_STRING, CLASS_OBJECT -> getObj.apply(entity);
+            default -> throw new UnsupportedOperationException();
+        };
     }
 }

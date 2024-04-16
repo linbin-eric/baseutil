@@ -2,124 +2,48 @@ package com.jfirer.baseutil.reflect;
 
 import io.github.karlatemp.unsafeaccessor.Unsafe;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
+
 public final class ReflectUtil
 {
-    private static final Unsafe UNSAFE           = Unsafe.getUnsafe();
-    public static final  int    PRIMITIVE_INT    = 1;
-    public static final  int    PRIMITIVE_BOOL   = 2;
-    public static final  int    PRIMITIVE_BYTE   = 3;
-    public static final  int    PRIMITIVE_SHORT  = 4;
-    public static final  int    PRIMITIVE_LONG   = 5;
-    public static final  int    PRIMITIVE_CHAR   = 6;
-    public static final  int    PRIMITIVE_FLOAT  = 7;
-    public static final  int    PRIMITIVE_DOUBLE = 8;
-    public static final  int    PRIMITIVE_VOID   = 9;
-    public static final  int    CLASS_INT        = 10;
-    public static final  int    CLASS_BOOL       = 11;
-    public static final  int    CLASS_BYTE       = 12;
-    public static final  int    CLASS_SHORT      = 13;
-    public static final  int    CLASS_LONG       = 14;
-    public static final  int    CLASS_CHAR       = 15;
-    public static final  int    CLASS_FLOAT      = 16;
-    public static final  int    CLASS_DOUBLE     = 17;
-    public static final  int    CLASS_STRING     = 18;
-    public static final  int    CLASS_OBJECT     = 19;
-    public static final  int    CLASS_VOID       = 19;
+    private static final Unsafe               UNSAFE           = Unsafe.getUnsafe();
+    public static final  int                  PRIMITIVE_INT    = 1;
+    public static final  int                  PRIMITIVE_BOOL   = 2;
+    public static final  int                  PRIMITIVE_BYTE   = 3;
+    public static final  int                  PRIMITIVE_SHORT  = 4;
+    public static final  int                  PRIMITIVE_LONG   = 5;
+    public static final  int                  PRIMITIVE_CHAR   = 6;
+    public static final  int                  PRIMITIVE_FLOAT  = 7;
+    public static final  int                  PRIMITIVE_DOUBLE = 8;
+    public static final  int                  PRIMITIVE_VOID   = 9;
+    public static final  int                  CLASS_INT        = 10;
+    public static final  int                  CLASS_BOOL       = 11;
+    public static final  int                  CLASS_BYTE       = 12;
+    public static final  int                  CLASS_SHORT      = 13;
+    public static final  int                  CLASS_LONG       = 14;
+    public static final  int                  CLASS_CHAR       = 15;
+    public static final  int                  CLASS_FLOAT      = 16;
+    public static final  int                  CLASS_DOUBLE     = 17;
+    public static final  int                  CLASS_STRING     = 18;
+    public static final  int                  CLASS_OBJECT     = 19;
+    public static final  int                  CLASS_VOID       = 19;
+    public static final  MethodHandles.Lookup TRUSTED_LOOKUP;
 
-    public enum Primitive
+    static
     {
-        INT, BOOL, BYTE, SHORT, LONG, CHAR, FLOAT, DOUBLE, STRING, UNKONW
-    }
-
-    public static Primitive ofPrimitive(Class<?> type)
-    {
-        switch (type.getName())
+        long  fieldOffset = 0;
+        Class lookupClass = MethodHandles.Lookup.class;
+        try
         {
-            case "int", "java.lang.Integer" ->
-            {
-                return Primitive.INT;
-            }
-            case "boolean", "java.lang.Boolean" ->
-            {
-                return Primitive.BOOL;
-            }
-            case "byte", "java.lang.Byte" ->
-            {
-                return Primitive.BYTE;
-            }
-            case "short", "java.lang.Short" ->
-            {
-                return Primitive.SHORT;
-            }
-            case "long", "java.lang.Long" ->
-            {
-                return Primitive.LONG;
-            }
-            case "char", "java.lang.Character" ->
-            {
-                return Primitive.CHAR;
-            }
-            case "float", "java.lang.Float" ->
-            {
-                return Primitive.FLOAT;
-            }
-            case "double", "java.lang.Double" ->
-            {
-                return Primitive.DOUBLE;
-            }
-            case "java.lang.String" ->
-            {
-                return Primitive.STRING;
-            }
-            default ->
-            {
-                return Primitive.UNKONW;
-            }
+            Field implLookup = lookupClass.getDeclaredField("IMPL_LOOKUP");
+            fieldOffset = UNSAFE.staticFieldOffset(implLookup);
         }
-    }
-
-    public static Class<?> wrapPrimitive(Class<?> type)
-    {
-        if (type.isPrimitive() == false)
+        catch (Throwable e)
         {
-            throw new IllegalArgumentException();
+            ReflectUtil.throwException(e);
         }
-        if (type == int.class)
-        {
-            return Integer.class;
-        }
-        else if (type == short.class)
-        {
-            return Short.class;
-        }
-        else if (type == long.class)
-        {
-            return Long.class;
-        }
-        else if (type == float.class)
-        {
-            return Float.class;
-        }
-        else if (type == double.class)
-        {
-            return Double.class;
-        }
-        else if (type == boolean.class)
-        {
-            return Boolean.class;
-        }
-        else if (type == byte.class)
-        {
-            return Byte.class;
-        }
-        else if (type == char.class)
-        {
-            return Character.class;
-        }
-        else
-        {
-            return null;
-        }
+        TRUSTED_LOOKUP = (MethodHandles.Lookup) UNSAFE.getReference(lookupClass, fieldOffset);
     }
 
     public static void throwException(Throwable t)

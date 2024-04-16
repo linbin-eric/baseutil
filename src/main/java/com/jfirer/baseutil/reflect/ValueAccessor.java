@@ -6,12 +6,11 @@ import java.lang.reflect.Field;
 
 public class ValueAccessor
 {
-    protected Field                 field;
-    private   long                  offset;
-    protected boolean               primitive;
-    protected ReflectUtil.Primitive primitiveType;
-    protected int                   classId;
-    private   Unsafe                unsafe = Unsafe.getUnsafe();
+    protected Field   field;
+    private   long    offset;
+    protected boolean primitive;
+    protected int     classId;
+    private   Unsafe  unsafe = Unsafe.getUnsafe();
 
     public ValueAccessor()
     {
@@ -19,11 +18,10 @@ public class ValueAccessor
 
     public ValueAccessor(Field field)
     {
-        this.field    = field;
-        primitive     = field.getType().isPrimitive();
-        offset        = unsafe.objectFieldOffset(field);
-        primitiveType = ReflectUtil.ofPrimitive(field.getType());
-        classId       = ReflectUtil.getClassId(field.getType());
+        this.field = field;
+        primitive  = field.getType().isPrimitive();
+        offset     = unsafe.objectFieldOffset(field);
+        classId    = ReflectUtil.getClassId(field.getType());
     }
 
     public void set(Object entity, int value)
@@ -469,11 +467,6 @@ public class ValueAccessor
     public Field getField()
     {
         return field;
-    }
-
-    public ReflectUtil.Primitive getPrimitiveType()
-    {
-        return primitiveType;
     }
 
     public Object newInstace()

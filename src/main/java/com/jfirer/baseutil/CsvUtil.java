@@ -41,7 +41,7 @@ public class CsvUtil
         String name(String fieldName);
     }
 
-    record CsvEntity(int index, ValueAccessor valueAccessor, ReflectUtil.Primitive primitive)
+    record CsvEntity(int index, ValueAccessor valueAccessor, int classId)
     {
     }
 
@@ -111,22 +111,22 @@ public class CsvUtil
                 T t = supplier.get();
                 for (CsvEntity csvEntity : csvEntities)
                 {
-                    switch (csvEntity.primitive)
+                    switch (csvEntity.classId)
                     {
-                        case INT -> csvEntity.valueAccessor.setObject(t, Integer.valueOf(content.get(csvEntity.index())));
-                        case BOOL -> csvEntity.valueAccessor.setObject(t, Boolean.valueOf(content.get(csvEntity.index())));
-                        case BYTE -> csvEntity.valueAccessor.setObject(t, Byte.valueOf(content.get(csvEntity.index())));
-                        case SHORT -> csvEntity.valueAccessor.setObject(t, Short.valueOf(content.get(csvEntity.index())));
-                        case LONG -> csvEntity.valueAccessor.setObject(t, Long.valueOf(content.get(csvEntity.index())));
-                        case CHAR -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()).charAt(0));
-                        case FLOAT -> csvEntity.valueAccessor.setObject(t, Float.valueOf(content.get(csvEntity.index())));
-                        case DOUBLE -> csvEntity.valueAccessor.setObject(t, Double.valueOf(content.get(csvEntity.index())));
-                        case STRING -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
-                        case UNKONW ->
+                        case ReflectUtil.CLASS_INT, ReflectUtil.PRIMITIVE_INT -> csvEntity.valueAccessor.setObject(t, Integer.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_BOOL,ReflectUtil.PRIMITIVE_BOOL -> csvEntity.valueAccessor.setObject(t, Boolean.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_BYTE,ReflectUtil.PRIMITIVE_BYTE -> csvEntity.valueAccessor.setObject(t, Byte.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_SHORT,ReflectUtil.PRIMITIVE_SHORT -> csvEntity.valueAccessor.setObject(t, Short.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_LONG,ReflectUtil.PRIMITIVE_LONG -> csvEntity.valueAccessor.setObject(t, Long.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_CHAR,ReflectUtil.PRIMITIVE_CHAR -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()).charAt(0));
+                        case ReflectUtil.CLASS_FLOAT,ReflectUtil.PRIMITIVE_FLOAT -> csvEntity.valueAccessor.setObject(t, Float.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_DOUBLE,ReflectUtil.PRIMITIVE_DOUBLE -> csvEntity.valueAccessor.setObject(t, Double.valueOf(content.get(csvEntity.index())));
+                        case ReflectUtil.CLASS_STRING -> csvEntity.valueAccessor.setObject(t, content.get(csvEntity.index()));
+                        case ReflectUtil.CLASS_OBJECT ->
                         {
                             throw new IllegalArgumentException("csv文件映射不支持字段:" + csvEntity.valueAccessor.getField().getName() + "的类型，请使用8种基本类型或包装类或String");
                         }
-                        default -> throw new IllegalStateException("Unexpected value: " + csvEntity.primitive);
+                        default -> throw new IllegalStateException("Unexpected value: " + csvEntity.classId);
                     }
                 }
                 list.add(t);
@@ -139,8 +139,8 @@ public class CsvUtil
     {
         List<CsvEntity>            csvEntities = new ArrayList<>();
         Map<String, ValueAccessor> map         = new HashMap<>();
-        Class ckass = type;
-        List<Field> fields =new ArrayList<>();
+        Class                      ckass       = type;
+        List<Field>                fields      = new ArrayList<>();
         while (ckass != Object.class)
         {
             fields.addAll(Arrays.stream(ckass.getDeclaredFields()).toList());
@@ -162,7 +162,7 @@ public class CsvUtil
             if (map.containsKey(name))
             {
                 ValueAccessor valueAccessor = map.get(name);
-                csvEntities.add(new CsvEntity(i, valueAccessor, ReflectUtil.ofPrimitive(valueAccessor.getField().getType())));
+                csvEntities.add(new CsvEntity(i, valueAccessor, ReflectUtil.getClassId(valueAccessor.getField().getType())));
             }
         }
         return csvEntities.toArray(CsvEntity[]::new);
