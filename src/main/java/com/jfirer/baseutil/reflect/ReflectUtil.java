@@ -76,6 +76,50 @@ public final class ReflectUtil
         return classId >= 10 && classId <= 17;
     }
 
+    public static Class getBoxedType(Class clazz)
+    {
+        if (clazz == int.class)
+        {
+            return Integer.class;
+        }
+        else if (clazz == boolean.class)
+        {
+            return Boolean.class;
+        }
+        else if (clazz == byte.class)
+        {
+            return Byte.class;
+        }
+        else if (clazz == short.class)
+        {
+            return Short.class;
+        }
+        else if (clazz == long.class)
+        {
+            return Long.class;
+        }
+        else if (clazz == char.class)
+        {
+            return Character.class;
+        }
+        else if (clazz == float.class)
+        {
+            return Float.class;
+        }
+        else if (clazz == double.class)
+        {
+            return Double.class;
+        }
+        else if (clazz == void.class)
+        {
+            return Void.class;
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+
     public static int getClassId(Class clazz)
     {
         if (clazz == int.class)
