@@ -71,6 +71,36 @@ public class YamlReader
         return map;
     }
 
+    public Map<String, Object> getMapWithIndentStructure()
+    {
+        Map<String, Object> map = new HashMap<>();
+        for (YmlElement element : elements)
+        {
+            if (element instanceof StringYmlElement stringYmlElement)
+            {
+                if (stringYmlElement.getValue() != null && element.getParent() == null)
+                {
+                    map.put(element.getName(), stringYmlElement.getValue());
+                }
+            }
+            else if (element instanceof ListYmlElement listYmlElement)
+            {
+                if (element.getParent() == null)
+                {
+                    map.put(element.getName(), listYmlElement.getValue());
+                }
+            }
+            else if (element instanceof MapYmlElement mapYmlElement)
+            {
+                if (element.getParent() == null)
+                {
+                    map.put(element.getName(), mapYmlElement.toOrdinaryMap());
+                }
+            }
+        }
+        return map;
+    }
+
     @Data
     @Accessors(chain = true)
     public abstract static class YmlElement
