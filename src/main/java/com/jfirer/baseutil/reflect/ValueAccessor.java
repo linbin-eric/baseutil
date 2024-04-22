@@ -1,14 +1,17 @@
 package com.jfirer.baseutil.reflect;
 
 import io.github.karlatemp.unsafeaccessor.Unsafe;
+import lombok.Getter;
 
 import java.lang.reflect.Field;
 
 public class ValueAccessor
 {
+    @Getter
     protected Field   field;
     private   long    offset;
     protected boolean primitive;
+    @Getter
     protected int     classId;
     private   Unsafe  unsafe = Unsafe.getUnsafe();
 
