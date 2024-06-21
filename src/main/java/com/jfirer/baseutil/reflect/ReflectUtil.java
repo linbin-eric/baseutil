@@ -8,23 +8,23 @@ import java.lang.reflect.Field;
 public final class ReflectUtil
 {
     private static final Unsafe               UNSAFE           = Unsafe.getUnsafe();
-    public static final  int                  PRIMITIVE_INT    = 1;
-    public static final  int                  PRIMITIVE_BOOL   = 2;
-    public static final  int                  PRIMITIVE_BYTE   = 3;
-    public static final  int                  PRIMITIVE_SHORT  = 4;
-    public static final  int                  PRIMITIVE_LONG   = 5;
-    public static final  int                  PRIMITIVE_CHAR   = 6;
-    public static final  int                  PRIMITIVE_FLOAT  = 7;
-    public static final  int                  PRIMITIVE_DOUBLE = 8;
+    public static final  int                  PRIMITIVE_BYTE   = 1;
+    public static final  int                  PRIMITIVE_INT    = 2;
+    public static final  int                  PRIMITIVE_SHORT  = 3;
+    public static final  int                  PRIMITIVE_LONG   = 4;
+    public static final  int                  PRIMITIVE_FLOAT  = 5;
+    public static final  int                  PRIMITIVE_DOUBLE = 6;
+    public static final  int                  PRIMITIVE_CHAR   = 7;
+    public static final  int                  PRIMITIVE_BOOL   = 8;
     public static final  int                  PRIMITIVE_VOID   = 9;
-    public static final  int                  CLASS_INT        = 10;
-    public static final  int                  CLASS_BOOL       = 11;
-    public static final  int                  CLASS_BYTE       = 12;
-    public static final  int                  CLASS_SHORT      = 13;
-    public static final  int                  CLASS_LONG       = 14;
-    public static final  int                  CLASS_CHAR       = 15;
-    public static final  int                  CLASS_FLOAT      = 16;
-    public static final  int                  CLASS_DOUBLE     = 17;
+    public static final  int                  CLASS_BYTE       = 10;
+    public static final  int                  CLASS_INT        = 11;
+    public static final  int                  CLASS_SHORT      = 12;
+    public static final  int                  CLASS_LONG       = 13;
+    public static final  int                  CLASS_FLOAT      = 14;
+    public static final  int                  CLASS_DOUBLE     = 15;
+    public static final  int                  CLASS_CHAR       = 16;
+    public static final  int                  CLASS_BOOL       = 17;
     public static final  int                  CLASS_STRING     = 18;
     public static final  int                  CLASS_OBJECT     = 19;
     public static final  int                  CLASS_VOID       = 20;
@@ -202,5 +202,11 @@ public final class ReflectUtil
         {
             return CLASS_OBJECT;
         }
+    }
+
+    public static boolean isNumber(Class<?> ckass)
+    {
+        int classId = getClassId(ckass);
+        return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE);
     }
 }
