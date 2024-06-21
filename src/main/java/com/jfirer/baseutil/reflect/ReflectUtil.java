@@ -209,4 +209,16 @@ public final class ReflectUtil
         int classId = getClassId(ckass);
         return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE);
     }
+
+    public static boolean isBooleanOrBooleanBox(Class<?> ckass)
+    {
+        int classId = getClassId(ckass);
+        return classId == PRIMITIVE_BOOL || classId == CLASS_BOOL;
+    }
+
+    public static boolean isCharOrCharBox(Class<?> ckass)
+    {
+        int classId = getClassId(ckass);
+        return classId == PRIMITIVE_CHAR || classId == CLASS_CHAR;
+    }
 }
