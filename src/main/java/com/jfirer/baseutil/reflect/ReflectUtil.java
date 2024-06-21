@@ -27,7 +27,7 @@ public final class ReflectUtil
     public static final  int                  CLASS_DOUBLE     = 17;
     public static final  int                  CLASS_STRING     = 18;
     public static final  int                  CLASS_OBJECT     = 19;
-    public static final  int                  CLASS_VOID       = 19;
+    public static final  int                  CLASS_VOID       = 20;
     public static final  MethodHandles.Lookup TRUSTED_LOOKUP;
 
     static
