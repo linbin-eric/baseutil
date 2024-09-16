@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class Formatter
+public class STR
 {
     static ConcurrentMap<String, Template> map         = new ConcurrentHashMap<>();
     static ThreadLocal<StringBuilder>      threadLocal = ThreadLocal.withInitial(StringBuilder::new);
