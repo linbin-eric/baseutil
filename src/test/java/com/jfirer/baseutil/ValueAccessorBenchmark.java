@@ -1,7 +1,7 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.CompileValueAccessor;
-import com.jfirer.baseutil.reflect.LambdaValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.impl.LambdaValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
