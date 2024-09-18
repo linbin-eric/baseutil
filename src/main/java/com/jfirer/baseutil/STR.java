@@ -46,7 +46,7 @@ public class STR
             e.printStackTrace(printStream);
             printStream.flush();
             String content = byteArrayOutputStream.toString(StandardCharsets.UTF_8);
-            builder.append(content);
+            builder.append("\r\n").append(content);
         }
         return builder.toString();
     }
