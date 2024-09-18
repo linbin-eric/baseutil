@@ -15,6 +15,7 @@ public class ClassModel
     private Set<Class<?>>                                interfaces      = new HashSet<Class<?>>();
     private Set<String>                                  classSimpleName = new HashSet<String>();
     private Class<?>                                     parentClass;
+    private boolean                                      isFinal         = false;
 
     public ClassModel(String className)
     {
@@ -23,7 +24,7 @@ public class ClassModel
 
     public ClassModel(String className, Class<?> parentClass, Class<?>... interCc)
     {
-        this.className = className;
+        this.className   = className;
         this.parentClass = parentClass;
         for (Class<?> each : interCc)
         {
@@ -36,11 +37,23 @@ public class ClassModel
         StringBuilder cache = new StringBuilder();
         if (parentClass == null || parentClass == Object.class)
         {
-            cache.append("public class ").append(className);
+            cache.append("public ");
+            if (isFinal)
+            {
+                cache.append("final ");
+            }
+            cache.append("class ");
+            cache.append(className);
         }
         else
         {
-            cache.append("public class ").append(className).append(" extends ").append(SmcHelper.getReferenceName(parentClass, this));
+            cache.append("public ");
+            if (isFinal)
+            {
+                cache.append("final ");
+            }
+            cache.append("class ");
+            cache.append(className).append(" extends ").append(SmcHelper.getReferenceName(parentClass, this));
         }
         if (interfaces.isEmpty() == false)
         {
@@ -269,5 +282,15 @@ public class ClassModel
     public void setPackageName(String packageName)
     {
         this.packageName = packageName;
+    }
+
+    public boolean isFinal()
+    {
+        return isFinal;
+    }
+
+    public void setFinal(boolean aFinal)
+    {
+        isFinal = aFinal;
     }
 }

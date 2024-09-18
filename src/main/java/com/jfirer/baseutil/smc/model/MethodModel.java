@@ -18,6 +18,7 @@ public class MethodModel
     private String      methodName;
     private String      body;
     private ClassModel  classModel;
+    private boolean     isFinal = false;
 
     public MethodModel(ClassModel classModel)
     {
@@ -40,19 +41,19 @@ public class MethodModel
         {
             accessLevel = AccessLevel.PROTECTED;
         }
-        methodName = method.getName();
-        returnType = method.getReturnType();
+        methodName    = method.getName();
+        returnType    = method.getReturnType();
         paramterTypes = method.getParameterTypes();
-        throwables = method.getExceptionTypes();
+        throwables    = method.getExceptionTypes();
     }
 
     public MethodModel(MethodModel methodModel)
     {
-        methodName = methodModel.methodName;
-        accessLevel = methodModel.accessLevel;
+        methodName    = methodModel.methodName;
+        accessLevel   = methodModel.accessLevel;
         paramterTypes = methodModel.paramterTypes;
-        throwables = methodModel.throwables;
-        returnType = methodModel.returnType;
+        throwables    = methodModel.throwables;
+        returnType    = methodModel.returnType;
     }
 
     @Override
@@ -74,8 +75,12 @@ public class MethodModel
                 cache.append("public ");
                 break;
         }
+        if (isFinal)
+        {
+            cache.append(" final ");
+        }
         cache.append(SmcHelper.getReferenceName(returnType, classModel)).append(' ')//
-                .append(methodName).append('(');
+             .append(methodName).append('(');
         if (paramterTypes != null && paramterTypes.length > 0)
         {
             boolean hasComma = false;
@@ -181,8 +186,8 @@ public class MethodModel
     public MethodModelKey generateKey()
     {
         MethodModelKey key = new MethodModelKey();
-        key.accessLevel = accessLevel;
-        key.methodName = methodName;
+        key.accessLevel   = accessLevel;
+        key.methodName    = methodName;
         key.paramterTypes = paramterTypes;
         return key;
     }
@@ -215,6 +220,16 @@ public class MethodModel
         }
         cache.append(')');
         return cache.toString();
+    }
+
+    public boolean isFinal()
+    {
+        return isFinal;
+    }
+
+    public void setFinal(boolean aFinal)
+    {
+        isFinal = aFinal;
     }
 
     public AccessLevel getAccessLevel()
@@ -317,7 +332,7 @@ public class MethodModel
             {
                 accessLevel = AccessLevel.PROTECTED;
             }
-            methodName = method.getName();
+            methodName    = method.getName();
             paramterTypes = method.getParameterTypes();
         }
 

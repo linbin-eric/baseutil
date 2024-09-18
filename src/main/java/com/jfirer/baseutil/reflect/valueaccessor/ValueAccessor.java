@@ -167,6 +167,7 @@ public interface ValueAccessor
                     default -> throw new IllegalStateException("Unexpected value: " + classId);
                 };
                 methodModel.setParamterNames("entity");
+                methodModel.setFinal(true);
                 methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + " )entity)." + getMethodName + "();");
                 classModel.putMethodModel(methodModel);
                 MethodModel setMethodModel = switch (classId)
@@ -182,20 +183,24 @@ public interface ValueAccessor
                     default -> throw new IllegalStateException("Unexpected value: " + classId);
                 };
                 setMethodModel.setParamterNames("entity", "value");
+                setMethodModel.setFinal(true);
                 setMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "(value);");
                 classModel.putMethodModel(setMethodModel);
             }
             MethodModel getMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("get", Object.class), classModel);
+            getMethodModel.setFinal(true);
             getMethodModel.setParamterNames("entity");
             getMethodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + " )entity)." + getMethodName + "();");
             classModel.putMethodModel(getMethodModel);
             MethodModel getRefenceMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("getReference", Object.class), classModel);
             getRefenceMethodModel.setParamterNames("entity");
+            getRefenceMethodModel.setFinal(true);
             getRefenceMethodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + " )entity)." + getMethodName + "();");
             classModel.putMethodModel(getRefenceMethodModel);
             if (field.getType().isPrimitive())
             {
                 MethodModel setMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class), classModel);
+                setMethodModel.setFinal(true);
                 setMethodModel.setParamterNames("entity", "value");
                 setMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "((" + SmcHelper.getReferenceName(ReflectUtil.getBoxedType(field.getType()), classModel) + ")value);");
                 classModel.putMethodModel(setMethodModel);
@@ -203,10 +208,12 @@ public interface ValueAccessor
             else
             {
                 MethodModel setMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class), classModel);
+                setMethodModel.setFinal(true);
                 setMethodModel.setParamterNames("entity", "value");
                 setMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")value);");
                 classModel.putMethodModel(setMethodModel);
                 MethodModel setReferenceMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("setReference", Object.class, Object.class), classModel);
+                setReferenceMethodModel.setFinal(true);
                 setReferenceMethodModel.setParamterNames("entity", "value");
                 setReferenceMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")value);");
                 classModel.putMethodModel(setReferenceMethodModel);
@@ -669,12 +676,14 @@ public interface ValueAccessor
         try
         {
             ClassModel classModel = new ClassModel("GetInt_" + count.incrementAndGet());
+            classModel.setFinal(true);
             classModel.addInterface(GetInt.class);
             MethodModel methodModel = new MethodModel(GetInt.class.getDeclaredMethod("get", Object.class), classModel);
             methodModel.setParamterNames("entity");
             String getMethodName = "get" + toMethodName(field);
             methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + getMethodName + "();");
             classModel.putMethodModel(methodModel);
+            methodModel.setFinal(true);
             Class<GetInt> compile = (Class<GetInt>) new CompileHelper(Thread.currentThread().getContextClassLoader()).compile(classModel);
             return compile.getConstructor().newInstance();
         }

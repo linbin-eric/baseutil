@@ -48,33 +48,37 @@ public class ValueAccessorBenchmark
         }
     }
 
+    @Benchmark
     public void testUnsafe()
     {
         valueAccessor.getInt(test);
     }
 
+    @Benchmark
     public void testCompile()
     {
         valueAccessor_compile.getInt(test);
     }
+//
+//    @Benchmark
+//    public void testlambda()
+//    {
+//        testLambda.getInt(test);
+//    }
 
     @Benchmark
     public void testlambda()
     {
-        testLambda.getInt(test);
-    }
-
-    @Benchmark
-    public void AtestValueAccessorLambda()
-    {
         valueAccessor_lambda.getInt(test);
     }
 
+    @Benchmark
     public void testOrigin()
     {
         accessorTestApplyInt.get(test);
     }
 
+    @Benchmark
     public void factoryLambda()
     {
         factoryLambda.get(test);
