@@ -1,5 +1,8 @@
 package com.jfirer.baseutil;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,12 +10,11 @@ import java.util.concurrent.ConcurrentMap;
 
 public class STR
 {
-    static ConcurrentMap<String, Template> map         = new ConcurrentHashMap<>();
-    static ThreadLocal<StringBuilder>      threadLocal = ThreadLocal.withInitial(StringBuilder::new);
+    static ConcurrentMap<String, Template> map = new ConcurrentHashMap<>();
 
     public static String format(String pattern, Object... params)
     {
-        StringBuilder builder = threadLocal.get();
+        StringBuilder builder = new StringBuilder();
         map.computeIfAbsent(pattern, v -> {
             List<Segment> segments   = new LinkedList<>();
             char[]        value      = v.toCharArray();
@@ -37,9 +39,16 @@ public class STR
             }
             return new Template(segments.toArray(Segment[]::new));
         }).output(builder, params);
-        String result = builder.toString();
-        builder.setLength(0);
-        return result;
+        if (params[params.length - 1] instanceof Throwable e)
+        {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            PrintStream           printStream           = new PrintStream(byteArrayOutputStream, false, StandardCharsets.UTF_8);
+            e.printStackTrace(printStream);
+            printStream.flush();
+            String content = byteArrayOutputStream.toString(StandardCharsets.UTF_8);
+            builder.append(content);
+        }
+        return builder.toString();
     }
 
     static class Template
@@ -109,5 +118,15 @@ public class STR
             }
         }
         return -1;
+    }
+
+    public static void main(String[] args)
+    {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PrintStream           printStream           = new PrintStream(byteArrayOutputStream, false, StandardCharsets.UTF_8);
+        new Throwable().printStackTrace(printStream);
+        printStream.flush();
+        String content = byteArrayOutputStream.toString(StandardCharsets.UTF_8);
+        System.out.println(content);
     }
 }
