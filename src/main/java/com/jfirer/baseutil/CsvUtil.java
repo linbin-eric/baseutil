@@ -1,7 +1,8 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
-import com.jfirer.baseutil.reflect.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
 import com.jfirer.baseutil.time.Timewatch;
 
 import java.io.BufferedReader;
@@ -41,7 +42,7 @@ public class CsvUtil
         String name(String fieldName);
     }
 
-    record CsvEntity(int index, ValueAccessor valueAccessor, int classId)
+    record CsvEntity(int index, UnsafeValueAccessorImpl valueAccessor, int classId)
     {
     }
 
@@ -149,11 +150,11 @@ public class CsvUtil
         fields.forEach(field -> {
             if (field.isAnnotationPresent(CsvHeaderName.class))
             {
-                map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), new ValueAccessor(field));
+                map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), new UnsafeValueAccessorImpl(field));
             }
             else
             {
-                map.put(headerName.apply(field.getName()), new ValueAccessor(field));
+                map.put(headerName.apply(field.getName()), new UnsafeValueAccessorImpl(field));
             }
         });
         for (int i = 0; i < content.size(); i++)
@@ -161,7 +162,7 @@ public class CsvUtil
             String name = content.get(i);
             if (map.containsKey(name))
             {
-                ValueAccessor valueAccessor = map.get(name);
+                UnsafeValueAccessorImpl valueAccessor = map.get(name);
                 csvEntities.add(new CsvEntity(i, valueAccessor, ReflectUtil.getClassId(valueAccessor.getField().getType())));
             }
         }

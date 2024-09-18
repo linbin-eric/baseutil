@@ -1,5 +1,7 @@
 package com.jfirer.baseutil.reflect;
 
+import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
+
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -10,7 +12,7 @@ import java.util.function.Function;
 
 import static com.jfirer.baseutil.reflect.ReflectUtil.*;
 
-public class LambdaValueAccessor extends ValueAccessor
+public class LambdaValueAccessor extends UnsafeValueAccessorImpl
 {
     @FunctionalInterface
     public interface GetBoolean

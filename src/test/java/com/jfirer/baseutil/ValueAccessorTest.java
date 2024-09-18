@@ -2,12 +2,11 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.CompileValueAccessor;
 import com.jfirer.baseutil.reflect.LambdaValueAccessor;
-import com.jfirer.baseutil.reflect.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.lang.reflect.Field;
 
 public class ValueAccessorTest
 {
@@ -35,40 +34,40 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test = new ValueAccessorTest();
         ValueAccessor     valueAccessor;
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("a"));
         Assert.assertEquals(test.a, valueAccessor.getInt(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("b"));
         Assert.assertEquals(test.b, valueAccessor.getByte(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("c"));
         Assert.assertEquals(test.c, valueAccessor.getChar(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("d"));
         Assert.assertEquals(test.d, valueAccessor.getDouble(test), 0.000001d);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("f"));
         Assert.assertEquals(test.f, valueAccessor.getFloat(test), 0x000001f);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("bb"));
         Assert.assertEquals(test.bb, valueAccessor.getBoolean(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("s"));
         Assert.assertEquals(test.s, valueAccessor.getShort(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("l"));
         Assert.assertEquals(test.l, valueAccessor.getLong(test));
         ////
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("a1"));
         Assert.assertEquals(test.a1, valueAccessor.getIntObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("b1"));
         Assert.assertEquals(test.b1, valueAccessor.getByteObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("c1"));
         Assert.assertEquals(test.c1, valueAccessor.getCharObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("d1"));
         Assert.assertEquals(test.d1, valueAccessor.getDoubleObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("f1"));
         Assert.assertEquals(test.f1, valueAccessor.getFloatObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("bb1"));
         Assert.assertEquals(test.bb1, valueAccessor.getBooleanObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("s1"));
         Assert.assertEquals(test.s1, valueAccessor.getShortObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("l1"));
         Assert.assertEquals(test.l1, valueAccessor.getLongObject(test));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("name"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("name"));
         Assert.assertEquals(test.name, valueAccessor.get(test));
     }
 
@@ -77,53 +76,53 @@ public class ValueAccessorTest
     {
         ValueAccessorTest test = new ValueAccessorTest();
         ValueAccessor     valueAccessor;
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("a"));
         valueAccessor.set(test, 2);
         Assert.assertEquals(test.a, 2);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("b"));
         valueAccessor.set(test, (byte) 2);
         Assert.assertEquals(test.b, 2);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("c"));
         valueAccessor.set(test, 'c');
         Assert.assertEquals(test.c, 'c');
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("d"));
         valueAccessor.set(test, 2d);
         Assert.assertEquals(test.d, 2d, 0.000001d);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("f"));
         valueAccessor.set(test, 2f);
         Assert.assertEquals(test.f, 2f, 0x000001f);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("bb"));
         valueAccessor.set(test, true);
         Assert.assertEquals(test.bb, true);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("s"));
         valueAccessor.set(test, (short) 2);
         Assert.assertEquals(test.s, 2);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("l"));
         valueAccessor.set(test, 2l);
         Assert.assertEquals(test.l, 2l);
         ////
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("a1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("a1"));
         valueAccessor.set(test, 2);
         Assert.assertEquals(test.a1, Integer.valueOf(2));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("b1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("b1"));
         valueAccessor.set(test, (byte) 2);
         Assert.assertEquals(test.b1, Byte.valueOf((byte) 2));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("c1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("c1"));
         valueAccessor.set(test, 'c');
         Assert.assertEquals(test.c1, Character.valueOf('c'));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("d1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("d1"));
         valueAccessor.set(test, 2d);
         Assert.assertEquals(test.d1, 2d, 0.000001d);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("f1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("f1"));
         valueAccessor.set(test, 2f);
         Assert.assertEquals(test.f1, 2f, 0x000001f);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("bb1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("bb1"));
         valueAccessor.set(test, true);
         Assert.assertEquals(test.bb1, true);
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("s1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("s1"));
         valueAccessor.set(test, (short) 2);
         Assert.assertEquals(test.s1, Short.valueOf((short) 2));
-        valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField("l1"));
+        valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField("l1"));
         valueAccessor.set(test, 2l);
         Assert.assertEquals(test.l1, Long.valueOf(2));
     }

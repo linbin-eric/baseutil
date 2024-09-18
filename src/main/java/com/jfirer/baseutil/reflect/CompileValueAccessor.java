@@ -1,5 +1,7 @@
 package com.jfirer.baseutil.reflect;
 
+import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
 import com.jfirer.baseutil.smc.SmcHelper;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.model.ClassModel;
@@ -9,7 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CompileValueAccessor extends ValueAccessor
+public class CompileValueAccessor
 {
     protected static final AtomicInteger count = new AtomicInteger();
 
@@ -18,62 +20,39 @@ public class CompileValueAccessor extends ValueAccessor
         return field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
     }
 
-    public static ValueAccessor create(Field field, CompileHelper compileHelper)
+    public static ValueAccessor create(Field field, CompileHelper compileHelper) throws NoSuchMethodException
     {
-        ClassModel classModel = new ClassModel("ValueAccessor_" + field.getName() + "_" + count.getAndIncrement(), CompileValueAccessor.class);
-        Class<?>   type       = field.getType();
-        if (type == int.class || type == Integer.class)
+        ClassModel classModel = new ClassModel("ValueAccessor_" + field.getName() + "_" + count.getAndIncrement());
+        classModel.addInterface(ValueAccessor.class);
+        int    classId    = ReflectUtil.getClassId(field.getType());
+        String methodName = ReflectUtil.isBooleanOrBooleanBox(field.getType()) ? "is" + toMethodName(field) : "get" + toMethodName(field);
+        //这个方法本身必须存在
+        if (ReflectUtil.isBooleanOrBooleanBox(field.getType()))
         {
-            return build(field, compileHelper, classModel, "getInt", int.class, Integer.class);
-        }
-        else if (type == short.class || type == Short.class)
-        {
-            return build(field, compileHelper, classModel, "getShort", short.class, Short.class);
-        }
-        else if (type == long.class || type == Long.class)
-        {
-            return build(field, compileHelper, classModel, "getLong", long.class, Long.class);
-        }
-        else if (type == float.class || type == Float.class)
-        {
-            return build(field, compileHelper, classModel, "getFloat", float.class, Float.class);
-        }
-        else if (type == double.class || type == Double.class)
-        {
-            return build(field, compileHelper, classModel, "getDouble", double.class, Double.class);
-        }
-        else if (type == boolean.class || type == Boolean.class)
-        {
-            return build(field, compileHelper, classModel, "getBoolean", boolean.class, Boolean.class);
-        }
-        else if (type == byte.class || type == Byte.class)
-        {
-            return build(field, compileHelper, classModel, "getByte", byte.class, Byte.class);
-        }
-        else if (type == char.class || type == Character.class)
-        {
-            return build(field, compileHelper, classModel, "getChar", char.class, Character.class);
+            field.getDeclaringClass().getMethod(methodName);
         }
         else
         {
-            try
-            {
-                Method      method      = ValueAccessor.class.getDeclaredMethod("get", Object.class);
-                MethodModel methodModel = new MethodModel(method, classModel);
-                methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).get" + toMethodName(field) + "();");
-                classModel.putMethodModel(methodModel);
-                method = ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class);
-                methodModel = new MethodModel(method, classModel);
-                methodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")$0).set" + toMethodName(field) + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")$1);");
-                classModel.putMethodModel(methodModel);
-                return (ValueAccessor) compileHelper.compile(classModel).getDeclaredConstructor().newInstance();
-            }
-            catch (Exception e)
-            {
-                ReflectUtil.throwException(e);
-                return null;
-            }
+            field.getDeclaringClass().getMethod(methodName);
         }
+        MethodModel methodModel = switch (classId)
+        {
+            case ReflectUtil.PRIMITIVE_BYTE -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getByte",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_CHAR -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getChar",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_DOUBLE -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getDouble",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_FLOAT -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getFloat",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_INT -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getInt",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_LONG -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getLong",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_SHORT -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getShort",Object.class), classModel);
+            case ReflectUtil.PRIMITIVE_BOOL -> new MethodModel(ValueAccessor.class.getDeclaredMethod("getBoolean",Object.class), classModel);
+            default -> throw new IllegalStateException("Unexpected value: " + classId);
+        };
+        methodModel.setParamterNames("entity");
+        methodModel.setBody("return entity." + methodName + "();");
+        classModel.putMethodModel(methodModel);
+        MethodModel getMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("get", Object.class), classModel);
+        getMethodModel.setParamterNames("entity");
+
     }
 
     private static ValueAccessor build(Field field, CompileHelper compileHelper, ClassModel classModel, String getMethodName, Class<?> C1, Class<?> C2)
@@ -97,7 +76,7 @@ public class CompileValueAccessor extends ValueAccessor
 
     private static void overrideSetMethod(Field field, ClassModel classModel, String setMethodName, Class paramType) throws NoSuchMethodException
     {
-        Method      method      = ValueAccessor.class.getDeclaredMethod(setMethodName, Object.class, paramType);
+        Method      method      = UnsafeValueAccessorImpl.class.getDeclaredMethod(setMethodName, Object.class, paramType);
         MethodModel methodModel = new MethodModel(method, classModel);
         if (paramType == Object.class)
         {
@@ -112,7 +91,7 @@ public class CompileValueAccessor extends ValueAccessor
 
     private static void overrideGetMethod(Field field, ClassModel classModel, String getMethodName) throws NoSuchMethodException
     {
-        Method      method      = ValueAccessor.class.getDeclaredMethod(getMethodName, Object.class);
+        Method      method      = UnsafeValueAccessorImpl.class.getDeclaredMethod(getMethodName, Object.class);
         MethodModel methodModel = new MethodModel(method, classModel);
         if (field.getType() != boolean.class)
         {

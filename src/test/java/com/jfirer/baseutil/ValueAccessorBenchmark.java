@@ -2,7 +2,8 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.CompileValueAccessor;
 import com.jfirer.baseutil.reflect.LambdaValueAccessor;
-import com.jfirer.baseutil.reflect.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
+import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
@@ -21,10 +22,10 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class ValueAccessorBenchmark
 {
-    ValueAccessorTest           test = new ValueAccessorTest();
-    ValueAccessor               valueAccessor;
-    ValueAccessor               valueAccessor_compile;
-    LambdaValueAccessor         valueAccessor_lambda;
+    ValueAccessorTest   test = new ValueAccessorTest();
+    ValueAccessor       valueAccessor;
+    ValueAccessor       valueAccessor_compile;
+    LambdaValueAccessor valueAccessor_lambda;
     ApplyInt<ValueAccessorTest> accessorTestApplyInt;
 
     interface ApplyInt<T>
@@ -37,7 +38,7 @@ public class ValueAccessorBenchmark
         try
         {
             String name = "a";
-            valueAccessor = new ValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
+            valueAccessor = new UnsafeValueAccessorImpl(ValueAccessorTest.class.getDeclaredField(name));
             valueAccessor_compile = CompileValueAccessor.create(ValueAccessorTest.class.getDeclaredField(name), new CompileHelper());
             valueAccessor_lambda = new LambdaValueAccessor(ValueAccessorTest.class.getDeclaredField(name));
             accessorTestApplyInt = ValueAccessorTest::getA;
