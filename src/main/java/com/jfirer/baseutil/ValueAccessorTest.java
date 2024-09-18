@@ -3,6 +3,7 @@ package com.jfirer.baseutil;
 import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.GetInt;
+import com.jfirer.baseutil.reflect.valueaccessor.impl.LambdaAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import lombok.Data;
 import org.junit.Assert;
@@ -286,21 +287,20 @@ public class ValueAccessorTest
     public void test2() throws Throwable
     {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
-        GetInt<ValueAccessorTest> factoryLambda =(GetInt) LambdaMetafactory.metafactory(MethodHandles.lookup(), //固定参数
-                                                                                        "get",//需要实现的函数式接口的方法名
-                                                                                        MethodType.methodType(GetInt.class),//固定参数，本方法最终返回的函数式接口的类
-                                                                                        MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名，如果是泛型的，用 Object.class代替
-                                                                                        lookup.findVirtual(ValueAccessorTest.class, "getA", MethodType.methodType(int.class)),//这个函数接口需要引用的类的方法
-                                                                                        MethodType.methodType(int.class, ValueAccessorTest.class))//实际运行时候传入的参数类型，也就是泛型信息在运行的时候对应的实际的类型。
-                                                                           .getTarget().invokeExact();
+        GetInt<ValueAccessorTest> factoryLambda = (GetInt) LambdaMetafactory.metafactory(MethodHandles.lookup(), //固定参数
+                                                                                         "get",//需要实现的函数式接口的方法名
+                                                                                         MethodType.methodType(GetInt.class),//固定参数，本方法最终返回的函数式接口的类
+                                                                                         MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名，如果是泛型的，用 Object.class代替
+                                                                                         lookup.findVirtual(ValueAccessorTest.class, "getA", MethodType.methodType(int.class)),//这个函数接口需要引用的类的方法
+                                                                                         MethodType.methodType(int.class, ValueAccessorTest.class))//实际运行时候传入的参数类型，也就是泛型信息在运行的时候对应的实际的类型。
+                                                                            .getTarget().invokeExact();
         factoryLambda.get(new ValueAccessorTest());
     }
 
     @Test
-    public void test3() throws NoSuchMethodException, IllegalAccessException
+    public void test3() throws NoSuchMethodException, IllegalAccessException, NoSuchFieldException
     {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        lookup.findVirtual(ValueAccessorTest.class, "getA", MethodType.methodType(int.class));
-        ReflectUtil.TRUSTED_LOOKUP.findVirtual(ValueAccessorTest.class, "getA", MethodType.methodType(int.class));
+        Field a = ValueAccessorTest.class.getDeclaredField("a");
+        new LambdaAccessorImpl(a);
     }
 }

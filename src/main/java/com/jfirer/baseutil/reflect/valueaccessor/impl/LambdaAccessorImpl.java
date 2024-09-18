@@ -42,7 +42,7 @@ public class LambdaAccessorImpl implements ValueAccessor
             {
                 case PRIMITIVE_INT ->
                 {
-                    getInt = ValueAccessor.buildGetInt(field);
+                    getInt = ValueAccessor.buildCompileGetInt(field);
                     setInt = ValueAccessor.buildSetInt(field);
                 }
                 case PRIMITIVE_BYTE ->

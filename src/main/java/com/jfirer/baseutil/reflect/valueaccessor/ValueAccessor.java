@@ -659,4 +659,28 @@ public interface ValueAccessor
             throw new RuntimeException(e);
         }
     }
+
+    static GetInt buildCompileGetInt(Field field)
+    {
+        if (field.getType() != int.class)
+        {
+            throw new IllegalArgumentException(field.getName() + " is not int");
+        }
+        try
+        {
+            ClassModel classModel = new ClassModel("GetInt_" + count.incrementAndGet());
+            classModel.addInterface(GetInt.class);
+            MethodModel methodModel = new MethodModel(GetInt.class.getDeclaredMethod("get", Object.class), classModel);
+            methodModel.setParamterNames("entity");
+            String getMethodName = "get" + toMethodName(field);
+            methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + getMethodName + "();");
+            classModel.putMethodModel(methodModel);
+            Class<GetInt> compile = (Class<GetInt>) new CompileHelper(Thread.currentThread().getContextClassLoader()).compile(classModel);
+            return compile.getConstructor().newInstance();
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 }
