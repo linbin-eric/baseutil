@@ -58,6 +58,7 @@ public class ValueAccessorBenchmark
         valueAccessor_compile.getInt(test);
     }
 
+    @Benchmark
     public void testlambda()
     {
         testLambda.getInt(test);
