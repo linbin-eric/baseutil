@@ -42,7 +42,7 @@ public class CsvUtil
         String name(String fieldName);
     }
 
-    record CsvEntity(int index, UnsafeValueAccessorImpl valueAccessor, int classId)
+    record CsvEntity(int index, ValueAccessor valueAccessor, int classId)
     {
     }
 
@@ -150,7 +150,7 @@ public class CsvUtil
         fields.forEach(field -> {
             if (field.isAnnotationPresent(CsvHeaderName.class))
             {
-                map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), new UnsafeValueAccessorImpl(field));
+                map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), ValueAccessor.normal(field));
             }
             else
             {
@@ -162,7 +162,7 @@ public class CsvUtil
             String name = content.get(i);
             if (map.containsKey(name))
             {
-                UnsafeValueAccessorImpl valueAccessor = map.get(name);
+                ValueAccessor valueAccessor = map.get(name);
                 csvEntities.add(new CsvEntity(i, valueAccessor, ReflectUtil.getClassId(valueAccessor.getField().getType())));
             }
         }
