@@ -202,7 +202,7 @@ public interface ValueAccessor
                 MethodModel setMethodModel = new MethodModel(ValueAccessor.class.getDeclaredMethod("setObject", Object.class, Object.class), classModel);
                 setMethodModel.setFinal(true);
                 setMethodModel.setParamterNames("entity", "value");
-                setMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "((" + SmcHelper.getReferenceName(ReflectUtil.getBoxedType(field.getType()), classModel) + ")value);");
+                setMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "((" + SmcHelper.getReferenceName(ReflectUtil.getBoxedTypeOrOrigin(field.getType()), classModel) + ")value);");
                 classModel.putMethodModel(setMethodModel);
             }
             else

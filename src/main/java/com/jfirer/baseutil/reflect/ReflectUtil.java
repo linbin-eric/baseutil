@@ -77,7 +77,7 @@ public final class ReflectUtil
         return classId >= 10 && classId <= 17;
     }
 
-    public static Class getBoxedType(Class clazz)
+    public static Class getBoxedTypeOrOrigin(Class clazz)
     {
         if (clazz == int.class)
         {
@@ -117,7 +117,7 @@ public final class ReflectUtil
         }
         else
         {
-            throw new IllegalArgumentException();
+            return clazz;
         }
     }
 
