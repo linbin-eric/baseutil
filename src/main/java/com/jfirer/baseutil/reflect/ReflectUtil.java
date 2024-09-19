@@ -4,6 +4,7 @@ import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 
 public final class ReflectUtil
 {
@@ -43,7 +44,7 @@ public final class ReflectUtil
         {
             ReflectUtil.throwException(e);
         }
-        TRUSTED_LOOKUP = (MethodHandles.Lookup) UNSAFE.getObject(lookupClass, fieldOffset);
+        TRUSTED_LOOKUP = (MethodHandles.Lookup) UNSAFE.getReference(lookupClass, fieldOffset);
     }
 
     public static void throwException(Throwable t)
@@ -208,6 +209,12 @@ public final class ReflectUtil
     {
         int classId = getClassId(ckass);
         return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE);
+    }
+
+    public static boolean isNumberOrBigDecimal(Class<?> clazz)
+    {
+        int classId = getClassId(clazz);
+        return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE) || clazz == BigDecimal.class;
     }
 
     public static boolean isBooleanOrBooleanBox(Class<?> ckass)
