@@ -73,7 +73,7 @@ public class UnsafeValueAccessorImpl implements ValueAccessor
     @Override
     public void setReference(Object entity, Object value)
     {
-        unsafe.putReference(entity, offset, value);
+        unsafe.putObject(entity, offset, value);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class UnsafeValueAccessorImpl implements ValueAccessor
             case ReflectUtil.PRIMITIVE_LONG -> unsafe.putLong(entity, offset, ((Number) value).longValue());
             case ReflectUtil.PRIMITIVE_FLOAT -> unsafe.putFloat(entity, offset, ((Number) value).floatValue());
             case ReflectUtil.PRIMITIVE_DOUBLE -> unsafe.putDouble(entity, offset, ((Number) value).doubleValue());
-            default -> unsafe.putReference(entity, offset, value);
+            default -> unsafe.putObject(entity, offset, value);
         }
     }
 
@@ -158,13 +158,13 @@ public class UnsafeValueAccessorImpl implements ValueAccessor
             case ReflectUtil.PRIMITIVE_BOOL -> unsafe.getBoolean(entity, offset);
             case ReflectUtil.PRIMITIVE_BYTE -> unsafe.getByte(entity, offset);
             case ReflectUtil.PRIMITIVE_CHAR -> unsafe.getChar(entity, offset);
-            default -> unsafe.getReference(entity, offset);
+            default -> unsafe.getObject(entity, offset);
         };
     }
 
     @Override
     public Object getReference(Object entity)
     {
-        return unsafe.getReference(entity, offset);
+        return unsafe.getObject(entity, offset);
     }
 }

@@ -5,7 +5,6 @@ import com.jfirer.baseutil.bytecode.support.OverridesAttribute;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.annotation.Resource;
 import java.lang.annotation.Retention;
 import java.util.List;
 

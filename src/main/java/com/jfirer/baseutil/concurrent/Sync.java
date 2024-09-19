@@ -1,6 +1,6 @@
 package com.jfirer.baseutil.concurrent;
 
-
+import com.jfirer.baseutil.reflect.ReflectUtil;
 import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.reflect.Field;
@@ -9,7 +9,7 @@ import java.util.concurrent.locks.LockSupport;
 
 public abstract class Sync<E>
 {
-    private static final Unsafe UNSAFE   = Unsafe.getUnsafe();
+    private static final Unsafe UNSAFE   = ReflectUtil.UNSAFE;
     private static final long   tailOffset;
     private static final int    WAITING  = 1;
     private static final int    CANCELED = 2;
@@ -41,9 +41,9 @@ public abstract class Sync<E>
 
     private Node enqueue()
     {
-        Thread t = Thread.currentThread();
-        Node insert = new Node();
-        Node pred = tail;
+        Thread t      = Thread.currentThread();
+        Node   insert = new Node();
+        Node   pred   = tail;
         insert.prev = pred;
         if (UNSAFE.compareAndSetReference(this, tailOffset, pred, insert))
         {
@@ -53,7 +53,7 @@ public abstract class Sync<E>
         }
         for (; ; )
         {
-            pred = tail;
+            pred        = tail;
             insert.prev = pred;
             if (UNSAFE.compareAndSetReference(this, tailOffset, pred, insert))
             {
@@ -79,12 +79,12 @@ public abstract class Sync<E>
 
     public E take(long time, TimeUnit unit)
     {
-        E result;
-        Node self = enqueue();
-        Node pred = self.prev;
+        E    result;
+        Node self  = enqueue();
+        Node pred  = self.prev;
         Node h;
         long nanos = unit.toNanos(time);
-        long t0 = System.nanoTime();
+        long t0    = System.nanoTime();
         do
         {
             if (pred == (h = head))
@@ -144,11 +144,9 @@ public abstract class Sync<E>
             }
             if (pred.status == CANCELED)
             {
-                while (pred != h && (pred = pred.prev).status == CANCELED)
-                    ;
+                while (pred != h && (pred = pred.prev).status == CANCELED) ;
             }
-        }
-        while (true);
+        } while (true);
     }
 
     public E take()
@@ -175,8 +173,7 @@ public abstract class Sync<E>
             else if (pred.status == CANCELED)
             {
                 // 寻找到非取消节点的最靠近的head的节点作为新的前置节点
-                while (pred != h && (pred = pred.prev).status == CANCELED)
-                    ;
+                while (pred != h && (pred = pred.prev).status == CANCELED) ;
             }
             else
             {
@@ -187,8 +184,7 @@ public abstract class Sync<E>
                 cancel(self);
                 return null;
             }
-        }
-        while (true);
+        } while (true);
     }
 
     /**
@@ -203,8 +199,7 @@ public abstract class Sync<E>
         {
             if (nextWaiter == null)
             {
-                while ((nextWaiter = node.successor) == null)
-                    ;
+                while ((nextWaiter = node.successor) == null) ;
             }
             LockSupport.unpark(nextWaiter);
         }
@@ -232,8 +227,8 @@ public abstract class Sync<E>
             try
             {
                 Field field = Node.class.getDeclaredField("status");
-                statusOffset = UNSAFE.objectFieldOffset(field);
-                field = Node.class.getDeclaredField("successor");
+                statusOffset    = UNSAFE.objectFieldOffset(field);
+                field           = Node.class.getDeclaredField("successor");
                 successorOffset = UNSAFE.objectFieldOffset(field);
             }
             catch (NoSuchFieldException e)
@@ -249,7 +244,7 @@ public abstract class Sync<E>
 
         public void relaxSetSuccessor(Thread next)
         {
-            UNSAFE.putReferenceVolatile(this, successorOffset, next);
+            UNSAFE.putReferenceRelease(this, successorOffset, next);
         }
 
         public void clean()

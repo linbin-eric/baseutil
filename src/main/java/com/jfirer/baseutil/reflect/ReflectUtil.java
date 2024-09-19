@@ -7,28 +7,28 @@ import java.lang.reflect.Field;
 
 public final class ReflectUtil
 {
-    private static final Unsafe               UNSAFE           = Unsafe.getUnsafe();
-    public static final  int                  PRIMITIVE_BYTE   = 1;
-    public static final  int                  PRIMITIVE_INT    = 2;
-    public static final  int                  PRIMITIVE_SHORT  = 3;
-    public static final  int                  PRIMITIVE_LONG   = 4;
-    public static final  int                  PRIMITIVE_FLOAT  = 5;
-    public static final  int                  PRIMITIVE_DOUBLE = 6;
-    public static final  int                  PRIMITIVE_CHAR   = 7;
-    public static final  int                  PRIMITIVE_BOOL   = 8;
-    public static final  int                  PRIMITIVE_VOID   = 9;
-    public static final  int                  CLASS_BYTE       = 10;
-    public static final  int                  CLASS_INT        = 11;
-    public static final  int                  CLASS_SHORT      = 12;
-    public static final  int                  CLASS_LONG       = 13;
-    public static final  int                  CLASS_FLOAT      = 14;
-    public static final  int                  CLASS_DOUBLE     = 15;
-    public static final  int                  CLASS_CHAR       = 16;
-    public static final  int                  CLASS_BOOL       = 17;
-    public static final  int                  CLASS_STRING     = 18;
-    public static final  int                  CLASS_OBJECT     = 19;
-    public static final  int                  CLASS_VOID       = 20;
-    public static final  MethodHandles.Lookup TRUSTED_LOOKUP;
+    public static final Unsafe               UNSAFE           = Unsafe.getUnsafe();
+    public static final int                  PRIMITIVE_BYTE   = 1;
+    public static final int                  PRIMITIVE_INT    = 2;
+    public static final int                  PRIMITIVE_SHORT  = 3;
+    public static final int                  PRIMITIVE_LONG   = 4;
+    public static final int                  PRIMITIVE_FLOAT  = 5;
+    public static final int                  PRIMITIVE_DOUBLE = 6;
+    public static final int                  PRIMITIVE_CHAR   = 7;
+    public static final int                  PRIMITIVE_BOOL   = 8;
+    public static final int                  PRIMITIVE_VOID   = 9;
+    public static final int                  CLASS_BYTE       = 10;
+    public static final int                  CLASS_INT        = 11;
+    public static final int                  CLASS_SHORT      = 12;
+    public static final int                  CLASS_LONG       = 13;
+    public static final int                  CLASS_FLOAT      = 14;
+    public static final int                  CLASS_DOUBLE     = 15;
+    public static final int                  CLASS_CHAR       = 16;
+    public static final int                  CLASS_BOOL       = 17;
+    public static final int                  CLASS_STRING     = 18;
+    public static final int                  CLASS_OBJECT     = 19;
+    public static final int                  CLASS_VOID       = 20;
+    public static final MethodHandles.Lookup TRUSTED_LOOKUP;
 
     static
     {
@@ -43,7 +43,7 @@ public final class ReflectUtil
         {
             ReflectUtil.throwException(e);
         }
-        TRUSTED_LOOKUP = (MethodHandles.Lookup) UNSAFE.getReference(lookupClass, fieldOffset);
+        TRUSTED_LOOKUP = (MethodHandles.Lookup) UNSAFE.getObject(lookupClass, fieldOffset);
     }
 
     public static void throwException(Throwable t)

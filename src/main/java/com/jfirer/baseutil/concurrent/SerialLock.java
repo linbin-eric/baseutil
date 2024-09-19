@@ -1,8 +1,6 @@
 package com.jfirer.baseutil.concurrent;
 
-
-
-
+import com.jfirer.baseutil.reflect.ReflectUtil;
 import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.reflect.Field;
@@ -12,15 +10,14 @@ import java.util.concurrent.locks.LockSupport;
 
 public class SerialLock<T>
 {
-    private final static Unsafe unsafe;
-    private final static long   NEXT_OFF;
+    private final static Unsafe     unsafe          = ReflectUtil.UNSAFE;
+    private final static long       NEXT_OFF;
     private final static SerialNode TerminationNode = new SerialNode(null);
 
     static
     {
         try
         {
-            unsafe = Unsafe.getUnsafe();
             Field nextField = SerialNode.class.getDeclaredField("next");
             NEXT_OFF = unsafe.objectFieldOffset(nextField);
         }
@@ -44,7 +41,7 @@ public class SerialLock<T>
         else
         {
             SerialNode next;
-            boolean exec = false;
+            boolean    exec = false;
             do
             {
                 next = cs.next;
@@ -79,8 +76,7 @@ public class SerialLock<T>
                 {
                     cs = next;
                 }
-            }
-            while (true);
+            } while (true);
             if (exec)
             {
                 processCs(ns, key);
@@ -133,7 +129,7 @@ public class SerialLock<T>
         SerialNode(Runnable runnable)
         {
             this.runnable = runnable;
-            this.owner = Thread.currentThread();
+            this.owner    = Thread.currentThread();
         }
 
         boolean casTermination()

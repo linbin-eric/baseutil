@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.jfirer</groupId>
     <artifactId>baseutil</artifactId>
-    <version>1.1.11</version>
+    <version>1.1.12-SNAPSHOT</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
@@ -88,62 +88,33 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-            <scope>compile</scope>
+            <groupId>io.github.karlatemp</groupId>
+            <artifactId>unsafe-accessor</artifactId>
+            <version>1.7.0</version>
         </dependency>
         <dependency>
-            <groupId>org.jctools</groupId>
-            <artifactId>jctools-core</artifactId>
-            <version>4.0.1</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
-<!--            <scope>test</scope>-->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>1.23</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>2.24.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
-            <version>1.23</version>
+            <version>1.37</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>jsr250-api</artifactId>
-            <version>1.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.karlatemp</groupId>
-            <artifactId>unsafe-accessor</artifactId>
-            <version>1.7.0</version>
         </dependency>
     </dependencies>
     <distributionManagement>
