@@ -150,7 +150,7 @@ public class CsvUtil
         fields.forEach(field -> {
             if (field.isAnnotationPresent(CsvHeaderName.class))
             {
-                map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), ValueAccessor.normal(field));
+                map.put(field.getAnnotation(CsvHeaderName.class).value().equals("") ? field.getName() : field.getAnnotation(CsvHeaderName.class).value(), ValueAccessor.standard(field));
             }
             else
             {

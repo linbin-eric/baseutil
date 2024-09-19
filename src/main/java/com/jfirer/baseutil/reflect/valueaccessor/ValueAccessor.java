@@ -130,7 +130,7 @@ public interface ValueAccessor
         return field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
     }
 
-    static ValueAccessor normal(Field field)
+    static ValueAccessor standard(Field field)
     {
         return new UnsafeValueAccessorImpl(field);
     }

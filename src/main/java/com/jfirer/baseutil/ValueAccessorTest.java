@@ -1,6 +1,5 @@
 package com.jfirer.baseutil;
 
-import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.GetInt;
 import com.jfirer.baseutil.reflect.valueaccessor.impl.LambdaAccessorImpl;
@@ -60,7 +59,7 @@ public class ValueAccessorTest
         Field               l1     = ValueAccessorTest.class.getDeclaredField("l1");
         Field               name   = ValueAccessorTest.class.getDeclaredField("name");
         List<ValueAccessor> list   = new ArrayList<>();
-        list.add(ValueAccessor.normal(a));
+        list.add(ValueAccessor.standard(a));
         list.add(ValueAccessor.compile(a));
         list.add(ValueAccessor.lambda(a));
         for (ValueAccessor each : list)
@@ -73,7 +72,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3, target.a);
         }
         list.clear();
-        list.add(ValueAccessor.normal(b));
+        list.add(ValueAccessor.standard(b));
         list.add(ValueAccessor.compile(b));
         list.add(ValueAccessor.lambda(b));
         for (ValueAccessor each : list)
@@ -86,7 +85,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3, target.b);
         }
         list.clear();
-        list.add(ValueAccessor.normal(c));
+        list.add(ValueAccessor.standard(c));
         list.add(ValueAccessor.compile(c));
         list.add(ValueAccessor.lambda(c));
         for (ValueAccessor each : list)
@@ -99,7 +98,7 @@ public class ValueAccessorTest
             Assert.assertEquals('e', target.c);
         }
         list.clear();
-        list.add(ValueAccessor.normal(d));
+        list.add(ValueAccessor.standard(d));
         list.add(ValueAccessor.compile(d));
         list.add(ValueAccessor.lambda(d));
         for (ValueAccessor each : list)
@@ -112,7 +111,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3.0, target.d, 0.0001);
         }
         list.clear();
-        list.add(ValueAccessor.normal(f));
+        list.add(ValueAccessor.standard(f));
         list.add(ValueAccessor.compile(f));
         list.add(ValueAccessor.lambda(f));
         for (ValueAccessor each : list)
@@ -125,7 +124,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3.0f, target.f, 0.0001);
         }
         list.clear();
-        list.add(ValueAccessor.normal(bb));
+        list.add(ValueAccessor.standard(bb));
         list.add(ValueAccessor.compile(bb));
         list.add(ValueAccessor.lambda(bb));
         for (ValueAccessor each : list)
@@ -138,7 +137,7 @@ public class ValueAccessorTest
             Assert.assertTrue(target.bb);
         }
         list.clear();
-        list.add(ValueAccessor.normal(s));
+        list.add(ValueAccessor.standard(s));
         list.add(ValueAccessor.compile(s));
         list.add(ValueAccessor.lambda(s));
         for (ValueAccessor each : list)
@@ -151,7 +150,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3, target.s);
         }
         list.clear();
-        list.add(ValueAccessor.normal(l));
+        list.add(ValueAccessor.standard(l));
         list.add(ValueAccessor.compile(l));
         list.add(ValueAccessor.lambda(l));
         for (ValueAccessor each : list)
@@ -164,7 +163,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3L, target.l);
         }
         list.clear();
-        list.add(ValueAccessor.normal(a1));
+        list.add(ValueAccessor.standard(a1));
         list.add(ValueAccessor.compile(a1));
         list.add(ValueAccessor.lambda(a1));
         for (ValueAccessor each : list)
@@ -177,7 +176,7 @@ public class ValueAccessorTest
             Assert.assertEquals(Integer.valueOf(3), target.a1);
         }
         list.clear();
-        list.add(ValueAccessor.normal(b1));
+        list.add(ValueAccessor.standard(b1));
         list.add(ValueAccessor.compile(b1));
         list.add(ValueAccessor.lambda(b1));
         for (ValueAccessor each : list)
@@ -190,7 +189,7 @@ public class ValueAccessorTest
             Assert.assertEquals(Byte.valueOf((byte) 3), target.b1);
         }
         list.clear();
-        list.add(ValueAccessor.normal(c1));
+        list.add(ValueAccessor.standard(c1));
         list.add(ValueAccessor.compile(c1));
         list.add(ValueAccessor.lambda(c1));
         for (ValueAccessor each : list)
@@ -203,7 +202,7 @@ public class ValueAccessorTest
             Assert.assertEquals(Character.valueOf('e'), target.c1);
         }
         list.clear();
-        list.add(ValueAccessor.normal(d1));
+        list.add(ValueAccessor.standard(d1));
         list.add(ValueAccessor.compile(d1));
         list.add(ValueAccessor.lambda(d1));
         for (ValueAccessor each : list)
@@ -216,7 +215,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3.0, target.d1, 0.0001);
         }
         list.clear();
-        list.add(ValueAccessor.normal(f1));
+        list.add(ValueAccessor.standard(f1));
         list.add(ValueAccessor.compile(f1));
         list.add(ValueAccessor.lambda(f1));
         for (ValueAccessor each : list)
@@ -229,7 +228,7 @@ public class ValueAccessorTest
             Assert.assertEquals(3.0f, target.f1, 0.0001);
         }
         list.clear();
-        list.add(ValueAccessor.normal(bb1));
+        list.add(ValueAccessor.standard(bb1));
         list.add(ValueAccessor.compile(bb1));
         list.add(ValueAccessor.lambda(bb1));
         for (ValueAccessor each : list)
@@ -242,7 +241,7 @@ public class ValueAccessorTest
             Assert.assertFalse(target.bb1);
         }
         list.clear();
-        list.add(ValueAccessor.normal(s1));
+        list.add(ValueAccessor.standard(s1));
         list.add(ValueAccessor.compile(s1));
         list.add(ValueAccessor.lambda(s1));
         for (ValueAccessor each : list)
@@ -255,7 +254,7 @@ public class ValueAccessorTest
             Assert.assertEquals(Short.valueOf((short) 3), target.s1);
         }
         list.clear();
-        list.add(ValueAccessor.normal(l1));
+        list.add(ValueAccessor.standard(l1));
         list.add(ValueAccessor.compile(l1));
         list.add(ValueAccessor.lambda(l1));
         for (ValueAccessor each : list)
@@ -268,7 +267,7 @@ public class ValueAccessorTest
             Assert.assertEquals(Long.valueOf(3L), target.l1);
         }
         list.clear();
-        list.add(ValueAccessor.normal(name));
+        list.add(ValueAccessor.standard(name));
         list.add(ValueAccessor.compile(name));
         list.add(ValueAccessor.lambda(name));
         for (ValueAccessor each : list)
