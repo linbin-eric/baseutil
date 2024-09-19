@@ -4,7 +4,6 @@ import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 
 public final class ReflectUtil
 {
@@ -26,9 +25,10 @@ public final class ReflectUtil
     public static final int                  CLASS_DOUBLE     = 15;
     public static final int                  CLASS_CHAR       = 16;
     public static final int                  CLASS_BOOL       = 17;
-    public static final int                  CLASS_STRING     = 18;
-    public static final int                  CLASS_OBJECT     = 19;
-    public static final int                  CLASS_VOID       = 20;
+    public static final int                  CLASS_VOID       = 18;
+    public static final int                  CLASS_STRING     = 19;
+    public static final int                  CLASS_BIGDECIMAL = 20;
+    public static final int                  CLASS_OBJECT     = 99;
     public static final MethodHandles.Lookup TRUSTED_LOOKUP;
 
     static
@@ -211,10 +211,20 @@ public final class ReflectUtil
         return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE);
     }
 
+    public static boolean isNumber(int classId)
+    {
+        return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE);
+    }
+
     public static boolean isNumberOrBigDecimal(Class<?> clazz)
     {
         int classId = getClassId(clazz);
-        return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE) || clazz == BigDecimal.class;
+        return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE) || classId == CLASS_BIGDECIMAL;
+    }
+
+    public static boolean isNumberOrBigDecimal(int classId)
+    {
+        return (classId >= PRIMITIVE_BYTE && classId <= PRIMITIVE_DOUBLE) || (classId >= CLASS_BYTE && classId <= CLASS_DOUBLE) || classId == CLASS_BIGDECIMAL;
     }
 
     public static boolean isBooleanOrBooleanBox(Class<?> ckass)
