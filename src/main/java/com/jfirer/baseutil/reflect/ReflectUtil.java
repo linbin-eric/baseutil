@@ -238,4 +238,14 @@ public final class ReflectUtil
         int classId = getClassId(ckass);
         return classId == PRIMITIVE_CHAR || classId == CLASS_CHAR;
     }
+
+    public static boolean isNonBoxedObject(Class<?> clazz)
+    {
+        return getClassId(clazz) > CLASS_VOID;
+    }
+
+    public static boolean isNonBoxedObject(int classId)
+    {
+        return classId > CLASS_VOID;
+    }
 }
