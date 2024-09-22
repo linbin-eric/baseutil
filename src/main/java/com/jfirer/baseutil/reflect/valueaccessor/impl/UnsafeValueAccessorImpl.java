@@ -10,10 +10,10 @@ import java.lang.reflect.Field;
 public class UnsafeValueAccessorImpl implements ValueAccessor
 {
     @Getter
-    protected final Field  field;
-    private final   long   offset;
-    protected final int    classId;
-    private static  Unsafe unsafe = Unsafe.getUnsafe();
+    protected final      Field  field;
+    private final        long   offset;
+    protected final      int    classId;
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
 
     public UnsafeValueAccessorImpl(Field field)
     {
@@ -73,7 +73,7 @@ public class UnsafeValueAccessorImpl implements ValueAccessor
     @Override
     public void setReference(Object entity, Object value)
     {
-        unsafe.putObject(entity, offset, value);
+        unsafe.putReference(entity, offset, value);
     }
 
     @Override
@@ -85,9 +85,9 @@ public class UnsafeValueAccessorImpl implements ValueAccessor
         }
         switch (classId)
         {
-            case ReflectUtil.PRIMITIVE_BOOL -> unsafe.putBoolean(entity, offset, ((Boolean) value).booleanValue());
+            case ReflectUtil.PRIMITIVE_BOOL -> unsafe.putBoolean(entity, offset, (Boolean) value);
             case ReflectUtil.PRIMITIVE_BYTE -> unsafe.putByte(entity, offset, ((Number) value).byteValue());
-            case ReflectUtil.PRIMITIVE_CHAR -> unsafe.putChar(entity, offset, ((Character) value).charValue());
+            case ReflectUtil.PRIMITIVE_CHAR -> unsafe.putChar(entity, offset, (Character) value);
             case ReflectUtil.PRIMITIVE_SHORT -> unsafe.putShort(entity, offset, ((Number) value).shortValue());
             case ReflectUtil.PRIMITIVE_INT -> unsafe.putInt(entity, offset, ((Number) value).intValue());
             case ReflectUtil.PRIMITIVE_LONG -> unsafe.putLong(entity, offset, ((Number) value).longValue());
