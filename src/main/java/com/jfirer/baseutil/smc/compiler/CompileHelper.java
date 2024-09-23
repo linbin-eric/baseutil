@@ -9,6 +9,7 @@ import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * In-memory compile Java source code as String.
@@ -17,9 +18,10 @@ import java.util.Arrays;
  */
 public class CompileHelper
 {
-    private final        MemoryClassLoader     memoryClassLoader;
-    private final        JavaCompiler          compiler;
-    private final        MemoryJavaFileManager manager;
+    private final       MemoryClassLoader     memoryClassLoader;
+    private final       JavaCompiler          compiler;
+    private final       MemoryJavaFileManager manager;
+    public static final AtomicInteger         COMPILE_COUNTER = new AtomicInteger();
 
     public CompileHelper()
     {
@@ -41,9 +43,9 @@ public class CompileHelper
                 throw new NullPointerException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK/lib目录下的tools.jar拷贝到jre/lib目录。如果是linux，将JAVA_HOME设置为jdk的");
             }
         }
-        this.compiler = compiler;
+        this.compiler     = compiler;
         memoryClassLoader = new MemoryClassLoader(classLoader);
-        manager = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
+        manager           = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
     }
 
     public synchronized Class<?> compile(ClassModel classModel) throws IOException, ClassNotFoundException
