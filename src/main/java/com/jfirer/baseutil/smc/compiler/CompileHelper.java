@@ -21,7 +21,8 @@ public class CompileHelper
     private final       MemoryClassLoader     memoryClassLoader;
     private final       JavaCompiler          compiler;
     private final       MemoryJavaFileManager manager;
-    public static final AtomicInteger         COMPILE_COUNTER = new AtomicInteger();
+    public static final AtomicInteger         COMPILE_COUNTER        = new AtomicInteger();
+    public static final CompileHelper         DEFAULT_COMPILE_HELPER = new CompileHelper();
 
     public CompileHelper()
     {
@@ -69,4 +70,6 @@ public class CompileHelper
             manager.clear();
         }
     }
+
+
 }

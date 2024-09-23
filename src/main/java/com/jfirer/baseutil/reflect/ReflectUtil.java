@@ -248,4 +248,21 @@ public final class ReflectUtil
     {
         return classId > CLASS_VOID;
     }
+
+    public static String parseBeanGetMethodName(Field field)
+    {
+        if (field.getType() == boolean.class)
+        {
+            return "is" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+        }
+        else
+        {
+            return "get" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+        }
+    }
+
+    public static String parseBeanSetMethodName(Field field)
+    {
+        return "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+    }
 }
