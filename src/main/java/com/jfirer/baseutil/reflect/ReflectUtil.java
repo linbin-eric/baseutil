@@ -4,6 +4,8 @@ import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.List;
 
 public final class ReflectUtil
 {
@@ -264,5 +266,28 @@ public final class ReflectUtil
     public static String parseBeanSetMethodName(Field field)
     {
         return "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+    }
+
+    public static Field[] findPojoBeanFields(Class clazz)
+    {
+        List<Field> fields = new LinkedList<>();
+        while (clazz != Object.class)
+        {
+            for (Field each : clazz.getDeclaredFields())
+            {
+                try
+                {
+                    clazz.getDeclaredMethod(parseBeanGetMethodName(each));
+                    clazz.getDeclaredMethod(parseBeanSetMethodName(each), each.getType());
+                    fields.add(each);
+                }
+                catch (NoSuchMethodException e)
+                {
+                    continue;
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return fields.toArray(new Field[0]);
     }
 }
