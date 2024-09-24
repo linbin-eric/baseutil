@@ -2,6 +2,7 @@ package com.jfirer.baseutil.smc.model;
 
 import com.jfirer.baseutil.smc.SmcHelper;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class ClassModel
@@ -87,6 +88,10 @@ public class ClassModel
      */
     public boolean addImport(Class<?> type)
     {
+        if (Modifier.isPublic(type.getModifiers()) == false)
+        {
+            return false;
+        }
         // 如果是已经存在的，则等同于添加成功
         if (imports.contains(type))
         {
