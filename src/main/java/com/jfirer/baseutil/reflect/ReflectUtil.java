@@ -35,9 +35,8 @@ public final class ReflectUtil
     public static final int                  CLASS_STRING            = 19;
     public static final int                  CLASS_BIGDECIMAL        = 20;
     public static final int                  CLASS_BLOB              = 21;
-    public static final int                  CLASS_CLOB              = 21;
-    public static final int                  CLASS_TIMESTAMP         = 22;
-    public static final int                  CLASS_ENUM              = 23;
+    public static final int                  CLASS_CLOB              = 22;
+    public static final int                  CLASS_TIMESTAMP         = 23;
     public static final int                  PRIMITIVE_BYTE_ARRAY    = 31;
     public static final int                  PRIMITIVE_INT_ARRAY     = 32;
     public static final int                  PRIMITIVE_SHORT_ARRAY   = 33;
@@ -46,6 +45,7 @@ public final class ReflectUtil
     public static final int                  PRIMITIVE_DOUBLE_ARRAY  = 36;
     public static final int                  PRIMITIVE_CHAR_ARRAY    = 37;
     public static final int                  PRIMITIVE_BOOLEAN_ARRAY = 38;
+    public static final int                  CLASS_ENUM              = 98;
     public static final int                  CLASS_OBJECT            = 99;
     public static final MethodHandles.Lookup TRUSTED_LOOKUP;
 
