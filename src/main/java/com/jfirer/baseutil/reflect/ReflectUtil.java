@@ -30,6 +30,10 @@ public final class ReflectUtil
     public static final int                  CLASS_VOID       = 18;
     public static final int                  CLASS_STRING     = 19;
     public static final int                  CLASS_BIGDECIMAL = 20;
+    public static final int                  CLASS_BLOB       = 21;
+    public static final int                  CLASS_CLOB       = 21;
+    public static final int                  CLASS_TIMESTAMP  = 22;
+    public static final int                  CLASS_ENUM       = 23;
     public static final int                  CLASS_OBJECT     = 99;
     public static final MethodHandles.Lookup TRUSTED_LOOKUP;
 
