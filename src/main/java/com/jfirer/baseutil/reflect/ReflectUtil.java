@@ -7,7 +7,10 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,6 +40,10 @@ public final class ReflectUtil
     public static final int                  CLASS_BLOB              = 21;
     public static final int                  CLASS_CLOB              = 22;
     public static final int                  CLASS_TIMESTAMP         = 23;
+    public static final int                  CLASS_CALENDAR          = 24;
+    public static final int                  CLASS_DATE              = 25;
+    public static final int                  CLASS_SQL_DATE          = 26;
+    public static final int                  CLASS_TIME              = 27;
     public static final int                  PRIMITIVE_BYTE_ARRAY    = 31;
     public static final int                  PRIMITIVE_INT_ARRAY     = 32;
     public static final int                  PRIMITIVE_SHORT_ARRAY   = 33;
@@ -264,6 +271,22 @@ public final class ReflectUtil
         else if (clazz == boolean[].class)
         {
             return PRIMITIVE_BOOLEAN_ARRAY;
+        }
+        else if (clazz == Calendar.class)
+        {
+            return CLASS_CALENDAR;
+        }
+        else if (clazz == Date.class)
+        {
+            return CLASS_DATE;
+        }
+        else if (clazz == java.sql.Date.class)
+        {
+            return CLASS_SQL_DATE;
+        }
+        else if (clazz == Time.class)
+        {
+            return CLASS_TIME;
         }
         else if (clazz.isEnum())
         {
