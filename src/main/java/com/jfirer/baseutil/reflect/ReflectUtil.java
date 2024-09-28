@@ -13,32 +13,40 @@ import java.util.List;
 
 public final class ReflectUtil
 {
-    public static final Unsafe               UNSAFE           = Unsafe.getUnsafe();
-    public static final int                  PRIMITIVE_BYTE   = 1;
-    public static final int                  PRIMITIVE_INT    = 2;
-    public static final int                  PRIMITIVE_SHORT  = 3;
-    public static final int                  PRIMITIVE_LONG   = 4;
-    public static final int                  PRIMITIVE_FLOAT  = 5;
-    public static final int                  PRIMITIVE_DOUBLE = 6;
-    public static final int                  PRIMITIVE_CHAR   = 7;
-    public static final int                  PRIMITIVE_BOOL   = 8;
-    public static final int                  PRIMITIVE_VOID   = 9;
-    public static final int                  CLASS_BYTE       = 10;
-    public static final int                  CLASS_INT        = 11;
-    public static final int                  CLASS_SHORT      = 12;
-    public static final int                  CLASS_LONG       = 13;
-    public static final int                  CLASS_FLOAT      = 14;
-    public static final int                  CLASS_DOUBLE     = 15;
-    public static final int                  CLASS_CHAR       = 16;
-    public static final int                  CLASS_BOOL       = 17;
-    public static final int                  CLASS_VOID       = 18;
-    public static final int                  CLASS_STRING     = 19;
-    public static final int                  CLASS_BIGDECIMAL = 20;
-    public static final int                  CLASS_BLOB       = 21;
-    public static final int                  CLASS_CLOB       = 21;
-    public static final int                  CLASS_TIMESTAMP  = 22;
-    public static final int                  CLASS_ENUM       = 23;
-    public static final int                  CLASS_OBJECT     = 99;
+    public static final Unsafe               UNSAFE                  = Unsafe.getUnsafe();
+    public static final int                  PRIMITIVE_BYTE          = 1;
+    public static final int                  PRIMITIVE_INT           = 2;
+    public static final int                  PRIMITIVE_SHORT         = 3;
+    public static final int                  PRIMITIVE_LONG          = 4;
+    public static final int                  PRIMITIVE_FLOAT         = 5;
+    public static final int                  PRIMITIVE_DOUBLE        = 6;
+    public static final int                  PRIMITIVE_CHAR          = 7;
+    public static final int                  PRIMITIVE_BOOL          = 8;
+    public static final int                  PRIMITIVE_VOID          = 9;
+    public static final int                  CLASS_BYTE              = 10;
+    public static final int                  CLASS_INT               = 11;
+    public static final int                  CLASS_SHORT             = 12;
+    public static final int                  CLASS_LONG              = 13;
+    public static final int                  CLASS_FLOAT             = 14;
+    public static final int                  CLASS_DOUBLE            = 15;
+    public static final int                  CLASS_CHAR              = 16;
+    public static final int                  CLASS_BOOL              = 17;
+    public static final int                  CLASS_VOID              = 18;
+    public static final int                  CLASS_STRING            = 19;
+    public static final int                  CLASS_BIGDECIMAL        = 20;
+    public static final int                  CLASS_BLOB              = 21;
+    public static final int                  CLASS_CLOB              = 21;
+    public static final int                  CLASS_TIMESTAMP         = 22;
+    public static final int                  CLASS_ENUM              = 23;
+    public static final int                  PRIMITIVE_BYTE_ARRAY    = 31;
+    public static final int                  PRIMITIVE_INT_ARRAY     = 32;
+    public static final int                  PRIMITIVE_SHORT_ARRAY   = 33;
+    public static final int                  PRIMITIVE_LONG_ARRAY    = 34;
+    public static final int                  PRIMITIVE_FLOAT_ARRAY   = 35;
+    public static final int                  PRIMITIVE_DOUBLE_ARRAY  = 36;
+    public static final int                  PRIMITIVE_CHAR_ARRAY    = 37;
+    public static final int                  PRIMITIVE_BOOLEAN_ARRAY = 38;
+    public static final int                  CLASS_OBJECT            = 99;
     public static final MethodHandles.Lookup TRUSTED_LOOKUP;
 
     static
@@ -224,6 +232,38 @@ public final class ReflectUtil
         else if (clazz == Timestamp.class)
         {
             return CLASS_TIMESTAMP;
+        }
+        else if (clazz == int[].class)
+        {
+            return PRIMITIVE_INT_ARRAY;
+        }
+        else if (clazz == byte[].class)
+        {
+            return PRIMITIVE_BYTE_ARRAY;
+        }
+        else if (clazz == short[].class)
+        {
+            return PRIMITIVE_SHORT_ARRAY;
+        }
+        else if (clazz == long[].class)
+        {
+            return PRIMITIVE_LONG_ARRAY;
+        }
+        else if (clazz == float[].class)
+        {
+            return PRIMITIVE_FLOAT_ARRAY;
+        }
+        else if (clazz == double[].class)
+        {
+            return PRIMITIVE_DOUBLE_ARRAY;
+        }
+        else if (clazz == char[].class)
+        {
+            return PRIMITIVE_CHAR_ARRAY;
+        }
+        else if (clazz == boolean[].class)
+        {
+            return PRIMITIVE_BOOLEAN_ARRAY;
         }
         else if (clazz.isEnum())
         {
