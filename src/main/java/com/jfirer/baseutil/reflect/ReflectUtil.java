@@ -4,6 +4,10 @@ import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -204,6 +208,26 @@ public final class ReflectUtil
         else if (clazz == Void.class)
         {
             return CLASS_VOID;
+        }
+        else if (clazz == BigDecimal.class)
+        {
+            return CLASS_BIGDECIMAL;
+        }
+        else if (clazz == Blob.class)
+        {
+            return CLASS_BLOB;
+        }
+        else if (clazz == Clob.class)
+        {
+            return CLASS_CLOB;
+        }
+        else if (clazz == Timestamp.class)
+        {
+            return CLASS_TIMESTAMP;
+        }
+        else if (clazz.isEnum())
+        {
+            return CLASS_ENUM;
         }
         else
         {
