@@ -74,16 +74,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>nexus3</id>
-            <name>nexus</name>
-            <url>http://yynas.cn:8081/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>nexus3</id>
-            <name>nexus</name>
-            <url>http://yynas.cn:8081/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
