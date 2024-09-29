@@ -1,9 +1,11 @@
 package com.jfirer.baseutil.reflect;
 
 import io.github.karlatemp.unsafeaccessor.Unsafe;
+import lombok.SneakyThrows;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -380,5 +382,11 @@ public final class ReflectUtil
             clazz = clazz.getSuperclass();
         }
         return fields.toArray(new Field[0]);
+    }
+
+    @SneakyThrows
+    public static Method getMethodWithoutCheck(Class<?> clazz, String methodName, Class<?>... parameterTypes)
+    {
+        return clazz.getDeclaredMethod(methodName, parameterTypes);
     }
 }
