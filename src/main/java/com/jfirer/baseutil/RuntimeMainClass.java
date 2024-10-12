@@ -16,9 +16,68 @@ import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 @Slf4j
-public class Restart
+public class RuntimeMainClass
 {
-    public static final String SELF_PID = String.valueOf(ManagementFactory.getRuntimeMXBean().getPid());
+    private static volatile Class  MAIN_CLASS;
+    public static final     String SELF_PID = String.valueOf(ManagementFactory.getRuntimeMXBean().getPid());
+
+    /**
+     * 将当前执行的 main 方法注册到静态变量，供后续读取需要
+     */
+    public static void registerMainClass()
+    {
+        StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
+        String            className         = stackTraceElement.getClassName();
+        String            methodName        = stackTraceElement.getMethodName();
+        if (methodName.equals("main") == false)
+        {
+            throw new IllegalStateException("当前方法为" + className + "#" + methodName + ",不是启动的 main 方法。");
+        }
+        try
+        {
+            MAIN_CLASS = Thread.currentThread().getContextClassLoader().loadClass(className);
+        }
+        catch (ClassNotFoundException e)
+        {
+            ReflectUtil.throwException(e);
+        }
+    }
+
+    public static Class getMainClass()
+    {
+        if (MAIN_CLASS == null)
+        {
+            throw new NullPointerException("main方法所在的类还没有注册，请确认先执行了com.jfirer.baseutil.RuntimeMainClass.registerMainClass方法");
+        }
+        return MAIN_CLASS;
+    }
+
+    /**
+     * 获取 main 方法所在的类的文件路径。
+     * 1. 如果当前是一个 jar 包，则返回的路径是该 jar 文件所在的文件夹路径。
+     * 2. 如果当前是在 ide 中运行，则返回的路径是项目文件夹本身的路径。
+     *
+     * @return
+     */
+    public static File getFilePathOfMainClass()
+    {
+        if (MAIN_CLASS == null)
+        {
+            throw new NullPointerException("main方法所在的类还没有注册，请确认先执行了com.jfirer.baseutil.CodeLocation.registerMainMethodOfClass方法");
+        }
+        File dirPath = null;
+        try
+        {
+            dirPath = new File(MAIN_CLASS.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+            //如果 dirPath 是一个文件夹路径，则意味着在编译输出目录下的 classes 文件夹下；如果 dirPath 是一个文件，则意味着他是一个jar 包
+            dirPath = dirPath.isFile() ? dirPath.getParentFile() : dirPath.getParentFile().getParentFile();
+        }
+        catch (URISyntaxException e)
+        {
+            ReflectUtil.throwException(e);
+        }
+        return dirPath;
+    }
 
     /**
      * 检查启动的单体 Jar 的名称。
@@ -34,7 +93,7 @@ public class Restart
         String            methodName        = stackTraceElement.getMethodName();
         if (methodName.equals("main") == false)
         {
-            throw new IllegalStateException("当前方法为" + className + "#" + methodName + ",不是启动的 main 方法。");
+            throw new IllegalStateException(STR.format("当前方法为 {}#{},不是启动的 main 方法。", className, methodName));
         }
         Class<?> mainMethodInClass = null;
         try
@@ -57,7 +116,7 @@ public class Restart
             {
                 throw new IllegalArgumentException(STR.format("启动检查流程,检查的文件名前缀为:{}，实际启动的单体 Jar 为:{}，不吻合", prefixName, file.getAbsolutePath()));
             }
-            List<String> pidByName = getPidByNameqWithoutSelf(prefixName);
+            List<String> pidByName = getPidByNameUseJpsWithoutSelf(prefixName);
             log.info("发现同前缀名的非自身进程有:{}", pidByName);
             pidByName.forEach(pid -> killPid(pid));
             if (file.getName().equals(finalFileName))
@@ -84,12 +143,13 @@ public class Restart
         }
     }
 
-    private static List<String> getPidByNameqWithoutSelf(String prefix)
+    public static List<String> getPidByNameUseJpsWithoutSelf(String prefix)
     {
         boolean window = System.getProperty("os.name").toLowerCase().contains("win");
         ProcessBuilder processBuilder = window ?//
-                new ProcessBuilder("cmd.exe", "/c", "wmic process where \"name='java.exe' and CommandLine like '%%" + prefix + "%%'\" get ProcessId /value | findstr \"=\"")//
-                : new ProcessBuilder("sh", "-c", "ps aux | grep '" + prefix + "' | grep -v grep | awk '{print $2}'");
+                new ProcessBuilder("cmd.exe", "/c", STR.format("""
+                                                                       jps | findstr /C:"{}" | for /f "tokens=1" %i in ('more') do @echo %i""", prefix))//
+                : new ProcessBuilder("sh", "-c", STR.format("jps | grep '{}' | grep -v grep | awk '{print $1}'", prefix));
         try
         {
             Process      process = processBuilder.start();
@@ -101,7 +161,58 @@ public class Restart
                 {
                     if (!line.equals(""))
                     {
-                        String pid = window ? line.substring(10) : line;
+                        if (!SELF_PID.equalsIgnoreCase(line))
+                        {
+                            log.debug("根据名称:{}查找到非自身 pid:{}", prefix, line);
+                            list.add(line);
+                        }
+                    }
+                }
+            }
+            process.destroy();
+            return list;
+        }
+        catch (Throwable e)
+        {
+            log.error("发生未知异常", e);
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<String> getPidByNameWithoutSelf(String prefix)
+    {
+        boolean window = System.getProperty("os.name").toLowerCase().contains("win");
+        ProcessBuilder processBuilder = window ?//
+                new ProcessBuilder("cmd.exe", "/c", "wmic process where \"name='java.exe' and CommandLine like '%%" + prefix + "%%'\" get ProcessId /value | findstr \"=\"")//
+                : new ProcessBuilder("sh", "-c", "ps aux | grep '" + prefix + "' | grep -v grep | awk '{print $1,$2}'");
+        try
+        {
+            Process      process = processBuilder.start();
+            List<String> list    = new ArrayList<>();
+            try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8")))
+            {
+                String line;
+                while ((line = input.readLine()) != null)
+                {
+                    if (!line.equals(""))
+                    {
+                        String pid;
+                        if (window)
+                        {
+                            pid = line.substring(10);
+                        }
+                        else
+                        {
+                            String[] split = line.split(" ");
+                            if (split[0].matches("-?\\d+"))
+                            {
+                                pid = split[0].trim();
+                            }
+                            else
+                            {
+                                pid = split[1].trim();
+                            }
+                        }
                         if (!SELF_PID.equalsIgnoreCase(pid))
                         {
                             log.debug("根据名称:{}查找到非自身 pid:{}", prefix, pid);
@@ -149,10 +260,9 @@ public class Restart
                 {
                     Process        process = builder.start();
                     BufferedReader reader  = process.inputReader();
-                    String         line;
-                    while ((line = reader.readLine()) != null)
+                    while (reader.readLine() != null)
                     {
-                        System.out.println(line);
+                        ;
                     }
                     reader.close();
                     process.destroy();
@@ -166,57 +276,6 @@ public class Restart
         catch (Throwable e)
         {
             log.error("发生未知异常", e);
-        }
-    }
-
-    private static boolean isCommandAvailable(String command)
-    {
-        ProcessBuilder builder = new ProcessBuilder("which", command);
-        try
-        {
-            Process process = builder.start();
-            try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8")))
-            {
-                String line = input.readLine();
-                if (line != null && line.equals("") == false)
-                {
-                    if (line.endsWith("not found"))
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-        catch (Throwable e)
-        {
-            return false;
-        }
-    }
-
-    public static void restartSelf()
-    {
-        try
-        {
-            File file = new File(CodeLocation.getMainMethodInClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-            if (file.isDirectory())
-            {
-                //此时意味着在 IDE 中运行，则不需要这个流程
-                return;
-            }
-            System.out.println("准备重启的文件为:" + file.getAbsolutePath());
-            startJar(file.getAbsolutePath());
-        }
-        catch (URISyntaxException e)
-        {
-            throw new RuntimeException(e);
         }
     }
 }
