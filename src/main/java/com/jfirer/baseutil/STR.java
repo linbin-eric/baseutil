@@ -39,7 +39,7 @@ public class STR
             }
             return new Template(segments.toArray(Segment[]::new));
         }).output(builder, params);
-        if (params[params.length - 1] instanceof Throwable e)
+        if (params.length != 0 && params[params.length - 1] instanceof Throwable e)
         {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             PrintStream           printStream           = new PrintStream(byteArrayOutputStream, false, StandardCharsets.UTF_8);
