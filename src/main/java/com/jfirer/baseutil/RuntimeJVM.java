@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 @Slf4j
-public class RuntimeMainClass
+public class RuntimeJVM
 {
     private static volatile Class  MAIN_CLASS;
     public static final     String SELF_PID = String.valueOf(ManagementFactory.getRuntimeMXBean().getPid());
@@ -47,7 +47,7 @@ public class RuntimeMainClass
     {
         if (MAIN_CLASS == null)
         {
-            throw new NullPointerException("main方法所在的类还没有注册，请确认先执行了com.jfirer.baseutil.RuntimeMainClass.registerMainClass方法");
+            throw new NullPointerException("main方法所在的类还没有注册，请确认先执行了com.jfirer.baseutil.RuntimeJVM.registerMainClass方法");
         }
         return MAIN_CLASS;
     }
@@ -277,5 +277,10 @@ public class RuntimeMainClass
         {
             log.error("发生未知异常", e);
         }
+    }
+
+    public static String selfPid()
+    {
+        return SELF_PID;
     }
 }
