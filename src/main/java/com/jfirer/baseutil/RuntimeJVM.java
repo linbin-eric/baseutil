@@ -59,7 +59,7 @@ public class RuntimeJVM
      *
      * @return
      */
-    public static File getFilePathOfMainClass()
+    public static File getDirOfMainClass()
     {
         if (MAIN_CLASS == null)
         {
