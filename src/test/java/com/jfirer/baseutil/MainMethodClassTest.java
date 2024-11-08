@@ -4,7 +4,7 @@ public class MainMethodClassTest
 {
     public static void main(String[] args)
     {
-        CodeLocation.registerMainMethodOfClass();
-        System.out.println(CodeLocation.getFilePathOfMainMethodClass());
+        RuntimeJVM.registerMainClass();
+        System.out.println(RuntimeJVM.getDirOfMainClass());
     }
 }
