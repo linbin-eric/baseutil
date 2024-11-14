@@ -286,7 +286,7 @@ public class ValueAccessorTest
     public void test2() throws Throwable
     {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
-        GetInt<ValueAccessorTest> factoryLambda = (GetInt) LambdaMetafactory.metafactory(MethodHandles.lookup(), //固定参数
+        GetInt factoryLambda = (GetInt) LambdaMetafactory.metafactory(MethodHandles.lookup(), //固定参数
                                                                                          "get",//需要实现的函数式接口的方法名
                                                                                          MethodType.methodType(GetInt.class),//固定参数，本方法最终返回的函数式接口的类
                                                                                          MethodType.methodType(int.class, Object.class),// 函数式接口的方法签名，如果是泛型的，用 Object.class代替

@@ -1,7 +1,7 @@
 package com.jfirer.baseutil.reflect.valueaccessor;
 
 @FunctionalInterface
-public interface GetInt<T>
+public interface GetInt
 {
-    int get(T obj);
+    int get(Object obj);
 }

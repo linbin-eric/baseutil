@@ -11,7 +11,6 @@ import static com.jfirer.baseutil.reflect.ReflectUtil.*;
 
 public class LambdaAccessorImpl implements ValueAccessor
 {
-    private       Field                      field;
     private       GetBoolean                 getBoolean;
     private       SetBoolean                 setBoolean;
     private       GetByte                    getByte;
@@ -20,7 +19,7 @@ public class LambdaAccessorImpl implements ValueAccessor
     private       SetChar                    setChar;
     private       GetShort                   getShort;
     private       SetShort                   setShort;
-    private       GetInt<Object>             getInt;
+    private       GetInt             getInt;
     private       SetInt                     setInt;
     private       GetLong                    getLong;
     private       SetLong                    setLong;
@@ -34,15 +33,14 @@ public class LambdaAccessorImpl implements ValueAccessor
 
     public LambdaAccessorImpl(Field field)
     {
-        this.field = field;
-        classId    = ReflectUtil.getClassId(field.getType());
+        classId = ReflectUtil.getClassId(field.getType());
         try
         {
             switch (classId)
             {
                 case PRIMITIVE_INT ->
                 {
-                    getInt = ValueAccessor.buildCompileGetInt(field);
+                    getInt = ValueAccessor.buildGetInt(field);
                     setInt = ValueAccessor.buildSetInt(field);
                 }
                 case PRIMITIVE_BYTE ->
@@ -199,12 +197,6 @@ public class LambdaAccessorImpl implements ValueAccessor
     public Object getReference(Object entity)
     {
         return getObj.apply(entity);
-    }
-
-    @Override
-    public Field getField()
-    {
-        return field;
     }
 
     @Override

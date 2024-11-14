@@ -120,8 +120,6 @@ public interface ValueAccessor
         throw new IllegalStateException("not impl method!");
     }
 
-    Field getField();
-
     AtomicInteger count         = new AtomicInteger();
     CompileHelper compileHelper = new CompileHelper();
 
@@ -218,17 +216,8 @@ public interface ValueAccessor
                 setReferenceMethodModel.setBody("((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + setMethodName + "((" + SmcHelper.getReferenceName(field.getType(), classModel) + ")value);");
                 classModel.putMethodModel(setReferenceMethodModel);
             }
-            MethodModel getField = new MethodModel(ValueAccessor.class.getDeclaredMethod("getField"), classModel);
-            getField.setBody("return field;");
-            classModel.putMethodModel(getField);
-            classModel.addField(new FieldModel("field", Field.class, classModel));
-            ConstructorModel constructorModel = new ConstructorModel(classModel);
-            constructorModel.setParamTypes(Field.class);
-            constructorModel.setParamNames("field");
-            constructorModel.setBody("this.field = field;");
-            classModel.addConstructor(constructorModel);
             Class<?> compile = compileHelper.compile(classModel);
-            return (ValueAccessor) compile.getConstructor(Field.class).newInstance(field);
+            return (ValueAccessor) compile.getConstructor().newInstance();
         }
         catch (Throwable e)
         {

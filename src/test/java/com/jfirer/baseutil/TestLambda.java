@@ -20,7 +20,7 @@ public class TestLambda implements ValueAccessor
     private       SetChar                    setChar;
     private       GetShort                   getShort;
     private       SetShort                   setShort;
-    private       GetInt<Object>             getInt;
+    private       GetInt                     getInt;
     private       SetInt                     setInt;
     private       GetLong                    getLong;
     private       SetLong                    setLong;
@@ -199,12 +199,6 @@ public class TestLambda implements ValueAccessor
     public Object getReference(Object entity)
     {
         return getObj.apply(entity);
-    }
-
-    @Override
-    public Field getField()
-    {
-        return field;
     }
 
     @Override

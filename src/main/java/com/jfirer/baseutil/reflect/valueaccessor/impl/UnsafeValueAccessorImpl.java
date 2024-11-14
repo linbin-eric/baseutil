@@ -9,17 +9,14 @@ import java.lang.reflect.Field;
 
 public class UnsafeValueAccessorImpl implements ValueAccessor
 {
-    @Getter
-    protected final      Field  field;
     private final        long   offset;
     protected final      int    classId;
     private static final Unsafe unsafe = Unsafe.getUnsafe();
 
     public UnsafeValueAccessorImpl(Field field)
     {
-        this.field = field;
-        offset     = unsafe.objectFieldOffset(field);
-        classId    = ReflectUtil.getClassId(field.getType());
+        offset  = unsafe.objectFieldOffset(field);
+        classId = ReflectUtil.getClassId(field.getType());
     }
 
     @Override

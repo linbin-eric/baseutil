@@ -21,14 +21,19 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class ValueAccessorBenchmark
 {
-    ValueAccessorTest         test = new ValueAccessorTest();
-    ValueAccessor             valueAccessor;
-    ValueAccessor             valueAccessor_compile;
-    ValueAccessor             valueAccessor_lambda;
-    GetInt<ValueAccessorTest> accessorTestApplyInt;
-    GetInt                    factoryLambda;
-    TestLambda                testLambda;
-    GetInt                    compileGetInt;
+    ValueAccessorTest               test = new ValueAccessorTest();
+    ValueAccessor                   valueAccessor;
+    ValueAccessor                   valueAccessor_compile;
+    ValueAccessor                   valueAccessor_lambda;
+    OriginGetInt<ValueAccessorTest> accessorTestApplyInt;
+    GetInt                          factoryLambda;
+    TestLambda                      testLambda;
+    GetInt                          compileGetInt;
+
+    interface OriginGetInt<T>
+    {
+        int get(T j);
+    }
 
     public ValueAccessorBenchmark()
     {
@@ -61,7 +66,6 @@ public class ValueAccessorBenchmark
     {
         valueAccessor_compile.getInt(test);
     }
-//
 //    @Benchmark
 //    public void testlambda()
 //    {

@@ -361,7 +361,29 @@ public final class ReflectUtil
         return "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
     }
 
-    public static Field[] findPojoBeanFields(Class clazz)
+    public static Field[] findPojoBeanSetFields(Class clazz)
+    {
+        List<Field> fields = new LinkedList<>();
+        while (clazz != Object.class)
+        {
+            for (Field each : clazz.getDeclaredFields())
+            {
+                try
+                {
+                    clazz.getDeclaredMethod(parseBeanSetMethodName(each), each.getType());
+                    fields.add(each);
+                }
+                catch (NoSuchMethodException e)
+                {
+                    ;
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return fields.toArray(new Field[0]);
+    }
+
+    public static Field[] findPojoBeanGetFields(Class clazz)
     {
         List<Field> fields = new LinkedList<>();
         while (clazz != Object.class)
@@ -371,12 +393,11 @@ public final class ReflectUtil
                 try
                 {
                     clazz.getDeclaredMethod(parseBeanGetMethodName(each));
-                    clazz.getDeclaredMethod(parseBeanSetMethodName(each), each.getType());
                     fields.add(each);
                 }
                 catch (NoSuchMethodException e)
                 {
-                    continue;
+                    ;
                 }
             }
             clazz = clazz.getSuperclass();
