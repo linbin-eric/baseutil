@@ -116,7 +116,7 @@ public class RuntimeJVM
             {
                 throw new IllegalArgumentException(STR.format("启动检查流程,检查的文件名前缀为:{}，实际启动的单体 Jar 为:{}，不吻合", prefixName, file.getAbsolutePath()));
             }
-            List<String> pidByName = getPidByNameUseJpsWithoutSelf(prefixName);
+            List<String> pidByName = getPidByNameWithoutSelf(prefixName);
             log.info("发现同前缀名的非自身进程有:{}", pidByName);
             pidByName.forEach(pid -> killPid(pid));
             if (file.getName().equals(finalFileName))
