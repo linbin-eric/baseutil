@@ -1,36 +1,28 @@
 package com.jfirer.baseutil.schedule.trigger;
 
 import java.util.concurrent.TimeUnit;
-import com.jfirer.baseutil.schedule.api.Timetask;
 
 public class RepeatDelayTrigger extends BaseTrigger
 {
     private final long delay;
-    
-    public RepeatDelayTrigger(Timetask timetask, long delay, TimeUnit unit)
+
+    public RepeatDelayTrigger(Runnable timetask, long delay, TimeUnit unit)
     {
         super(timetask);
-        this.delay = unit.toNanos(delay);
+        this.delay = unit.toMillis(delay);
         calNext();
     }
-    
+
     @Override
     public long deadline()
     {
         return deadline;
     }
-    
+
     @Override
-    public void calNext()
+    public boolean calNext()
     {
-        if (timetask.isCanceled() == false)
-        {
-            deadline = System.nanoTime() + delay;
-        }
-        else
-        {
-            cancel();
-        }
+        deadline = System.currentTimeMillis() + delay;
+        return true;
     }
-    
 }
