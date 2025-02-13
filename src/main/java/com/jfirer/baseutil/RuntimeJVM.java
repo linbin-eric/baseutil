@@ -18,13 +18,14 @@ import java.util.concurrent.locks.LockSupport;
 @Slf4j
 public class RuntimeJVM
 {
-    private static volatile Class  MAIN_CLASS;
-    public static final     String SELF_PID = String.valueOf(ManagementFactory.getRuntimeMXBean().getPid());
+    private static volatile Class    MAIN_CLASS;
+    private static volatile String[] args;
+    public static final     String   SELF_PID = String.valueOf(ManagementFactory.getRuntimeMXBean().getPid());
 
     /**
      * 将当前执行的 main 方法注册到静态变量，供后续读取需要
      */
-    public static void registerMainClass()
+    public static void registerMainClass(String... args)
     {
         StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
         String            className         = stackTraceElement.getClassName();
@@ -35,7 +36,8 @@ public class RuntimeJVM
         }
         try
         {
-            MAIN_CLASS = Thread.currentThread().getContextClassLoader().loadClass(className);
+            MAIN_CLASS      = Thread.currentThread().getContextClassLoader().loadClass(className);
+            RuntimeJVM.args = args;
         }
         catch (ClassNotFoundException e)
         {
