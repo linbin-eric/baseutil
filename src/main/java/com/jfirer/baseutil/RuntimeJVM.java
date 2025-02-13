@@ -1,6 +1,7 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -19,6 +20,7 @@ import java.util.concurrent.locks.LockSupport;
 public class RuntimeJVM
 {
     private static volatile Class    MAIN_CLASS;
+    @Getter
     private static volatile String[] args;
     public static final     String   SELF_PID = String.valueOf(ManagementFactory.getRuntimeMXBean().getPid());
 
@@ -265,7 +267,7 @@ public class RuntimeJVM
             {
                 cmd = "java -jar " + filePath + " " + String.join(" ", args);
             }
-            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", cmd) : new ProcessBuilder("nohup", cmd, " &");
+            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", cmd) : new ProcessBuilder("nohup", "sh", "-c", cmd + " &");
             new Thread(() -> {
                 try
                 {
@@ -293,10 +295,5 @@ public class RuntimeJVM
     public static String selfPid()
     {
         return SELF_PID;
-    }
-
-    public static void restart()
-    {
-        RuntimeJVM.startJar(getDirOfMainClass().getAbsolutePath(), args);
     }
 }
