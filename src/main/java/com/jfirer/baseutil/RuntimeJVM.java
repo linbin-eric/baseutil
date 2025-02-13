@@ -86,7 +86,7 @@ public class RuntimeJVM
      *
      * @param prefixName
      */
-    public static void checkMainStart(String prefixName, String finalFileName)
+    public static void checkMainStart(String prefixName, String finalFileName, String... args)
     {
         StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
         String            className         = stackTraceElement.getClassName();
@@ -132,7 +132,7 @@ public class RuntimeJVM
                 }
                 Files.copy(file.toPath(), copyJarFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 log.info("当前单体 Jar 应用程序是:{}，将其复制到:{}，启动该复制 Jar", file.getAbsolutePath(), copyJarFile.getAbsolutePath());
-                startJar(copyJarFile.getAbsolutePath());
+                startJar(copyJarFile.getAbsolutePath(), args);
                 //启动该 jar 的同时当前进程也需要等待被杀死，因此这里就不需要往下执行了。暂停住当前的线程。
                 LockSupport.park();
             }
@@ -248,13 +248,22 @@ public class RuntimeJVM
         }
     }
 
-    public static void startJar(String filePath)
+    public static void startJar(String filePath, String... args)
     {
         boolean window = System.getProperty("os.name").toLowerCase().contains("win");
         log.info("准备启动 Jar:{}", filePath);
         try
         {
-            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", "java -jar " + filePath) : new ProcessBuilder("nohup", "java", "-jar", filePath, "&");
+            String cmd;
+            if (args.length == 0)
+            {
+                cmd = "java -jar " + filePath;
+            }
+            else
+            {
+                cmd = "java -jar " + filePath + " " + String.join(" ", args);
+            }
+            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", cmd) : new ProcessBuilder("nohup", cmd, " &");
             new Thread(() -> {
                 try
                 {

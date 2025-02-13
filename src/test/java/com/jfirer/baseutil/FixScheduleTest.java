@@ -17,6 +17,7 @@ public class FixScheduleTest
     public void test()
     {
         Timer timer = new SimpleWheelTimer(Executors.newCachedThreadPool(), 100);
+        System.out.println("开始");
         timer.add(new RepeatDelayTrigger(new Runnable()
         {
             long t0    = System.currentTimeMillis();
@@ -29,7 +30,7 @@ public class FixScheduleTest
                 t0 = System.currentTimeMillis();
                 times--;
             }
-        }, 1, TimeUnit.SECONDS));
+        }, 3, TimeUnit.SECONDS));
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(100));
     }
 }
