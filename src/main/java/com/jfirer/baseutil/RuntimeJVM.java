@@ -294,4 +294,9 @@ public class RuntimeJVM
     {
         return SELF_PID;
     }
+
+    public static void restart()
+    {
+        RuntimeJVM.startJar(getDirOfMainClass().getAbsolutePath(), args);
+    }
 }
