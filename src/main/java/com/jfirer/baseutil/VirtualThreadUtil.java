@@ -2,42 +2,42 @@ package com.jfirer.baseutil;
 
 import lombok.SneakyThrows;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 
 public class VirtualThreadUtil
 {
     @SneakyThrows
-    public static void start(List<Runnable> runnables)
+    public static void start(Collection<Runnable> runnables, int parallelSize)
     {
-        CountDownLatch latch = new CountDownLatch(runnables.size());
-        for (Runnable runnable : runnables)
-        {
-            Thread.startVirtualThread(() -> {
-                try
-                {
-                    runnable.run();
-                }
-                finally
-                {
-                    latch.countDown();
-                }
-            });
-        }
-        latch.await();
+        start(runnables, parallelSize, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
     @SneakyThrows
-    public static void start(List<Runnable> runnables, long timeout, TimeUnit unit)
+    public static void start(Collection<Runnable> runnables, int parallelSize, long timeout, TimeUnit unit)
     {
-        CountDownLatch latch = new CountDownLatch(runnables.size());
-        for (Runnable runnable : runnables)
+        CountDownLatch  latch = new CountDownLatch(parallelSize);
+        Queue<Runnable> queue = new LinkedTransferQueue<>(runnables);
+        for (int i = 0; i < parallelSize; i++)
         {
             Thread.startVirtualThread(() -> {
                 try
                 {
-                    runnable.run();
+                    do
+                    {
+                        Runnable poll = queue.poll();
+                        if (poll != null)
+                        {
+                            poll.run();
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    } while (true);
                 }
                 finally
                 {
