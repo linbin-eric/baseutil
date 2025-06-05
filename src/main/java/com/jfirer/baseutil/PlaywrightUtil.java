@@ -17,7 +17,10 @@ public class PlaywrightUtil
     {
         playwright = Playwright.create();
         browser    = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(headless)
-                                                                                 .setArgs(List.of("--incognito"))
+                                                                                 .setArgs(java.util.Arrays.asList(
+                                                                                         "--disable-blink-features=AutomationControlled",
+                                                                                         "--disable-features=PrivacySandboxSettings4",
+                                                                                         "--no-sandbox"))
         );
         List<BrowserContext> list = new LinkedList<>();
         for (int i = 0; i < initSize; i++)
@@ -57,6 +60,8 @@ public class PlaywrightUtil
                                                                                    .setBypassCSP(true)//
                                                                                    // 设置视口大小
                                                                                    .setViewportSize(1920, 1080)
+                                                                                   .setDeviceScaleFactor(1)
+                                                                                   .setIsMobile(false)
                                                                                    // 设置语言
                                                                                    .setLocale("en-US")//
                                                                                    .setAcceptDownloads(true)//
