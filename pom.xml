@@ -59,6 +59,13 @@
     </licenses>
     <dependencies>
         <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.51.0</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>io.github.karlatemp</groupId>
             <artifactId>unsafe-accessor</artifactId>
             <version>1.7.0</version>
