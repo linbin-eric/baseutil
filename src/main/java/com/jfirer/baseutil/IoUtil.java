@@ -2,6 +2,10 @@ package com.jfirer.baseutil;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 
 public class IoUtil
 {
@@ -43,5 +47,29 @@ public class IoUtil
             output.write(buffer, 0, length);
         }
         return output.toByteArray();
+    }
+
+    public static void deleteDir(String dir)
+    {
+        try
+        {
+            Path path = Paths.get(dir);
+            // 递归遍历文件夹，从最深层开始删除
+            Files.walk(path).sorted(Comparator.reverseOrder()) // 倒序排序，确保先删除子文件/子文件夹
+                 .forEach(p -> {
+                     try
+                     {
+                         Files.delete(p);
+                     }
+                     catch (Exception e)
+                     {
+                         throw new IllegalStateException("无法删除: " + p + ", 原因: " + e.getMessage(), e);
+                     }
+                 });
+        }
+        catch (Exception e)
+        {
+            throw new IllegalStateException("删除文件夹失败", e);
+        }
     }
 }
