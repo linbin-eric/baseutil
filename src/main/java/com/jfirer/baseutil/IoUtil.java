@@ -54,6 +54,10 @@ public class IoUtil
         try
         {
             Path path = Paths.get(dir);
+            if (path.toFile().exists() == false)
+            {
+                return;
+            }
             // 递归遍历文件夹，从最深层开始删除
             Files.walk(path).sorted(Comparator.reverseOrder()) // 倒序排序，确保先删除子文件/子文件夹
                  .forEach(p -> {
