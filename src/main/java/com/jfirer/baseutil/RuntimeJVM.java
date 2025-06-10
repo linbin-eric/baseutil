@@ -235,7 +235,7 @@ public class RuntimeJVM
         }
     }
 
-    private static void killPid(String pid)
+    public static void killPid(String pid)
     {
         boolean        window  = System.getProperty("os.name").toLowerCase().contains("win");
         ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/C", "taskkill /F /PID " + pid) : new ProcessBuilder("kill", "-9", pid);
