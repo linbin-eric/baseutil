@@ -303,4 +303,28 @@ public class RuntimeJVM
     {
         return SELF_PID;
     }
+
+    /**
+     * -1:未知
+     * 1:运行在jar中
+     * 2:运行在IDE中
+     *
+     * @return
+     */
+    public static int tryDetectRunningInJar()
+    {
+        String property = System.getProperty("sun.java.command");
+        if (StringUtil.isBlank(property))
+        {
+            return -1;
+        }
+        if (property.split(" ")[0].endsWith("jar"))
+        {
+            return 1;
+        }
+        else
+        {
+            return 2;
+        }
+    }
 }
