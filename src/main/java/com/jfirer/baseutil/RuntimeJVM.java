@@ -15,6 +15,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Consumer;
 
 @Slf4j
 public class RuntimeJVM
@@ -254,6 +255,11 @@ public class RuntimeJVM
 
     public static void startJar(String filePath, String... args)
     {
+        startJar(filePath, p -> {}, args);
+    }
+
+    public static void startJar(String filePath, Consumer<Process> onExist, String... args)
+    {
         boolean window = System.getProperty("os.name").toLowerCase().contains("win");
         log.info("准备启动 Jar:{}", filePath);
         try
@@ -267,24 +273,25 @@ public class RuntimeJVM
             {
                 cmd = "java -jar " + filePath + " " + String.join(" ", args);
             }
-            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", cmd) : new ProcessBuilder("nohup", "sh", "-c", cmd + " &");
-            new Thread(() -> {
+            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", cmd) : new ProcessBuilder(cmd);
+            builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+            builder.redirectError(ProcessBuilder.Redirect.DISCARD);
+            Thread.startVirtualThread(() -> {
+                Process process = null;
                 try
                 {
-                    Process        process = builder.start();
-                    BufferedReader reader  = process.inputReader();
-                    while (reader.readLine() != null)
-                    {
-                        ;
-                    }
-                    reader.close();
-                    process.destroy();
+                    process = builder.start();
+                    process.waitFor(); // 等待进程结束
                 }
-                catch (Throwable e)
+                catch (IOException | InterruptedException e)
                 {
-                    log.error("发生未知异常", e);
+                    if (process != null)
+                    {
+                        process.destroy();
+                        onExist.accept(process);
+                    }
                 }
-            }).start();
+            });
         }
         catch (Throwable e)
         {
