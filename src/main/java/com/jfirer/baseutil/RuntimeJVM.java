@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
@@ -253,38 +254,67 @@ public class RuntimeJVM
         }
     }
 
-    public static void startJar(String filePath, String... args)
+    /**
+     * 启动一个 jar,启动成功后，会返回该进程的 pid
+     *
+     * @param filePath
+     * @param args
+     * @return
+     */
+    public static long startJar(String filePath, String... args)
     {
-        startJar(filePath, p -> {}, args);
+        return startJar(filePath, p -> {}, args);
     }
 
-    public static void startJar(String filePath, Consumer<Process> onExist, String... args)
+    /**
+     * 启动一个 jar,启动成功后，会返回该进程的 pid
+     *
+     * @param filePath
+     * @param onExist
+     * @param args
+     * @return
+     */
+    public static long startJar(String filePath, Consumer<Process> onExist, String... args)
     {
         boolean window = System.getProperty("os.name").toLowerCase().contains("win");
         log.info("准备启动 Jar:{}", filePath);
+        List<String> cmd = new LinkedList<>();
         try
         {
-            String cmd;
-            if (args.length == 0)
+            if (window)
             {
-                cmd = "java -jar " + filePath;
+                cmd.add("cmd.exe");
+                cmd.add("/c");
+                cmd.add("java");
+                cmd.add("-jar");
+                cmd.add(filePath);
             }
             else
             {
-                cmd = "java -jar " + filePath + " " + String.join(" ", args);
+                cmd.add("java");
+                cmd.add("-jar");
+                cmd.add(filePath);
             }
-            ProcessBuilder builder = window ? new ProcessBuilder("cmd.exe", "/c", cmd) : new ProcessBuilder(cmd);
+            for (String arg : args)
+            {
+                cmd.add(arg);
+            }
+            ProcessBuilder builder = new ProcessBuilder(cmd);
             builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
             builder.redirectError(ProcessBuilder.Redirect.DISCARD);
+            Process process = builder.start();
+            long    pid     = process.pid();
             Thread.startVirtualThread(() -> {
-                Process process = null;
                 try
                 {
-                    process = builder.start();
                     process.waitFor(); // 等待进程结束
+                    process.destroy();
+                    log.debug("进程:{}结束", process.pid());
+                    onExist.accept(process);
                 }
-                catch (IOException | InterruptedException e)
+                catch (Throwable e)
                 {
+                    log.debug("进程异常结束", e);
                     if (process != null)
                     {
                         process.destroy();
@@ -292,10 +322,12 @@ public class RuntimeJVM
                     }
                 }
             });
+            return pid;
         }
         catch (Throwable e)
         {
             log.error("发生未知异常", e);
+            return -1;
         }
     }
 
