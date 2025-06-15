@@ -1,6 +1,7 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.concurrent.CycleArray;
+import com.jfirer.baseutil.concurrent.StrictReadCycleArray;
 import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CycleArrayTest
 {
-    private          CycleArray cycleArray = new CycleArray(16);
-    private volatile boolean    pass       = true;
+    private          CycleArray<AtomicInteger> cycleArray = new StrictReadCycleArray(16);
+    private volatile boolean                   pass       = true;
 
     public AtomicInteger fetch()
     {
@@ -26,7 +27,7 @@ public class CycleArrayTest
             if (take.incrementAndGet() != 1)
             {
                 pass = false;
-                throw new IllegalStateException("current:"+take.get());
+                throw new IllegalStateException("current:" + take.get());
 //                throw new IllegalStateException();
             }
         }
@@ -43,24 +44,17 @@ public class CycleArrayTest
     @Test
     public void test()
     {
-        int numThread = 20;
-        CountDownLatch latch = new CountDownLatch(numThread);
+        int            numThread = 20;
+        CountDownLatch latch     = new CountDownLatch(numThread);
         for (int j = 0; j < numThread; j++)
         {
             Thread.startVirtualThread(() -> {
                 try
                 {
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < 1000000; i++)
                     {
                         AtomicInteger fetch = fetch();
-                        try
-                        {
-                            Thread.sleep(1);
-                        }
-                        catch (InterruptedException e)
-                        {
-                            e.printStackTrace();
-                        }
+
                         put(fetch);
                     }
                 }
