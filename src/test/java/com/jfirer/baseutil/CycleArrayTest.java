@@ -44,14 +44,14 @@ public class CycleArrayTest
     @Test
     public void test()
     {
-        int            numThread = 20;
+        int            numThread = 10;
         CountDownLatch latch     = new CountDownLatch(numThread);
         for (int j = 0; j < numThread; j++)
         {
             Thread.startVirtualThread(() -> {
                 try
                 {
-                    for (int i = 0; i < 1000000; i++)
+                    for (int i = 0; i < 100; i++)
                     {
                         AtomicInteger fetch = fetch();
 

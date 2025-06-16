@@ -9,6 +9,7 @@ import java.util.Arrays;
 @Data
 abstract class L1Pad
 {
+    protected volatile     long   writeIndex;
     byte b000, b001, b002, b003, b004, b005, b006, b007;//  8b
     byte b010, b011, b012, b013, b014, b015, b016, b017;// 16b
     byte b020, b021, b022, b023, b024, b025, b026, b027;// 24b
@@ -44,7 +45,7 @@ abstract class L1Field extends L1Pad
     protected static final long   ARRAY_LONG_INDEX_SCALE_SHIFT = getPowerOfTwo(Unsafe.ARRAY_LONG_INDEX_SCALE);
     protected static final long   ARRAY_LONG_BASE_OFFSET       = Unsafe.ARRAY_LONG_BASE_OFFSET;
     protected static final Unsafe UNSAFE                       = ReflectUtil.UNSAFE;
-    protected volatile     long   writeIndex;
+
 }
 
 @Data
@@ -67,7 +68,7 @@ abstract class L2Pad extends L1Field
     byte b160, b161, b162, b163, b164, b165, b166, b167;//120b
     byte b170, b171, b172, b173, b174, b175, b176, b177;//128b
     protected volatile     long readIndex;
-    protected static final long WRITE_INDEX_OFFSET = UNSAFE.objectFieldOffset(L1Field.class, "writeIndex");
+    protected static final long WRITE_INDEX_OFFSET = UNSAFE.objectFieldOffset(L1Pad.class, "writeIndex");
     protected static final long READ_INDEX_OFFSET  = UNSAFE.objectFieldOffset(L2Pad.class, "readIndex");
 }
 

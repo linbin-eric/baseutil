@@ -1,5 +1,6 @@
 package com.jfirer.baseutil.concurrent;
 
+import javax.xml.transform.Source;
 import java.util.Arrays;
 
 public class StrictReadCycleArray<T> extends L2Pad implements CycleArray<T>
@@ -49,22 +50,30 @@ public class StrictReadCycleArray<T> extends L2Pad implements CycleArray<T>
      */
     public boolean put(T o)
     {
+        long limit      = this.readIndex + capacity;
+        long writeIndex = this.writeIndex;
         do
         {
-            long writeIndex = this.writeIndex;
-            if (writeIndex < readIndex + capacity)
+            if (writeIndex < limit)
             {
                 long newWriteIndex = writeIndex + 1;
-                if (UNSAFE.compareAndSetLong(this, WRITE_INDEX_OFFSET, writeIndex, newWriteIndex))
+                long witnesses     = UNSAFE.compareAndExchangeLong(this, WRITE_INDEX_OFFSET, writeIndex, newWriteIndex);
+                if (witnesses == writeIndex)
                 {
                     array[(int) (writeIndex & index)] = o;
-                    UNSAFE.putLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((writeIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT), writeIndex >> shift);
+                    long round= writeIndex >>shift;
+                    UNSAFE.putLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((writeIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT), round);
+//                    System.out.println("writeIndex:"+writeIndex+",readIndex:"+readIndex+",round:"+round);
                     return true;
                 }
                 else
                 {
-                    ;
+                    writeIndex = witnesses;
                 }
+            }
+            else if (writeIndex < (limit = this.readIndex + capacity))
+            {
+                ;
             }
             else
             {
@@ -75,34 +84,47 @@ public class StrictReadCycleArray<T> extends L2Pad implements CycleArray<T>
 
     public T take()
     {
-        long count = 0;
+        long count      = 0;
+        long writeIndex = this.writeIndex;
+        long readIndex  = this.readIndex;
+        long round;
+        long current = 0;
         do
         {
-            long readIndex = this.readIndex;
-            long round     = readIndex >> shift;
+            round = readIndex >> shift;
             if (readIndex < writeIndex)
             {
-                long current = UNSAFE.getLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT));
+                current = UNSAFE.getLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT));
                 if (current == round)
                 {
-                    Object result = array[(int) (readIndex & index)];
-                    if (UNSAFE.compareAndSetLong(this, READ_INDEX_OFFSET, readIndex, readIndex + 1))
+                    Object result    = array[(int) (readIndex & index)];
+                    long   witnesses = UNSAFE.compareAndExchangeLong(this, READ_INDEX_OFFSET, readIndex, readIndex + 1);
+                    if (witnesses == readIndex)
                     {
                         return (T) result;
+                    }
+                    else
+                    {
+                        readIndex = witnesses;
                     }
                 }
                 else
                 {
-                    ;
+                    readIndex =this.readIndex;
+                    writeIndex = this.writeIndex;
                 }
+            }
+            else if (readIndex < (writeIndex = this.writeIndex))
+            {
+                ;
             }
             else
             {
                 return null;
             }
-        } while (count++<200000000);
-        System.err.println("异常");
+        } while (++count < 200000000);
+        System.err.println("异常,readIndex:" + readIndex + ",writeIndex:" + writeIndex+",round:"+round+",current:"+current+",real writeIndex:"+this.writeIndex);
         System.exit(0);
-        return  null;
+        return null;
     }
 }
