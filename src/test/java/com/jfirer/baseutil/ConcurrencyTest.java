@@ -32,7 +32,7 @@ public class ConcurrencyTest {
                 try {
                     startLatch.await();
                     for (int j = 0; j < operationsPerThread; j++) {
-                        if (array.put(threadId * operationsPerThread + j)) {
+                        if (array.cycAdd(threadId * operationsPerThread + j)) {
                             putCount.incrementAndGet();
                         } else {
                             putFailCount.incrementAndGet();
@@ -52,7 +52,7 @@ public class ConcurrencyTest {
                 try {
                     startLatch.await();
                     for (int j = 0; j < operationsPerThread; j++) {
-                        Integer result = array.take();
+                        Integer result = array.cycTake();
                         if (result != null) {
                             takeCount.incrementAndGet();
                         } else {

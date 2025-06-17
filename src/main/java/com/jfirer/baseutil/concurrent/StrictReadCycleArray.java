@@ -48,7 +48,7 @@ public class StrictReadCycleArray<T> extends L2Pad implements CycleArray<T>
      * @param o
      * @return
      */
-    public boolean put(T o)
+    public boolean cycAdd(T o)
     {
         long limit      = this.readIndex + capacity;
         long writeIndex = this.writeIndex;
@@ -82,7 +82,7 @@ public class StrictReadCycleArray<T> extends L2Pad implements CycleArray<T>
         } while (true);
     }
 
-    public T take()
+    public T cycTake()
     {
         long count      = 0;
         long writeIndex = this.writeIndex;

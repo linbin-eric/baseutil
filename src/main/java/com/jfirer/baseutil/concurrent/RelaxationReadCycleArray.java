@@ -116,7 +116,7 @@ public class RelaxationReadCycleArray<T> extends L2Pad implements CycleArray<T>
      * @param t
      * @return
      */
-    public boolean put(T t)
+    public boolean cycAdd(T t)
     {
         do
         {
@@ -151,7 +151,7 @@ public class RelaxationReadCycleArray<T> extends L2Pad implements CycleArray<T>
         } while (true);
     }
 
-    public T take()
+    public T cycTake()
     {
         do
         {

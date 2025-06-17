@@ -37,28 +37,28 @@ public class CycleArrayBenchmark {
     @Group("strictArray")
     @GroupThreads(2)
     public void strictArrayPut() {
-        strictArray.put(testValue);
+        strictArray.cycAdd(testValue);
     }
 
     @Benchmark
     @Group("strictArray")
     @GroupThreads(2)
     public void strictArrayTake() {
-        strictArray.take();
+        strictArray.cycTake();
     }
 
     @Benchmark
     @Group("relaxationArray")
     @GroupThreads(2)
     public void relaxationArrayPut() {
-        relaxationArray.put(testValue);
+        relaxationArray.cycAdd(testValue);
     }
 
     @Benchmark
     @Group("relaxationArray")
     @GroupThreads(2)
     public void relaxationArrayTake() {
-        relaxationArray.take();
+        relaxationArray.cycTake();
     }
 
     public static void main(String[] args) throws RunnerException {

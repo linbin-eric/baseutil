@@ -2,7 +2,7 @@ package com.jfirer.baseutil.concurrent;
 
 public interface CycleArray<T>
 {
-    boolean put(T t);
+    boolean cycAdd(T t);
 
-    T take();
+    T cycTake();
 }

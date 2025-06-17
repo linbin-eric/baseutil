@@ -10,7 +10,7 @@ public class SimpleDeadlockTest {
         // 简单的单生产者-单消费者测试
         Thread producer = new Thread(() -> {
             for (int i = 0; i < 1000; i++) {
-                while (!array.put(i)) {
+                while (!array.cycAdd(i)) {
                     Thread.yield(); // 如果队列满了就等待
                 }
                 if (i % 100 == 0) {
@@ -23,7 +23,7 @@ public class SimpleDeadlockTest {
         Thread consumer = new Thread(() -> {
             int count = 0;
             while (count < 1000) {
-                Integer value = array.take();
+                Integer value = array.cycTake();
                 if (value != null) {
                     count++;
                     if (count % 100 == 0) {

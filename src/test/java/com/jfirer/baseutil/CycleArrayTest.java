@@ -16,7 +16,7 @@ public class CycleArrayTest
 
     public AtomicInteger fetch()
     {
-        AtomicInteger take = (AtomicInteger) cycleArray.take();
+        AtomicInteger take = (AtomicInteger) cycleArray.cycTake();
         if (take == null)
         {
             take = new AtomicInteger();
@@ -34,10 +34,10 @@ public class CycleArrayTest
         return take;
     }
 
-    public boolean put(AtomicInteger take)
+    public boolean cycAdd(AtomicInteger take)
     {
         take.decrementAndGet();
-        return cycleArray.put(take);
+        return cycleArray.cycAdd(take);
     }
 
     @SneakyThrows
@@ -55,7 +55,7 @@ public class CycleArrayTest
                     {
                         AtomicInteger fetch = fetch();
 
-                        put(fetch);
+                        cycAdd(fetch);
                     }
                 }
                 catch (Throwable e)
