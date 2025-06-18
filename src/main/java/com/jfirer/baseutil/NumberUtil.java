@@ -10,4 +10,40 @@ public class NumberUtil
     {
         return numberPattern.matcher(str).matches();
     }
+
+    /**
+     * 计算大于CAP的最小的2的次方幂
+     *
+     * @param cap
+     * @return
+     */
+    public static final int normalizeSize(int cap)
+    {
+        int n = cap - 1;
+        n |= n >>> 1;
+        n |= n >>> 2;
+        n |= n >>> 4;
+        n |= n >>> 8;
+        n |= n >>> 16;
+        return n + 1;
+    }
+
+    /**
+     * 计算最接近value的log2值的整数。该整数小于等于log2值
+     *
+     * @param value
+     * @return
+     */
+    public static int log2(int value)
+    {
+        return 31 - Integer.numberOfLeadingZeros(value);
+    }
+
+    public static void main(String[] args)
+    {
+        int i = log2(Integer.MAX_VALUE);
+        System.out.println(i);
+        System.out.println(normalizeSize(1<<30));
+        System.out.println(1<<32);
+    }
 }

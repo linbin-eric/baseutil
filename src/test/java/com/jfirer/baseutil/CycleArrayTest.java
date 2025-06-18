@@ -1,7 +1,7 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.concurrent.CycleArray;
-import com.jfirer.baseutil.concurrent.StrictReadCycleArray;
+import com.jfirer.baseutil.concurrent.RoundReadCycleArray;
 import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,12 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CycleArrayTest
 {
-    private          CycleArray<AtomicInteger> cycleArray = new StrictReadCycleArray(16);
+    private          CycleArray<AtomicInteger> cycleArray = new RoundReadCycleArray<>(1024);
     private volatile boolean                   pass       = true;
 
     public AtomicInteger fetch()
     {
-        AtomicInteger take = (AtomicInteger) cycleArray.cycTake();
+        AtomicInteger take = (AtomicInteger) cycleArray.poll();
         if (take == null)
         {
             take = new AtomicInteger();
@@ -34,10 +34,10 @@ public class CycleArrayTest
         return take;
     }
 
-    public boolean cycAdd(AtomicInteger take)
+    public boolean add(AtomicInteger take)
     {
         take.decrementAndGet();
-        return cycleArray.cycAdd(take);
+        return cycleArray.add(take);
     }
 
     @SneakyThrows
@@ -55,7 +55,7 @@ public class CycleArrayTest
                     {
                         AtomicInteger fetch = fetch();
 
-                        cycAdd(fetch);
+                        add(fetch);
                     }
                 }
                 catch (Throwable e)

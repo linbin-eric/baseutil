@@ -9,7 +9,7 @@ import java.util.Arrays;
 @Data
 abstract class L1Pad
 {
-    protected volatile     long   writeIndex;
+    protected volatile long writeIndex;
     byte b000, b001, b002, b003, b004, b005, b006, b007;//  8b
     byte b010, b011, b012, b013, b014, b015, b016, b017;// 16b
     byte b020, b021, b022, b023, b024, b025, b026, b027;// 24b
@@ -45,7 +45,6 @@ abstract class L1Field extends L1Pad
     protected static final long   ARRAY_LONG_INDEX_SCALE_SHIFT = getPowerOfTwo(Unsafe.ARRAY_LONG_INDEX_SCALE);
     protected static final long   ARRAY_LONG_BASE_OFFSET       = Unsafe.ARRAY_LONG_BASE_OFFSET;
     protected static final Unsafe UNSAFE                       = ReflectUtil.UNSAFE;
-
 }
 
 @Data
@@ -72,7 +71,7 @@ abstract class L2Pad extends L1Field
     protected static final long READ_INDEX_OFFSET  = UNSAFE.objectFieldOffset(L2Pad.class, "readIndex");
 }
 
-public class RelaxationReadCycleArray<T> extends L2Pad implements CycleArray<T>
+public class RoundReadCycleArray<T> extends L2Pad implements CycleArray<T>
 {
     private final Object[] array;
     private final long[]   flag;
@@ -80,7 +79,7 @@ public class RelaxationReadCycleArray<T> extends L2Pad implements CycleArray<T>
     private final int      index;
     private final int      capacity;
 
-    public RelaxationReadCycleArray(int size)
+    public RoundReadCycleArray(int size)
     {
         int realSize = 1;
         int count    = 0;
@@ -116,15 +115,86 @@ public class RelaxationReadCycleArray<T> extends L2Pad implements CycleArray<T>
      * @param t
      * @return
      */
-    public boolean cycAdd(T t)
+    public boolean add(T t)
     {
+        long writeIndex = this.writeIndex;
+        long limit      = readIndex + capacity;
         do
         {
-            long writeIndex = this.writeIndex;
-            if (writeIndex < readIndex + capacity)
+            if (writeIndex < limit || writeIndex < (limit = readIndex + capacity))
             {
                 long newWriteIndex = writeIndex + 1;
-                if (UNSAFE.compareAndSetLong(this, WRITE_INDEX_OFFSET, writeIndex, newWriteIndex))
+                long witness       = UNSAFE.compareAndExchangeLong(this, WRITE_INDEX_OFFSET, writeIndex, newWriteIndex);
+                if (witness == writeIndex)
+                {
+                    long l_index    = ARRAY_LONG_BASE_OFFSET + ((writeIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT);
+                    long current    = UNSAFE.getLongVolatile(flag, l_index);
+                    long legalRound = writeIndex >>> shift;
+                    if (current >> 1 != legalRound)
+                    {
+                        while ((current = UNSAFE.getLongVolatile(flag, l_index)) >>> 1 != legalRound)
+                        {
+                            ;
+                        }
+                    }
+                    array[(int) (writeIndex & index)] = t;
+                    UNSAFE.putLongVolatile(flag, l_index, current | 1L);
+                    return true;
+                }
+                else
+                {
+                    writeIndex = witness;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        } while (true);
+    }
+
+    public T poll()
+    {
+        long readIndex = this.readIndex;
+        long limit     = this.writeIndex;
+        while (readIndex < limit || readIndex < (limit = this.writeIndex))
+        {
+            long witness = UNSAFE.compareAndExchangeLong(this, READ_INDEX_OFFSET, readIndex, readIndex + 1);
+            if (witness == readIndex)
+            {
+                long legal   = ((readIndex >>> shift) << 1) | 0x01L;
+                long l_index = ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT);
+                if (UNSAFE.getLongVolatile(flag, l_index) != legal)
+                {
+                    while (UNSAFE.getLongVolatile(flag, l_index) != legal)
+                    {
+                        ;
+                    }
+                }
+                Object result = array[(int) (readIndex & index)];
+                UNSAFE.putLongVolatile(flag, l_index, ((readIndex >>> shift) + 1) << 1);
+                return (T) result;
+            }
+            else
+            {
+                readIndex = witness;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void pushBusyWait(T t)
+    {
+        long writeIndex = this.writeIndex;
+        long limit      = readIndex + capacity;
+        do
+        {
+            if (writeIndex < limit || writeIndex < (limit = readIndex + capacity))
+            {
+                long newWriteIndex = writeIndex + 1;
+                long witness       = UNSAFE.compareAndExchangeLong(this, WRITE_INDEX_OFFSET, writeIndex, newWriteIndex);
+                if (witness == writeIndex)
                 {
                     long current    = UNSAFE.getLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((writeIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT));
                     long legalRound = writeIndex >> shift;
@@ -137,60 +207,23 @@ public class RelaxationReadCycleArray<T> extends L2Pad implements CycleArray<T>
                     }
                     array[(int) (writeIndex & index)] = t;
                     UNSAFE.putLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((writeIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT), current | 1L);
-                    return true;
+                    return;
                 }
                 else
                 {
-                    ;
+                    writeIndex = witness;
                 }
             }
             else
             {
-                return false;
+                Thread.yield();
             }
         } while (true);
     }
 
-    public T cycTake()
+    @Override
+    public boolean isEmpty()
     {
-        do
-        {
-            long readIndex = this.readIndex;
-            if (readIndex < writeIndex)
-            {
-                long newReadIndex = readIndex + 1;
-                if (UNSAFE.compareAndSetLong(this, READ_INDEX_OFFSET, readIndex, newReadIndex))
-                {
-                    long current    = UNSAFE.getLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT));
-                    long legalRound = readIndex >> shift;
-                    if (current >> 1 != legalRound)
-                    {
-                        while ((current = UNSAFE.getLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT))) >> 1 != legalRound)
-                        {
-                            ;
-                        }
-                    }
-                    int label = (int) (current & 0x01L);
-                    if (label != 1)
-                    {
-                        while ((UNSAFE.getLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT)) & 0x01L) != 1)
-                        {
-                            ;
-                        }
-                    }
-                    Object result = array[(int) (readIndex & index)];
-                    UNSAFE.putLongVolatile(flag, ARRAY_LONG_BASE_OFFSET + ((readIndex & index) << ARRAY_LONG_INDEX_SCALE_SHIFT), ((legalRound + 1) << 1));
-                    return (T) result;
-                }
-                else
-                {
-                    ;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        } while (true);
+        return readIndex == writeIndex;
     }
 }
