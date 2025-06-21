@@ -4,13 +4,8 @@ import java.util.SplittableRandom;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
-public class BitmapObjectPool<T extends BitmapObjectPool.Poolable>
+public class BitmapObjectPool<T>
 {
-    public interface Poolable
-    {
-        int getBitmapIndex();
-    }
-
     private static final SplittableRandom RANDOM                = new SplittableRandom();
     private static final int              MAX_SEGMENTS_TO_CHECK = 64; // Restrict traversal range
     private final        Object[][]       objectsSegments;
@@ -165,9 +160,8 @@ public class BitmapObjectPool<T extends BitmapObjectPool.Poolable>
         return null;
     }
 
-    public boolean release(T object)
+    public boolean release(int index)
     {
-        int index = object.getBitmapIndex();
         if (index < 0 || index >= actualCapacity)
         {
             return false;

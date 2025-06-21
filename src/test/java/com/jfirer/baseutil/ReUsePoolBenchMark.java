@@ -22,7 +22,7 @@ public class ReUsePoolBenchMark
     @Param({"4096","10000","20000"})
     private int arraySize;
 
-    class TestV implements BitmapObjectPool.Poolable
+    class TestV
     {
         private final int bitmapIndex;
 
@@ -31,7 +31,6 @@ public class ReUsePoolBenchMark
             this.bitmapIndex = bitmapIndex;
         }
 
-        @Override
         public int getBitmapIndex()
         {
             return bitmapIndex;
@@ -74,7 +73,7 @@ public class ReUsePoolBenchMark
         TestV acquire = bitmapObjectPool.acquire();
         if (acquire != null)
         {
-            bitmapObjectPool.release(acquire);
+            bitmapObjectPool.release(acquire.getBitmapIndex());
         }
     }
     public static void main(String[] args) throws RunnerException
