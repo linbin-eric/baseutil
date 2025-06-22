@@ -6,17 +6,18 @@ import java.util.function.Function;
 
 public class BitmapObjectPool<T>
 {
-    private static final SplittableRandom RANDOM                = new SplittableRandom();
-    private static final int              MAX_SEGMENTS_TO_CHECK = 64; // Restrict traversal range
-    private final        Object[][]       objectsSegments;
-    private final        long[][]         bitmapSegments;
-    private final        ReentrantLock[]  locks;
-    private final        int[]            availableCounts;
-    private final        int              actualCapacity;
-    private final        int              segmentSize;
-    private final        int              segmentCount;
-    private final        int              segmentSizeShift; // log2(segmentSize)
-    private volatile     int              lastSuccessfulSegment;
+    private static final SplittableRandom     RANDOM                = new SplittableRandom();
+    private static final int                  MAX_SEGMENTS_TO_CHECK = 64; // Restrict traversal range
+    private final        Object[][]           objectsSegments;
+    private final        long[][]             bitmapSegments;
+    private final        ReentrantLock[]      locks;
+    private final        int[]                availableCounts;
+    private final        int                  actualCapacity;
+    private final        int                  segmentSize;
+    private final        int                  segmentCount;
+    private final        int                  segmentSizeShift; // log2(segmentSize)
+    private final        Function<Integer, T> function;
+    private volatile     int                  lastSuccessfulSegment;
 
     @SuppressWarnings("unchecked")
     public BitmapObjectPool(Function<Integer, T> function, int requestedCapacity)
@@ -29,6 +30,7 @@ public class BitmapObjectPool<T>
         {
             throw new IllegalArgumentException("Capacity must be positive");
         }
+        this.function = function;
         // Calculate segmentSize as a power of 2 and multiple of 64
         int cpuCount         = Runtime.getRuntime().availableProcessors();
         int idealSegmentSize = Math.max(64, (requestedCapacity + cpuCount - 1) / cpuCount);
@@ -53,16 +55,16 @@ public class BitmapObjectPool<T>
             bitmapSegments[i]  = new long[bitmapSize];
             locks[i]           = new ReentrantLock();
             availableCounts[i] = segmentSize; // All segments have full segmentSize available
-            for (int j = 0; j < segmentSize; j++)
-            {
-                int index  = (i << segmentSizeShift) | j; // Bit operation: i * segmentSize + j
-                T   object = function.apply(index);
-                if (object == null)
-                {
-                    throw new IllegalStateException("Function returned null object at index " + index);
-                }
-                objectsSegments[i][j] = object;
-            }
+//            for (int j = 0; j < segmentSize; j++)
+//            {
+//                int index  = (i << segmentSizeShift) | j; // Bit operation: i * segmentSize + j
+//                T   object = function.apply(index);
+//                if (object == null)
+//                {
+//                    throw new IllegalStateException("Function returned null object at index " + index);
+//                }
+//                objectsSegments[i][j] = object;
+//            }
         }
     }
 
@@ -71,7 +73,7 @@ public class BitmapObjectPool<T>
     {
         // First phase: Try lastSuccessfulSegment with tryLock
         int startSegment = lastSuccessfulSegment;
-        if (availableCounts[startSegment] > 0 && locks[startSegment].tryLock())
+        if (locks[startSegment].tryLock())
         {
             try
             {
@@ -93,7 +95,7 @@ public class BitmapObjectPool<T>
         for (int i = 0; i < maxSegmentsToCheck; i++)
         {
             int segmentIndex = (randomStart + i) % segmentCount;
-            if (segmentIndex != startSegment && availableCounts[segmentIndex] > 0 && locks[segmentIndex].tryLock())
+            if (segmentIndex != startSegment && locks[segmentIndex].tryLock())
             {
                 try
                 {
@@ -115,22 +117,19 @@ public class BitmapObjectPool<T>
         for (int i = 0; i < maxSegmentsToCheck; i++)
         {
             int segmentIndex = (randomStart + i) % segmentCount;
-            if (availableCounts[segmentIndex] > 0)
+            locks[segmentIndex].lock();
+            try
             {
-                locks[segmentIndex].lock();
-                try
+                T result = tryAcquireFromSegment(segmentIndex);
+                if (result != null)
                 {
-                    T result = tryAcquireFromSegment(segmentIndex);
-                    if (result != null)
-                    {
-                        lastSuccessfulSegment = segmentIndex;
-                        return result;
-                    }
+                    lastSuccessfulSegment = segmentIndex;
+                    return result;
                 }
-                finally
-                {
-                    locks[segmentIndex].unlock();
-                }
+            }
+            finally
+            {
+                locks[segmentIndex].unlock();
             }
         }
         return null;
@@ -152,7 +151,14 @@ public class BitmapObjectPool<T>
                     int localIndex = (j << 6) | bitIndex; // Bit operation: j * 64 + bitIndex
                     bitmap[j] |= (1L << bitIndex);
                     availableCounts[segmentIndex]--;
-                    return (T) objectsSegments[segmentIndex][localIndex];
+                    T t = (T) objectsSegments[segmentIndex][localIndex];
+                    if (t == null)
+                    {
+                        int index = (segmentIndex << segmentSizeShift) | localIndex; // Bit operation: i * segmentSize + j
+                        t                                         = function.apply(index);
+                        objectsSegments[segmentIndex][localIndex] = t;
+                    }
+                    return t;
                 }
             }
         }
