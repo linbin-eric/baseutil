@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -101,6 +102,11 @@ public class RuntimeJVM
         {
             throw new IllegalStateException(STR.format("当前方法为 {}#{},不是启动的 main 方法。", className, methodName));
         }
+        if (detectRunningInJar() == false)
+        {
+            //在 IDE 中运行，则不需要这个流程
+            return;
+        }
         Class<?> mainMethodInClass = null;
         try
         {
@@ -113,18 +119,24 @@ public class RuntimeJVM
         try
         {
             File file = new File(mainMethodInClass.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-            if (file.isDirectory())
-            {
-                //此时意味着在 IDE 中运行，则不需要这个流程
-                return;
-            }
             if (!file.getName().startsWith(prefixName))
             {
                 throw new IllegalArgumentException(STR.format("启动检查流程,检查的文件名前缀为:{}，实际启动的单体 Jar 为:{}，不吻合", prefixName, file.getAbsolutePath()));
             }
-            List<String> pidByName = getPidByNameWithoutSelf(prefixName);
+            List<Long> pidByName = ProcessHandle.allProcesses().filter(processHandle -> {
+                                                    ProcessHandle.Info info = processHandle.info();
+                                                    if (info.commandLine().isPresent())
+                                                    {
+                                                        return info.commandLine().get().contains(prefixName);
+                                                    }
+                                                    else
+                                                    {
+                                                        return false;
+                                                    }
+                                                })//
+                                                .map(ProcessHandle::pid).toList();
             log.info("发现同前缀名的非自身进程有:{}", pidByName);
-            pidByName.forEach(pid -> killPid(pid));
+            pidByName.forEach(pid -> ProcessHandle.of(pid).ifPresent(processHandle -> processHandle.destroyForcibly()));
             if (file.getName().equals(finalFileName))
             {
                 log.info("当前单体 Jar 应用程序是:{}，可以继续执行后续业务逻辑", file.getAbsolutePath());
@@ -337,26 +349,11 @@ public class RuntimeJVM
     }
 
     /**
-     * -1:未知
-     * 1:运行在jar中
-     * 2:运行在IDE中
-     *
      * @return
      */
-    public static int tryDetectRunningInJar()
+    public static boolean detectRunningInJar()
     {
-        String property = System.getProperty("sun.java.command");
-        if (StringUtil.isBlank(property))
-        {
-            return -1;
-        }
-        if (property.split(" ")[0].endsWith("jar"))
-        {
-            return 1;
-        }
-        else
-        {
-            return 2;
-        }
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        return runtimeMXBean.getInputArguments().stream().filter(arg -> arg.equals("-jar")).findAny().isPresent();
     }
 }
