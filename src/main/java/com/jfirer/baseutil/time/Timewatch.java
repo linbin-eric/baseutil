@@ -40,11 +40,13 @@ public class Timewatch
         return t1 - t0;
     }
 
-    public void record()
+    public long record()
     {
         long pre = current;
         current = System.currentTimeMillis();
-        records.add(current - pre);
+        long cost = current - pre;
+        records.add(cost);
+        return cost;
     }
 
     public long getRecord(int index)
