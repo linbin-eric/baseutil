@@ -13,7 +13,6 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 
 public class Md5Util
 {
@@ -170,8 +169,6 @@ public class Md5Util
      *
      * @param password
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeySpecException
      */
     public static String generateStorngPasswordHash(String password)
     {

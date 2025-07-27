@@ -11,6 +11,7 @@
     <description>
         common api used by jfireFramework
     </description>
+    <url>http://git.oschina.net/eric_ds</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
@@ -40,28 +41,75 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
-                        <phase>compile</phase>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Javadoc插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
+<!--            &lt;!&ndash; GPG签名插件 &ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-gpg-plugin</artifactId>-->
+<!--                <version>3.2.4</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>sign-artifacts</id>-->
+<!--                        <phase>verify</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>sign</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
         </plugins>
+
     </build>
-    <url>http://git.oschina.net/eric_ds</url>
+
     <licenses>
         <license>
             <name>GNU Affero General Public License v3.0</name>
             <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
         </license>
     </licenses>
+    <scm>
+        <connection>scm:git:git@gitee.com:eric_ds/baseutil.git</connection>
+        <developerConnection>scm:git:ssh://gitee.com:eric_ds/baseutil.git</developerConnection>
+        <url>https://gitee.com/eric_ds/baseutil</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>Lin Bin</name>
+            <email>495561397@qq.com</email>
+        </developer>
+    </developers>
     <dependencies>
         <dependency>
             <groupId>com.microsoft.playwright</groupId>

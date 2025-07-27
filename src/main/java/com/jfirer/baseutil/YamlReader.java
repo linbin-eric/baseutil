@@ -5,9 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
-import java.lang.reflect.MalformedParametersException;
 import java.util.*;
-import java.util.function.Function;
 
 public class YamlReader
 {
@@ -110,8 +108,8 @@ public class YamlReader
         protected final int        level;
         /**
          * 1、字符串
-         * 2、Map<String,YmlElement>
-         * 3、List<String>
+         * 2. {@code Map<String, YmlElement>}
+         * 3. {@code List<String>}
          */
         protected       int        type;
         protected       YmlElement parent;

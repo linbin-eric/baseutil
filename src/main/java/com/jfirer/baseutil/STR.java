@@ -1,10 +1,13 @@
 package com.jfirer.baseutil;
 
+import lombok.Data;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -16,28 +19,62 @@ public class STR
     {
         StringBuilder builder = new StringBuilder();
         map.computeIfAbsent(pattern, v -> {
-            List<Segment> segments   = new LinkedList<>();
-            char[]        value      = v.toCharArray();
-            int           start      = 0;
-            int           pre        = 0;
-            int           paramIndex = 0;
-            while (pre < value.length)
+            if (params.length != 0 && params[0] instanceof Map map)
             {
-                start = indexOfBrace(value, pre);
-                if (start == -1)
+                List<Segment> segments = new LinkedList<>();
+                int           start    = 0;
+                int           pre      = 0;
+                while (pre < v.length())
                 {
-                    segments.add(new StringSegment(String.valueOf(value, pre, value.length - pre)));
-                    break;
+                    start = v.indexOf("${", pre);
+                    if (start == -1)
+                    {
+                        segments.add(new StringSegment(v.substring(pre, v.length())));
+                        break;
+                    }
+                    else
+                    {
+                        int end = v.indexOf("}", start);
+                        if (end == -1)
+                        {
+                            segments.add(new StringSegment(v.substring(pre, v.length())));
+                            break;
+                        }
+                        else
+                        {
+                            segments.add(new StringSegment(v.substring(pre, start)));
+                            segments.add(new NameParamSegment(v.substring(start + 2, end)));
+                            pre = end + 1;
+                        }
+                    }
                 }
-                else
-                {
-                    segments.add(new StringSegment(String.valueOf(value, pre, start - pre)));
-                    segments.add(new ParamSegment(paramIndex));
-                    paramIndex++;
-                    pre = start + 2;
-                }
+                return new Template(segments.toArray(Segment[]::new));
             }
-            return new Template(segments.toArray(Segment[]::new));
+            else
+            {
+                List<Segment> segments   = new LinkedList<>();
+                char[]        value      = v.toCharArray();
+                int           start      = 0;
+                int           pre        = 0;
+                int           paramIndex = 0;
+                while (pre < value.length)
+                {
+                    start = indexOfBrace(value, pre);
+                    if (start == -1)
+                    {
+                        segments.add(new StringSegment(String.valueOf(value, pre, value.length - pre)));
+                        break;
+                    }
+                    else
+                    {
+                        segments.add(new StringSegment(String.valueOf(value, pre, start - pre)));
+                        segments.add(new ParamSegment(paramIndex));
+                        paramIndex++;
+                        pre = start + 2;
+                    }
+                }
+                return new Template(segments.toArray(Segment[]::new));
+            }
         }).output(builder, params);
         if (params.length != 0 && params[params.length - 1] instanceof Throwable e)
         {
@@ -97,6 +134,18 @@ public class STR
         void output(StringBuilder builder, Object... params)
         {
             builder.append(params[index]);
+        }
+    }
+
+    @Data
+    static class NameParamSegment extends Segment
+    {
+        final String name;
+
+        @Override
+        void output(StringBuilder builder, Object... params)
+        {
+            builder.append(((Map<String, Object>) params[0]).get(name));
         }
     }
 
