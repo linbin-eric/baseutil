@@ -9,13 +9,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
 
@@ -104,7 +104,7 @@ public class RuntimeJVM
         }
         if (detectRunningInJar() == false)
         {
-            //在 IDE 中运行，则不需要这个流程
+            log.warn("当前在IDE中运行，不需要复制jar为copy-jar");
             return;
         }
         Class<?> mainMethodInClass = null;
@@ -123,6 +123,7 @@ public class RuntimeJVM
             {
                 throw new IllegalArgumentException(STR.format("启动检查流程,检查的文件名前缀为:{}，实际启动的单体 Jar 为:{}，不吻合", prefixName, file.getAbsolutePath()));
             }
+            long currentPid = ProcessHandle.current().pid();
             List<Long> pidByName = ProcessHandle.allProcesses().filter(processHandle -> {
                                                     ProcessHandle.Info info = processHandle.info();
                                                     if (info.commandLine().isPresent())
@@ -134,7 +135,8 @@ public class RuntimeJVM
                                                         return false;
                                                     }
                                                 })//
-                                                .map(ProcessHandle::pid).toList();
+                                                .map(ProcessHandle::pid)//
+                                                .filter(pid -> pid.longValue() != currentPid).toList();
             log.info("发现同前缀名的非自身进程有:{}", pidByName);
             pidByName.forEach(pid -> ProcessHandle.of(pid).ifPresent(processHandle -> processHandle.destroyForcibly()));
             if (file.getName().equals(finalFileName))
@@ -353,7 +355,14 @@ public class RuntimeJVM
      */
     public static boolean detectRunningInJar()
     {
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        return runtimeMXBean.getInputArguments().stream().filter(arg -> arg.equals("-jar")).findAny().isPresent();
+        Optional<String> s = ProcessHandle.current().info().commandLine();
+        if (s.isPresent())
+        {
+            return s.get().contains(" -jar ");
+        }
+        else
+        {
+            return false;
+        }
     }
 }
