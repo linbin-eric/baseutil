@@ -1,5 +1,7 @@
 package com.jfirer.baseutil;
 
+import com.jfirer.baseutil.reflect.ReflectUtil;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -37,6 +39,15 @@ public class IoUtil
         }
     }
 
+    public static boolean isFilePathAbsolute(String path)
+    {
+        if (path == null || path.isEmpty())
+        {
+            return false;
+        }
+        return Paths.get(path).isAbsolute();
+    }
+
     public static byte[] readAllBytes(InputStream inputStream) throws IOException
     {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -47,6 +58,39 @@ public class IoUtil
             output.write(buffer, 0, length);
         }
         return output.toByteArray();
+    }
+
+    public static String readFile(String path, boolean isFile, Charset charset)
+    {
+        if (isFile)
+        {
+            try (FileInputStream inputStream = new FileInputStream(path))
+            {
+                return new String(readAllBytes(inputStream), charset);
+            }
+            catch (IOException e)
+            {
+                ReflectUtil.throwException(e);
+                return null;
+            }
+        }
+        else
+        {
+            try (InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path))
+            {
+                return new String(readAllBytes(resourceAsStream), charset);
+            }
+            catch (IOException e)
+            {
+                ReflectUtil.throwException(e);
+                return null;
+            }
+        }
+    }
+
+    public static String readFile(String path, boolean isFile)
+    {
+        return readFile(path, isFile);
     }
 
     public static void deleteDir(String dir)
