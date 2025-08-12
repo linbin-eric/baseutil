@@ -292,9 +292,11 @@ public class RuntimeJVM
             }
             else
             {
+                cmd.add("nohup" );
                 cmd.add("java");
                 cmd.add("-jar");
                 cmd.add(filePath);
+                cmd.add("&");
             }
             for (String arg : args)
             {
