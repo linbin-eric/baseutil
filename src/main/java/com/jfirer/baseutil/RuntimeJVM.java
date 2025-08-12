@@ -2,6 +2,7 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -15,7 +16,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
 
@@ -102,7 +102,7 @@ public class RuntimeJVM
         {
             throw new IllegalStateException(STR.format("当前方法为 {}#{},不是启动的 main 方法。", className, methodName));
         }
-        if (detectRunningInJar() == false)
+        if (detectRunningInJar(getMainClass()) == false)
         {
             log.warn("当前在IDE中运行，不需要复制jar为copy-jar");
             return;
@@ -123,22 +123,9 @@ public class RuntimeJVM
             {
                 throw new IllegalArgumentException(STR.format("启动检查流程,检查的文件名前缀为:{}，实际启动的单体 Jar 为:{}，不吻合", prefixName, file.getAbsolutePath()));
             }
-            long currentPid = ProcessHandle.current().pid();
-            List<Long> pidByName = ProcessHandle.allProcesses().filter(processHandle -> {
-                                                    ProcessHandle.Info info = processHandle.info();
-                                                    if (info.commandLine().isPresent())
-                                                    {
-                                                        return info.commandLine().get().contains(prefixName);
-                                                    }
-                                                    else
-                                                    {
-                                                        return false;
-                                                    }
-                                                })//
-                                                .map(ProcessHandle::pid)//
-                                                .filter(pid -> pid.longValue() != currentPid).toList();
+            List<String> pidByName = getPidByNameWithoutSelf(prefixName);
             log.info("发现同前缀名的非自身进程有:{}", pidByName);
-            pidByName.forEach(pid -> ProcessHandle.of(pid).ifPresent(processHandle -> processHandle.destroyForcibly()));
+            pidByName.forEach(pid -> ProcessHandle.of(Long.valueOf(pid)).ifPresent(processHandle -> processHandle.destroyForcibly()));
             if (file.getName().equals(finalFileName))
             {
                 log.info("当前单体 Jar 应用程序是:{}，可以继续执行后续业务逻辑", file.getAbsolutePath());
@@ -353,16 +340,9 @@ public class RuntimeJVM
     /**
      * @return
      */
-    public static boolean detectRunningInJar()
+    @SneakyThrows
+    public static boolean detectRunningInJar(Class<?> ckass)
     {
-        Optional<String> s = ProcessHandle.current().info().commandLine();
-        if (s.isPresent())
-        {
-            return s.get().contains(" -jar ");
-        }
-        else
-        {
-            return false;
-        }
+        return new File(ckass.getProtectionDomain().getCodeSource().getLocation().toURI()).isFile();
     }
 }
