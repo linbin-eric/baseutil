@@ -6,8 +6,6 @@ import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
 import com.jfirer.baseutil.smc.SmcHelper;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.model.ClassModel;
-import com.jfirer.baseutil.smc.model.ConstructorModel;
-import com.jfirer.baseutil.smc.model.FieldModel;
 import com.jfirer.baseutil.smc.model.MethodModel;
 
 import java.lang.invoke.LambdaMetafactory;
@@ -139,6 +137,11 @@ public interface ValueAccessor
     }
 
     static ValueAccessor compile(Field field)
+    {
+        return compile(field, compileHelper);
+    }
+
+    static ValueAccessor compile(Field field, CompileHelper compileHelper)
     {
         try
         {

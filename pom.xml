@@ -147,5 +147,11 @@
             <version>1.37</version>
             <scope>test</scope>
         </dependency>
+        <!-- Eclipse JDT Core for JRE-compatible compilation -->
+        <dependency>
+            <groupId>org.eclipse.jdt</groupId>
+            <artifactId>ecj</artifactId>
+            <version>3.40.0</version>
+        </dependency>
     </dependencies>
 </project>

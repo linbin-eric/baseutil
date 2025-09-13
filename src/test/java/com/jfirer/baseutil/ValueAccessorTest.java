@@ -1,9 +1,11 @@
 package com.jfirer.baseutil;
 
-import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.GetInt;
+import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.impl.LambdaAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
+import com.jfirer.baseutil.smc.compiler.JDKCompilerImpl;
+import com.jfirer.baseutil.smc.compiler.JDTCompilerImpl;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,6 +63,8 @@ public class ValueAccessorTest
         List<ValueAccessor> list   = new ArrayList<>();
         list.add(ValueAccessor.standard(a));
         list.add(ValueAccessor.compile(a));
+        list.add(ValueAccessor.compile(a,new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompilerImpl())));
+        list.add(ValueAccessor.compile(a,new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDTCompilerImpl())));
         list.add(ValueAccessor.lambda(a));
         for (ValueAccessor each : list)
         {
