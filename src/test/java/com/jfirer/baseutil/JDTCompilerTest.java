@@ -1,6 +1,8 @@
-package com.jfirer.baseutil.smc.compiler;
+package com.jfirer.baseutil;
 
-import com.jfirer.baseutil.smc.model.ClassModel;
+import com.jfirer.baseutil.smc.compiler.CompileHelper;
+import com.jfirer.baseutil.smc.compiler.Compiler;
+import com.jfirer.baseutil.smc.compiler.CompilerFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,7 +47,7 @@ public class JDTCompilerTest {
     public void testCompileHelperWithJDT() throws IOException, ClassNotFoundException {
         // Test that we can create a CompileHelper with JDT compiler
         try {
-            Compiler jdtCompiler = CompilerFactory.createJDTCompiler();
+            Compiler      jdtCompiler   = CompilerFactory.createJDTCompiler();
             CompileHelper compileHelper = new CompileHelper(Thread.currentThread().getContextClassLoader(), jdtCompiler);
             Assert.assertNotNull("CompileHelper with JDT compiler should be created", compileHelper);
         } catch (RuntimeException e) {
@@ -58,7 +60,7 @@ public class JDTCompilerTest {
     public void testCompileHelperCreation() throws IOException, ClassNotFoundException {
         // Test that we can create a CompileHelper
         try {
-            CompileHelper compileHelper = new CompileHelper(Thread.currentThread().getContextClassLoader());
+            CompileHelper compileHelper = new CompileHelper();
             Assert.assertNotNull("CompileHelper should be created", compileHelper);
         } catch (RuntimeException e) {
             Assert.fail("Should be able to create CompileHelper: " + e.getMessage());

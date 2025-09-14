@@ -18,12 +18,11 @@ import java.util.*;
  *
  * @author Lin Bin
  */
-public class JDTCompilerImpl implements com.jfirer.baseutil.smc.compiler.Compiler
+public class JDTCompiler implements com.jfirer.baseutil.smc.compiler.Compiler
 {
     @Override
-    public Class<?> compile(ClassModel classModel, ClassLoader classLoader) throws IOException, ClassNotFoundException
+    public Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
-        System.out.println("JDT编译正在执行");
         // Convert ClassModel to source code
         String sourceCode = classModel.toStringWithLineNo();
         String fileName   = classModel.fileName();
@@ -121,10 +120,7 @@ public class JDTCompilerImpl implements com.jfirer.baseutil.smc.compiler.Compile
                 classBytes.put(classNameResult.replace('/', '.'), classFile.getBytes());
             }
         }
-        // Load the compiled class
-        MemoryClassLoader memoryClassLoader = new MemoryClassLoader(classLoader);
-        memoryClassLoader.addClassBytes(classBytes);
-        return memoryClassLoader.loadClass(className);
+        return classBytes;
     }
 
     /**

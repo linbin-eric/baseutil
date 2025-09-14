@@ -1,8 +1,8 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.smc.compiler.Compiler;
-import com.jfirer.baseutil.smc.compiler.JDKCompilerImpl;
-import com.jfirer.baseutil.smc.compiler.JDTCompilerImpl;
+import com.jfirer.baseutil.smc.compiler.JDKCompiler;
+import com.jfirer.baseutil.smc.compiler.JDTCompiler;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import com.jfirer.baseutil.smc.model.ConstructorModel;
@@ -33,8 +33,8 @@ public class CompilerTest
     @Parameters(name = "{1}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            { new JDTCompilerImpl(), "JDTCompiler" },
-            { new JDKCompilerImpl(), "JDKCompiler" }
+            { new JDTCompiler(), "JDTCompiler" },
+            { new JDKCompiler(), "JDKCompiler" }
         });
     }
 

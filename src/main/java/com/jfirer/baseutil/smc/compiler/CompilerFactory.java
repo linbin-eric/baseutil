@@ -16,7 +16,7 @@ public class CompilerFactory {
      */
     public static Compiler createJDTCompiler() {
         try {
-            return new JDTCompilerImpl();
+            return new JDTCompiler();
         } catch (Throwable t) {
             throw new RuntimeException("无法创建JDT编译器，请确保添加了Eclipse JDT依赖。", t);
         }
@@ -30,7 +30,7 @@ public class CompilerFactory {
      * @throws RuntimeException if JDK compiler cannot be created
      */
     public static Compiler createJDKCompiler() {
-        return new JDKCompilerImpl();
+        return new JDKCompiler();
     }
     
     /**

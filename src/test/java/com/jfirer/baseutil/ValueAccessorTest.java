@@ -4,8 +4,8 @@ import com.jfirer.baseutil.reflect.valueaccessor.GetInt;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import com.jfirer.baseutil.reflect.valueaccessor.impl.LambdaAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
-import com.jfirer.baseutil.smc.compiler.JDKCompilerImpl;
-import com.jfirer.baseutil.smc.compiler.JDTCompilerImpl;
+import com.jfirer.baseutil.smc.compiler.JDKCompiler;
+import com.jfirer.baseutil.smc.compiler.JDTCompiler;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,8 +56,8 @@ public class ValueAccessorTest
         return Arrays.asList(new Object[][]{
             {(Function<Field, ValueAccessor>) ValueAccessor::standard, "Standard"},
             {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field), "Compile-Default"},
-            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompilerImpl())), "Compile-JDK"},
-            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDTCompilerImpl())), "Compile-JDT"},
+            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompiler())), "Compile-JDK"},
+            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDTCompiler())), "Compile-JDT"},
             {(Function<Field, ValueAccessor>) ValueAccessor::lambda, "Lambda"}
         });
     }

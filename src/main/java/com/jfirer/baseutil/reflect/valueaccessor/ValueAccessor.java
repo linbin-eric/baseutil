@@ -676,7 +676,7 @@ public interface ValueAccessor
             methodModel.setBody("return ((" + SmcHelper.getReferenceName(field.getDeclaringClass(), classModel) + ")entity)." + getMethodName + "();");
             classModel.putMethodModel(methodModel);
             methodModel.setFinal(true);
-            Class<GetInt> compile = (Class<GetInt>) new CompileHelper(Thread.currentThread().getContextClassLoader()).compile(classModel);
+            Class<GetInt> compile = (Class<GetInt>) new CompileHelper().compile(classModel);
             return compile.getConstructor().newInstance();
         }
         catch (Throwable e)
