@@ -9,14 +9,20 @@ import com.jfirer.baseutil.smc.compiler.JDTCompilerImpl;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.function.Function;
 
+@RunWith(Parameterized.class)
 @Data
 public class ValueAccessorTest
 {
@@ -37,7 +43,24 @@ public class ValueAccessorTest
     Short     s1   = 1;
     Long      l1   = 1l;
     String    name = "sadsas";
+    @Parameter
+    public Function<Field, ValueAccessor> accessorFactory;
+
+    @Parameter(1)
+    public String accessorType;
+
     private CompileHelper compileHelper = new CompileHelper();
+
+    @Parameters(name = "{1}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+            {(Function<Field, ValueAccessor>) ValueAccessor::standard, "Standard"},
+            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field), "Compile-Default"},
+            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompilerImpl())), "Compile-JDK"},
+            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDTCompilerImpl())), "Compile-JDT"},
+            {(Function<Field, ValueAccessor>) ValueAccessor::lambda, "Lambda"}
+        });
+    }
 
     @Test
     public void testread() throws NoSuchFieldException
@@ -60,230 +83,150 @@ public class ValueAccessorTest
         Field               s1     = ValueAccessorTest.class.getDeclaredField("s1");
         Field               l1     = ValueAccessorTest.class.getDeclaredField("l1");
         Field               name   = ValueAccessorTest.class.getDeclaredField("name");
-        List<ValueAccessor> list   = new ArrayList<>();
-        list.add(ValueAccessor.standard(a));
-        list.add(ValueAccessor.compile(a));
-        list.add(ValueAccessor.compile(a,new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompilerImpl())));
-        list.add(ValueAccessor.compile(a,new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDTCompilerImpl())));
-        list.add(ValueAccessor.lambda(a));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.a, each.getInt(target));
-            Assert.assertEquals(target.a, each.get(target));
-            each.set(target, 2);
+
+        testField(target, a, accessorFactory.apply(a));
+        testField(target, b, accessorFactory.apply(b));
+        testField(target, c, accessorFactory.apply(c));
+        testField(target, d, accessorFactory.apply(d));
+        testField(target, f, accessorFactory.apply(f));
+        testField(target, bb, accessorFactory.apply(bb));
+        testField(target, s, accessorFactory.apply(s));
+        testField(target, l, accessorFactory.apply(l));
+        testField(target, a1, accessorFactory.apply(a1));
+        testField(target, b1, accessorFactory.apply(b1));
+        testField(target, c1, accessorFactory.apply(c1));
+        testField(target, d1, accessorFactory.apply(d1));
+        testField(target, f1, accessorFactory.apply(f1));
+        testField(target, bb1, accessorFactory.apply(bb1));
+        testField(target, s1, accessorFactory.apply(s1));
+        testField(target, l1, accessorFactory.apply(l1));
+        testField(target, name, accessorFactory.apply(name));
+    }
+
+    private void testField(ValueAccessorTest target, Field field, ValueAccessor accessor) {
+        String fieldName = field.getName();
+        Class<?> fieldType = field.getType();
+
+        if (fieldType == int.class) {
+            Assert.assertEquals(target.a, accessor.getInt(target));
+            Assert.assertEquals(target.a, accessor.get(target));
+            accessor.set(target, 2);
             Assert.assertEquals(2, target.a);
-            each.setObject(target, 3);
+            accessor.setObject(target, 3);
             Assert.assertEquals(3, target.a);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(b));
-        list.add(ValueAccessor.compile(b));
-        list.add(ValueAccessor.lambda(b));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.b, each.getByte(target));
-            Assert.assertEquals(target.b, each.get(target));
-            each.set(target, (byte) 2);
+        } else if (fieldType == byte.class) {
+            Assert.assertEquals(target.b, accessor.getByte(target));
+            Assert.assertEquals(target.b, accessor.get(target));
+            accessor.set(target, (byte) 2);
             Assert.assertEquals(2, target.b);
-            each.setObject(target, (byte) 3);
+            accessor.setObject(target, (byte) 3);
             Assert.assertEquals(3, target.b);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(c));
-        list.add(ValueAccessor.compile(c));
-        list.add(ValueAccessor.lambda(c));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.c, each.getChar(target));
-            Assert.assertEquals(target.c, each.get(target));
-            each.set(target, 'd');
+        } else if (fieldType == char.class) {
+            Assert.assertEquals(target.c, accessor.getChar(target));
+            Assert.assertEquals(target.c, accessor.get(target));
+            accessor.set(target, 'd');
             Assert.assertEquals('d', target.c);
-            each.setObject(target, 'e');
+            accessor.setObject(target, 'e');
             Assert.assertEquals('e', target.c);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(d));
-        list.add(ValueAccessor.compile(d));
-        list.add(ValueAccessor.lambda(d));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.d, each.getDouble(target), 0.0001);
-            Assert.assertEquals(target.d, each.get(target));
-            each.set(target, 2.0);
+        } else if (fieldType == double.class) {
+            Assert.assertEquals(target.d, accessor.getDouble(target), 0.0001);
+            Assert.assertEquals(target.d, accessor.get(target));
+            accessor.set(target, 2.0);
             Assert.assertEquals(2.0, target.d, 0.0001);
-            each.setObject(target, 3.0);
+            accessor.setObject(target, 3.0);
             Assert.assertEquals(3.0, target.d, 0.0001);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(f));
-        list.add(ValueAccessor.compile(f));
-        list.add(ValueAccessor.lambda(f));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.f, each.getFloat(target), 0.0001);
-            Assert.assertEquals(target.f, each.get(target));
-            each.set(target, 2.0f);
+        } else if (fieldType == float.class) {
+            Assert.assertEquals(target.f, accessor.getFloat(target), 0.0001);
+            Assert.assertEquals(target.f, accessor.get(target));
+            accessor.set(target, 2.0f);
             Assert.assertEquals(2.0f, target.f, 0.0001);
-            each.setObject(target, 3.0f);
+            accessor.setObject(target, 3.0f);
             Assert.assertEquals(3.0f, target.f, 0.0001);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(bb));
-        list.add(ValueAccessor.compile(bb));
-        list.add(ValueAccessor.lambda(bb));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.bb, each.getBoolean(target));
-            Assert.assertEquals(target.bb, each.get(target));
-            each.set(target, true);
+        } else if (fieldType == boolean.class) {
+            Assert.assertEquals(target.bb, accessor.getBoolean(target));
+            Assert.assertEquals(target.bb, accessor.get(target));
+            accessor.set(target, true);
             Assert.assertTrue(target.bb);
-            each.setObject(target, true);
+            accessor.setObject(target, true);
             Assert.assertTrue(target.bb);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(s));
-        list.add(ValueAccessor.compile(s));
-        list.add(ValueAccessor.lambda(s));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.s, each.getShort(target));
-            Assert.assertEquals(target.s, each.get(target));
-            each.set(target, (short) 2);
+        } else if (fieldType == short.class) {
+            Assert.assertEquals(target.s, accessor.getShort(target));
+            Assert.assertEquals(target.s, accessor.get(target));
+            accessor.set(target, (short) 2);
             Assert.assertEquals(2, target.s);
-            each.setObject(target, (short) 3);
+            accessor.setObject(target, (short) 3);
             Assert.assertEquals(3, target.s);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(l));
-        list.add(ValueAccessor.compile(l));
-        list.add(ValueAccessor.lambda(l));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.l, each.getLong(target));
-            Assert.assertEquals(target.l, each.get(target));
-            each.set(target, 2L);
+        } else if (fieldType == long.class) {
+            Assert.assertEquals(target.l, accessor.getLong(target));
+            Assert.assertEquals(target.l, accessor.get(target));
+            accessor.set(target, 2L);
             Assert.assertEquals(2L, target.l);
-            each.setObject(target, 3L);
+            accessor.setObject(target, 3L);
             Assert.assertEquals(3L, target.l);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(a1));
-        list.add(ValueAccessor.compile(a1));
-        list.add(ValueAccessor.lambda(a1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.a1, each.getReference(target));
-            Assert.assertEquals(target.a1, each.get(target));
-            each.setObject(target, 2);
+        } else if (fieldType == Integer.class) {
+            Assert.assertEquals(target.a1, accessor.getReference(target));
+            Assert.assertEquals(target.a1, accessor.get(target));
+            accessor.setObject(target, 2);
             Assert.assertEquals(Integer.valueOf(2), target.a1);
-            each.setReference(target, 3);
+            accessor.setReference(target, 3);
             Assert.assertEquals(Integer.valueOf(3), target.a1);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(b1));
-        list.add(ValueAccessor.compile(b1));
-        list.add(ValueAccessor.lambda(b1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.b1, each.getReference(target));
-            Assert.assertEquals(target.b1, each.get(target));
-            each.setObject(target, Byte.valueOf((byte) 2));
+        } else if (fieldType == Byte.class) {
+            Assert.assertEquals(target.b1, accessor.getReference(target));
+            Assert.assertEquals(target.b1, accessor.get(target));
+            accessor.setObject(target, Byte.valueOf((byte) 2));
             Assert.assertEquals(Byte.valueOf((byte) 2), target.b1);
-            each.setReference(target, Byte.valueOf((byte) 3));
+            accessor.setReference(target, Byte.valueOf((byte) 3));
             Assert.assertEquals(Byte.valueOf((byte) 3), target.b1);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(c1));
-        list.add(ValueAccessor.compile(c1));
-        list.add(ValueAccessor.lambda(c1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.c1, each.getReference(target));
-            Assert.assertEquals(target.c1, each.get(target));
-            each.setObject(target, Character.valueOf('d'));
+        } else if (fieldType == Character.class) {
+            Assert.assertEquals(target.c1, accessor.getReference(target));
+            Assert.assertEquals(target.c1, accessor.get(target));
+            accessor.setObject(target, Character.valueOf('d'));
             Assert.assertEquals(Character.valueOf('d'), target.c1);
-            each.setReference(target, 'e');
+            accessor.setReference(target, 'e');
             Assert.assertEquals(Character.valueOf('e'), target.c1);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(d1));
-        list.add(ValueAccessor.compile(d1));
-        list.add(ValueAccessor.lambda(d1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.d1, each.getReference(target));
-            Assert.assertEquals(target.d1, each.get(target));
-            each.setObject(target, 2.0);
+        } else if (fieldType == Double.class) {
+            Assert.assertEquals(target.d1, accessor.getReference(target));
+            Assert.assertEquals(target.d1, accessor.get(target));
+            accessor.setObject(target, 2.0);
             Assert.assertEquals(2.0, target.d1, 0.0001);
-            each.setReference(target, 3.0);
+            accessor.setReference(target, 3.0);
             Assert.assertEquals(3.0, target.d1, 0.0001);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(f1));
-        list.add(ValueAccessor.compile(f1));
-        list.add(ValueAccessor.lambda(f1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.f1, each.getReference(target));
-            Assert.assertEquals(target.f1, each.get(target));
-            each.setObject(target, 2.0f);
+        } else if (fieldType == Float.class) {
+            Assert.assertEquals(target.f1, accessor.getReference(target));
+            Assert.assertEquals(target.f1, accessor.get(target));
+            accessor.setObject(target, 2.0f);
             Assert.assertEquals(2.0f, target.f1, 0.0001);
-            each.setReference(target, 3.0f);
+            accessor.setReference(target, 3.0f);
             Assert.assertEquals(3.0f, target.f1, 0.0001);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(bb1));
-        list.add(ValueAccessor.compile(bb1));
-        list.add(ValueAccessor.lambda(bb1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.bb1, each.getReference(target));
-            Assert.assertEquals(target.bb1, each.get(target));
-            each.setObject(target, true);
+        } else if (fieldType == Boolean.class) {
+            Assert.assertEquals(target.bb1, accessor.getReference(target));
+            Assert.assertEquals(target.bb1, accessor.get(target));
+            accessor.setObject(target, true);
             Assert.assertTrue(target.bb1);
-            each.setReference(target, false);
+            accessor.setReference(target, false);
             Assert.assertFalse(target.bb1);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(s1));
-        list.add(ValueAccessor.compile(s1));
-        list.add(ValueAccessor.lambda(s1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.s1, each.getReference(target));
-            Assert.assertEquals(target.s1, each.get(target));
-            each.setObject(target, (short) 2);
+        } else if (fieldType == Short.class) {
+            Assert.assertEquals(target.s1, accessor.getReference(target));
+            Assert.assertEquals(target.s1, accessor.get(target));
+            accessor.setObject(target, (short) 2);
             Assert.assertEquals(Short.valueOf((short) 2), target.s1);
-            each.setReference(target, (short) 3);
+            accessor.setReference(target, (short) 3);
             Assert.assertEquals(Short.valueOf((short) 3), target.s1);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(l1));
-        list.add(ValueAccessor.compile(l1));
-        list.add(ValueAccessor.lambda(l1));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.l1, each.getReference(target));
-            Assert.assertEquals(target.l1, each.get(target));
-            each.setObject(target, 2L);
+        } else if (fieldType == Long.class) {
+            Assert.assertEquals(target.l1, accessor.getReference(target));
+            Assert.assertEquals(target.l1, accessor.get(target));
+            accessor.setObject(target, 2L);
             Assert.assertEquals(Long.valueOf(2L), target.l1);
-            each.setReference(target, 3L);
+            accessor.setReference(target, 3L);
             Assert.assertEquals(Long.valueOf(3L), target.l1);
-        }
-        list.clear();
-        list.add(ValueAccessor.standard(name));
-        list.add(ValueAccessor.compile(name));
-        list.add(ValueAccessor.lambda(name));
-        for (ValueAccessor each : list)
-        {
-            Assert.assertEquals(target.name, each.getReference(target));
-            Assert.assertEquals(target.name, each.get(target));
-            each.setObject(target, "hello");
+        } else if (fieldType == String.class) {
+            Assert.assertEquals(target.name, accessor.getReference(target));
+            Assert.assertEquals(target.name, accessor.get(target));
+            accessor.setObject(target, "hello");
             Assert.assertEquals("hello", target.name);
-            each.setReference(target, "world");
+            accessor.setReference(target, "world");
             Assert.assertEquals("world", target.name);
         }
-        list.clear();
     }
 
     @Test
