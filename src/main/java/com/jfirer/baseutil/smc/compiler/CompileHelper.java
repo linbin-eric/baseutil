@@ -29,7 +29,7 @@ public class CompileHelper
             if (SpringBootCompiler.isSpringBootEnvironment())
             {
                 System.out.println("[CompileHelper] 检测到Spring Boot环境，使用SpringBootCompiler");
-                this.compiler = new SpringBootCompiler(classLoader);
+                this.compiler = new SpringBootCompiler2(classLoader);
             }
             else if (ToolProvider.getSystemJavaCompiler() != null)
             {
