@@ -82,7 +82,7 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         // 如果是CLASS_PATH位置，尝试从LaunchedClassLoader加载类
         if (location == StandardLocation.CLASS_PATH && kinds.contains(Kind.CLASS))
         {
-            List<JavaFileObject> result          = new ArrayList<>();
+            List<JavaFileObject> result = new ArrayList<>();
             List<JavaFileObject> launchedClasses = findClassesFromLaunchedClassLoader(packageName, recurse);
             result.addAll(launchedClasses);
             return result;
@@ -117,11 +117,6 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
             // 如果递归查找，处理子包
             if (recurse)
             {
-//                String[] subPackages = findSubPackages(packageName);
-//                for (String subPackage : subPackages)
-//                {
-//                    result.addAll(findClassesFromLaunchedClassLoader(subPackage, true));
-//                }
                 throw new UnsupportedOperationException("不支持递归查询");
             }
         }
@@ -140,12 +135,16 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         List<JavaFileObject> result = new ArrayList<>();
         log.trace("[SpringBootJavaFileManager] 开始在JAR中查找包:{}", packageName);
         log.trace("  - JAR URL: {}", jarUrl);
-        log.trace("  - 协议: {}", jarUrl.getProtocol());
-        log.trace("  - 包名: {}", packageName);
-        log.trace("  - 递归查找: {}", recurse);
-        log.trace("  - 类加载器: {}", classLoader.getClass().getName());
+        log.info("  - 协议: {}", jarUrl.getProtocol());
+        log.info("  - 包名: {}", packageName);
+        log.info("  - 递归查找: {}", recurse);
+        log.info("  - 类加载器: {}", classLoader.getClass().getName());
         try
         {
+            // 检查是否是nested协议（包括jar:nested:格式）
+            String protocol = jarUrl.getProtocol();
+            String urlStr   = jarUrl.toString();
+            log.info("[SpringBootJavaFileManager] 检查协议: protocol={}, url={}", protocol, urlStr);
             return findClasses2(packageName);
         }
         catch (Exception e)
@@ -161,165 +160,29 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
     @SneakyThrows
     private List<JavaFileObject> findClasses2(String packageName)
     {
-        List<JavaFileObject> result           = new ArrayList<>();
-        List<String>         classesInPackage = ClassScanner.getClassesInPackage(packageName);
-        log.info("在包:{}下面发现类:{}", packageName, classesInPackage);
+        List<JavaFileObject>                result    = new ArrayList<>();
+        List<String> classesInPackage = ClassScanner.getClassesInPackage(packageName);
+        log.info("在包:{}下面发现类:{}",packageName,classesInPackage);
         for (String s : classesInPackage)
         {
             String         simpleUri  = "nested:///BOOT-INF/lib/" + s;
             java.net.URI   uri        = java.net.URI.create(simpleUri);
-            JavaFileObject fileObject = new NestedJarJavaFileObject(s, uri, s.replace('.', '/') + ".class");
+            JavaFileObject fileObject = new NestedJarJavaFileObject(s, uri, s.replace('.','/')+".class");
             result.add(fileObject);
         }
         return result;
     }
 
-    /**
-     * 在嵌套JAR文件中查找类（Spring Boot 3.x nested协议）
-     */
-    private List<JavaFileObject> findClassesInNestedJar(java.net.URL nestedUrl, String packageName, boolean recurse)
-    {
-        List<JavaFileObject> result = new ArrayList<>();
-        log.info("[SpringBootJavaFileManager] 开始在nested JAR中查找包:{}", packageName);
-        log.info("  - nested URL: {}", nestedUrl);
-        log.info("  - 包名: {}", packageName);
-        log.info("  - 递归查找: {}", recurse);
-        log.info("  - 类加载器: {}", classLoader.getClass().getName());
-        try
-        {
-            String packagePath = packageName.replace('.', '/') + '/';
-            log.info("  - 转换后的包路径: {}", packagePath);
-            // 在Spring Boot 3.x nested环境中，使用简化的策略
-            // 直接尝试通过类名构造和查找类
-            log.info("  - 尝试通过类名模式查找类");
-            // 获取类加载器的所有URLs，用于构造可能的类路径
-            try
-            {
-                java.lang.reflect.Method getURLsMethod = classLoader.getClass().getMethod("getURLs");
-                java.net.URL[]           urls          = (java.net.URL[]) getURLsMethod.invoke(classLoader);
-                log.info("  - 类加载器有 {} 个URL", urls.length);
-                // 对于每个URL，尝试查找其中的类
-                for (java.net.URL url : urls)
-                {
-                    String urlStr = url.toString();
-                    log.info("    检查URL: {}", urlStr);
-                    // 如果是nested协议且包含BOOT-INF/classes
-                    if (urlStr.contains("nested:") && urlStr.contains("BOOT-INF/classes"))
-                    {
-                        log.info("    发现nested classes URL");
-                        // 构造几个可能的类路径进行测试
-                        String[] testClasses = {packageName + ".HelloComponent", packageName + ".TestClass", "com.springboot.test.HelloComponent", "com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor", "org.slf4j.event.DefaultLoggingEvent"};
-                        for (String testClass : testClasses)
-                        {
-                            try
-                            {
-                                // 尝试加载类来验证是否存在
-                                Class<?> testClazz = classLoader.loadClass(testClass);
-                                log.info("    class成功加载类: {}", testClass);
-                                // 构造类文件的entry名称
-                                String classEntry = testClass.replace('.', '/') + ".class";
-                                log.info("    class类entry: {}", classEntry);
-                                // 创建对应的JavaFileObject
-                                try
-                                {
-                                    // 使用简化的URI创建方式，避免复杂的嵌套URL
-                                    String         simpleUri  = "nested:///BOOT-INF/classes/ssadasdadads" + classEntry;
-                                    java.net.URI   uri        = java.net.URI.create("");
-                                    JavaFileObject fileObject = new NestedJarJavaFileObject(testClass, uri, classEntry);
-                                    result.add(fileObject);
-                                    log.info("    成功创建类文件对象: {}", testClass);
-                                }
-                                catch (Exception e)
-                                {
-                                    log.warn("    创建类文件对象失败: {}", e.getMessage());
-                                    log.warn("    异常详情:", e);
-                                }
-                            }
-                            catch (ClassNotFoundException e)
-                            {
-                                log.debug("    类不存在: {}", testClass);
-                            }
-                        }
-                    }
-                    // 如果是nested协议且包含BOOT-INF/lib，检查是否包含目标包的类
-                    else if (urlStr.contains("nested:") && urlStr.contains("BOOT-INF/lib"))
-                    {
-                        log.info("    发现nested lib URL: {}", urlStr);
-                        // 尝试加载目标类，类加载器会自动搜索所有lib
-                        String[] libTestClasses = {"org.slf4j.event.DefaultLoggingEvent", "org.slf4j.event.LoggingEvent",    // 添加父类/接口
-                                "org.slf4j.Logger", "org.springframework.boot.SpringApplication"};
-                        for (String testClass : libTestClasses)
-                        {
-                            // 只处理在目标包名下的类，或者特定的已知类
-                            if (testClass.startsWith(packageName) || testClass.equals("org.slf4j.event.DefaultLoggingEvent") || testClass.equals("org.slf4j.event.LoggingEvent") || testClass.startsWith("org.slf4j") && packageName.startsWith("org.slf4j"))
-                            {
-                                try
-                                {
-                                    Class<?> testClazz = classLoader.loadClass(testClass);
-                                    log.info("    从lib中成功加载类: {}", testClass);
-                                    // 构造类文件的entry名称
-                                    String classEntry = testClass.replace('.', '/') + ".class";
-                                    log.info("    lib类entry: {}", classEntry);
-                                    // 创建对应的JavaFileObject
-                                    try
-                                    {
-                                        // 为lib中的类创建URI
-                                        String simpleUri = "nested:///BOOT-INF/libsasdassdasda/" + testClass + ".class";
-                                        simpleUri = "";
-                                        java.net.URI   uri        = java.net.URI.create(simpleUri);
-                                        JavaFileObject fileObject = new NestedJarJavaFileObject(testClass, uri, classEntry);
-                                        result.add(fileObject);
-                                        log.info("    成功创建lib类文件对象: {}", testClass);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        log.warn("    创建lib类文件对象失败: {}", e.getMessage());
-                                    }
-                                }
-                                catch (ClassNotFoundException e)
-                                {
-                                    log.debug("    lib中类不存在: {}", testClass);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                log.warn("  获取类加载器URLs失败: {}", e.getMessage());
-            }
-        }
-        catch (Exception e)
-        {
-            log.warn("[SpringBootJavaFileManager] 处理nested JAR文件失败: {}", e.getMessage());
-            log.warn("[SpringBootJavaFileManager] 异常类型: {}", e.getClass().getName());
-            log.warn("[SpringBootJavaFileManager] 异常堆栈:", e);
-        }
-        log.info("[SpringBootJavaFileManager] nested JAR查找完成，找到 {} 个类", result.size());
-//        // 输出找到的所有类名
-//        if (!result.isEmpty())
-//        {
-//            log.info("[SpringBootJavaFileManager] 找到的类列表:");
-//            for (JavaFileObject fileObj : result)
-//            {
-//                log.info("  - {}", fileObj.getName());
-//            }
-//        }
-//        else
-//        {
-//            log.info("[SpringBootJavaFileManager] 未找到任何类");
-//        }
-        return result;
-    }
+
+
 
     public static class ClassScanner
     {
         public static List<String> getClassesInPackage(String packageName) throws IOException, ClassNotFoundException
         {
             List<String> classes     = new ArrayList<>();
-            ClassLoader  classLoader = Thread.currentThread().getContextClassLoader();
-            String       path        = packageName.replace('.', '/');
+            ClassLoader    classLoader = Thread.currentThread().getContextClassLoader();
+            String         path        = packageName.replace('.', '/');
             // 获取包对应的资源
             Enumeration<URL> resources = classLoader.getResources(path);
             while (resources.hasMoreElements())
@@ -371,7 +234,7 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
 
         private static List<String> findClassesInJar(URL jarUrl, String packageName) throws IOException, ClassNotFoundException
         {
-            List<String>          classes       = new ArrayList<>();
+            List<String>        classes       = new ArrayList<>();
             JarURLConnection      jarConnection = (JarURLConnection) jarUrl.openConnection();
             JarFile               jarFile       = jarConnection.getJarFile();
             Enumeration<JarEntry> entries       = jarFile.entries();
@@ -387,52 +250,9 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
             }
             return classes;
         }
+
     }
 
-    /**
-     * 查找子包
-     */
-    private String[] findSubPackages(String packageName)
-    {
-        Set<String> subPackages = new HashSet<>();
-        try
-        {
-            String                              resourcePath = packageName.replace('.', '/');
-            java.util.Enumeration<java.net.URL> resources    = classLoader.getResources(resourcePath);
-            while (resources.hasMoreElements())
-            {
-                java.net.URL url = resources.nextElement();
-                if ("jar".equals(url.getProtocol()))
-                {
-                    // 处理JAR文件
-                    java.net.JarURLConnection                     jarConnection = (java.net.JarURLConnection) url.openConnection();
-                    java.util.jar.JarFile                         jarFile       = jarConnection.getJarFile();
-                    String                                        packagePath   = packageName.replace('.', '/') + '/';
-                    java.util.Enumeration<java.util.jar.JarEntry> entries       = jarFile.entries();
-                    while (entries.hasMoreElements())
-                    {
-                        java.util.jar.JarEntry entry     = entries.nextElement();
-                        String                 entryName = entry.getName();
-                        if (entryName.startsWith(packagePath) && entryName.length() > packagePath.length())
-                        {
-                            String remaining  = entryName.substring(packagePath.length());
-                            int    slashIndex = remaining.indexOf('/');
-                            if (slashIndex > 0)
-                            {
-                                String subPackage = remaining.substring(0, slashIndex);
-                                subPackages.add(packageName + "." + subPackage);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            log.warn("[SpringBootJavaFileManager] 查找子包失败: {}", e.getMessage());
-        }
-        return subPackages.toArray(new String[0]);
-    }
 
     /**
      * 内存输入Java文件对象
@@ -511,6 +331,11 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
             this.className = className;
             this.nestedUrl = null; // 不再需要URL，直接使用类加载器
             this.entryName = entryName;
+        }
+
+        NestedJarJavaFileObject(String className, java.net.URL nestedUrl, String entryName)
+        {
+            this(className, java.net.URI.create(""), entryName);
         }
 
         @Override
