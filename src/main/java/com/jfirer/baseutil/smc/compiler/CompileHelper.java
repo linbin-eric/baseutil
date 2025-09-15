@@ -26,8 +26,14 @@ public class CompileHelper
         this.memoryClassLoader = new MemoryClassLoader(classLoader);
         if (compiler == null)
         {
-            if (ToolProvider.getSystemJavaCompiler() != null)
+            if (SpringBootCompiler.isSpringBootEnvironment())
             {
+                System.out.println("[CompileHelper] 检测到Spring Boot环境，使用SpringBootCompiler");
+                this.compiler = new SpringBootCompiler(classLoader);
+            }
+            else if (ToolProvider.getSystemJavaCompiler() != null)
+            {
+                System.out.println("[CompileHelper] 检测到标准JDK环境，使用JDKCompiler");
                 this.compiler = new JDKCompiler();
             }
             else
