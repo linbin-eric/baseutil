@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -103,7 +104,7 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
             java.net.URL packageUrl = classLoader.getResource(resourcePath);
             if (packageUrl != null)
             {
-                log.info("[SpringBootJavaFileManager] 找到包资源: {} -> {}", packageName, packageUrl);
+                log.debug("[SpringBootJavaFileManager] 找到包资源: {} -> {}", packageName, packageUrl);
                 // 处理不同类型的URL
                 if ("jar".equals(packageUrl.getProtocol()))
                 {
@@ -126,7 +127,7 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         }
         return result;
     }
-
+private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHashMap<>();
     /**
      * 在JAR文件中查找类
      */
@@ -135,17 +136,17 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         List<JavaFileObject> result = new ArrayList<>();
         log.trace("[SpringBootJavaFileManager] 开始在JAR中查找包:{}", packageName);
         log.trace("  - JAR URL: {}", jarUrl);
-        log.info("  - 协议: {}", jarUrl.getProtocol());
-        log.info("  - 包名: {}", packageName);
-        log.info("  - 递归查找: {}", recurse);
-        log.info("  - 类加载器: {}", classLoader.getClass().getName());
+        log.trace("  - 协议: {}", jarUrl.getProtocol());
+        log.trace("  - 包名: {}", packageName);
+        log.trace("  - 递归查找: {}", recurse);
+        log.trace("  - 类加载器: {}", classLoader.getClass().getName());
         try
         {
             // 检查是否是nested协议（包括jar:nested:格式）
             String protocol = jarUrl.getProtocol();
             String urlStr   = jarUrl.toString();
             log.info("[SpringBootJavaFileManager] 检查协议: protocol={}, url={}", protocol, urlStr);
-            return findClasses2(packageName);
+            result= cached.computeIfAbsent(packageName, k->findClasses2(k));
         }
         catch (Exception e)
         {
@@ -153,24 +154,60 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
             log.warn("[SpringBootJavaFileManager] 异常类型: {}", e.getClass().getName());
             log.warn("[SpringBootJavaFileManager] 异常堆栈:", e);
         }
-        log.info("[SpringBootJavaFileManager] JAR查找完成，找到 {} 个类", result.size());
+        log.info("[SpringBootJavaFileManager] 包:{}查找完成，找到 {} 个类",packageName, result.size());
         return result;
     }
 
     @SneakyThrows
     private List<JavaFileObject> findClasses2(String packageName)
     {
+        String           resourcePath = packageName.replace('.', '/');
+        Enumeration<URL> resources    = classLoader.getResources(resourcePath);
         List<JavaFileObject>                result    = new ArrayList<>();
-        List<String> classesInPackage = ClassScanner.getClassesInPackage(packageName);
-        log.info("在包:{}下面发现类:{}",packageName,classesInPackage);
-        for (String s : classesInPackage)
+        while (resources.hasMoreElements())
         {
-            String         simpleUri  = "nested:///BOOT-INF/lib/" + s;
-            java.net.URI   uri        = java.net.URI.create(simpleUri);
-            JavaFileObject fileObject = new NestedJarJavaFileObject(s, uri, s.replace('.','/')+".class");
-            result.add(fileObject);
+            URL url = resources.nextElement();
+            log.debug("[SpringBootJavaFileManager] 找到资源: {} -> {}", resourcePath, url);
+            if (url.getProtocol().equals("jar"))
+            {
+                JarFile               jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
+                Enumeration<JarEntry> entries = jarFile.entries();
+                while (entries.hasMoreElements())
+                {
+                    JarEntry entry     = entries.nextElement();
+                    String   entryName = entry.getName();
+                    log.debug("发现entry:{}",entryName);
+                    if (entryName.startsWith(resourcePath+"/")==false)
+                    {
+                        continue;
+                    }
+                    String   substring = entryName.substring(resourcePath.length()+1);
+                    if (substring.length() > 6 && entryName.endsWith(".class"))
+                    {
+                        if (substring.contains("/") == false)
+                        {
+                            log.debug("在包:{}下找到类:{}", packageName, substring);
+                            java.net.URI   uri        = java.net.URI.create("");
+                            JavaFileObject fileObject = new NestedJarJavaFileObject(entryName.substring(0, entryName.length()-6).replace('/','.'), uri, entryName);
+                            result.add(fileObject);
+                        }
+                    }
+                }
+//                ClassScanner.findClassesInJar(url, packageName);
+            }
         }
         return result;
+//
+//        List<String> classesInPackage = ClassScanner.getClassesInPackage(packageName);
+//        log.info("在包:{}下面发现类:{}",packageName,classesInPackage.size());
+//        for (String s : classesInPackage)
+//        {
+//            String         simpleUri  = "nested:///BOOT-INF/lib/" + s;
+//            java.net.URI   uri        = java.net.URI.create(simpleUri);
+//            JavaFileObject fileObject = new NestedJarJavaFileObject(s, uri, s.replace('.','/')+".class");
+//            result.add(fileObject);
+//        }
+//        return result;
     }
 
 

@@ -22,8 +22,9 @@ import java.util.Map;
 @Slf4j
 public class SpringBootCompiler2 implements Compiler
 {
-    private final JavaCompiler compiler;
-    private final ClassLoader  classLoader;
+    private final JavaCompiler              compiler;
+    private final ClassLoader               classLoader;
+    private       SpringBootJavaFileManager manager;
 
     public SpringBootCompiler2()
     {
@@ -38,6 +39,8 @@ public class SpringBootCompiler2 implements Compiler
             throw new IllegalStateException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK/lib目录下的tools.jar拷贝到jre/lib目录。如果是linux，将JAVA_HOME设置为jdk的");
         }
         this.classLoader = classLoader;
+        // 创建支持LaunchedClassLoader的文件管理器
+        manager = new SpringBootJavaFileManager(compiler.getStandardFileManager(null, null, null), classLoader);
     }
 
     /**
@@ -87,10 +90,8 @@ public class SpringBootCompiler2 implements Compiler
     }
 
     @Override
-    public Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
+    public synchronized Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
-        // 创建支持LaunchedClassLoader的文件管理器
-        SpringBootJavaFileManager manager = new SpringBootJavaFileManager(compiler.getStandardFileManager(null, null, null), classLoader);
         try
         {
             String         source         = classModel.toStringWithLineNo();
