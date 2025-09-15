@@ -404,6 +404,32 @@ public class SpringBootCompiler implements Compiler
                 log.info("    - 成功添加BOOT-INF/classes目录到类路径: {}", bootInfClasses);
             }
 
+            // 检查BOOT-INF/lib目录是否存在，如果存在则添加其中的所有jar文件
+            Path bootInfLib = tempDir.resolve("BOOT-INF").resolve("lib");
+            if (Files.exists(bootInfLib) && Files.isDirectory(bootInfLib))
+            {
+                log.info("    - 发现BOOT-INF/lib目录，开始处理依赖库");
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(bootInfLib, "*.jar"))
+                {
+                    int libCount = 0;
+                    for (Path libJarPath : stream)
+                    {
+                        if (Files.isRegularFile(libJarPath) && libJarPath.toString().endsWith(".jar"))
+                        {
+                            classPath.append(File.pathSeparator);
+                            classPath.append(libJarPath.toString());
+                            libCount++;
+                            log.info("    - 成功添加依赖库: {}", libJarPath.getFileName());
+                        }
+                    }
+                    log.info("    - 共添加 {} 个依赖库", libCount);
+                }
+                catch (Exception e)
+                {
+                    log.warn("    - 处理BOOT-INF/lib目录时出现异常: {}", e.getMessage());
+                }
+            }
+
             log.info("    - 成功添加临时目录到类路径: {}", tempDir);
             return true;
         }
