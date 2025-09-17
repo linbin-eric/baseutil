@@ -123,14 +123,6 @@ public class CompilerTest
         Assert.assertEquals("Overridden from: test", instance.grandMethod());
     }
 
-    // 测试内部类（简化版）
-    @Test
-    public void testInnerClass() throws Exception
-    {
-        System.out.println("Testing inner class with " + compilerName);
-        // 由于框架限制，内部类测试暂时跳过
-        System.out.println("Skipping inner class test - framework limitation");
-    }
 
     // 测试泛型支持
     @Test
