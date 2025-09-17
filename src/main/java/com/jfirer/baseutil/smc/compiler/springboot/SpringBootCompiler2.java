@@ -23,7 +23,6 @@ import java.util.Map;
 @Slf4j
 public class SpringBootCompiler2 extends JDKCompiler implements Compiler
 {
-    private SpringBootJavaFileManager manager;
 
     public SpringBootCompiler2()
     {
@@ -37,28 +36,4 @@ public class SpringBootCompiler2 extends JDKCompiler implements Compiler
         manager = new SpringBootJavaFileManager(compiler.getStandardFileManager(null, null, null), classLoader);
     }
 
-    @Override
-    public synchronized Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
-    {
-        try
-        {
-            String         source         = classModel.toStringWithLineNo();
-            JavaFileObject javaFileObject = manager.makeStringSource(classModel.fileName(), source);
-            StringWriter   writer         = new StringWriter();
-            List<String>   options        = new ArrayList<>();
-            // 添加调试信息
-            options.add("-g");
-            JavaCompiler.CompilationTask task   = compiler.getTask(writer, manager, null, options, null, Arrays.asList(javaFileObject));
-            Boolean                      result = task.call();
-            if (result == null || !result.booleanValue())
-            {
-                throw new RuntimeException("Compilation failed. The error is \r\n" + writer.toString() + "\r\nThe source is \r\n" + source);
-            }
-            return manager.getClassBytes();
-        }
-        finally
-        {
-            manager.close();
-        }
-    }
 }
