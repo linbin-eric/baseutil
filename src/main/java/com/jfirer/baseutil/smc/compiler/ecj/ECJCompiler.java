@@ -1,6 +1,7 @@
 package com.jfirer.baseutil.smc.compiler.ecj;
 
 import com.jfirer.baseutil.smc.compiler.Compiler;
+import com.jfirer.baseutil.smc.compiler.jdk.MemoryJavaFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ECJ编译器实现，使用临时文件支持纯内存编译
@@ -76,11 +78,11 @@ public class ECJCompiler implements Compiler
         // 编译
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8);
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(sourceFile.toFile()));
-
+        MemoryJavaFileManager memoryJavaFileManager = new MemoryJavaFileManager(fileManager);
         StringWriter writer = new StringWriter();
         JavaCompiler.CompilationTask task = compiler.getTask(
             writer,
-            fileManager,
+            memoryJavaFileManager,
             null,
             options,
             null,
@@ -94,9 +96,11 @@ public class ECJCompiler implements Compiler
         {
             throw new RuntimeException("Compilation failed.The error is \r\n" + writer.toString() + "\r\nThe source is \r\n" + source);
         }
-
+        Map<String, byte[]> classBytes = memoryJavaFileManager.getClassBytes();
+        Map<String, byte[]> collect    = classBytes.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().replace('/', '.'), Map.Entry::getValue));
+        return collect;
         // 读取编译结果
-        return readCompiledClasses(outputDir, classModel.getPackageName());
+//        return readCompiledClasses(outputDir, classModel.getPackageName());
     }
 
     private Map<String, byte[]> readCompiledClasses(Path outputDir, String packageName) throws IOException
