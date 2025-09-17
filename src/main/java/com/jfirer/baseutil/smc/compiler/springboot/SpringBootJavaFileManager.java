@@ -2,11 +2,14 @@ package com.jfirer.baseutil.smc.compiler.springboot;
 
 import com.jfirer.baseutil.smc.compiler.MemoryInputJavaFileObject;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
 import java.io.*;
 import java.net.JarURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,10 +87,41 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         // 如果是CLASS_PATH位置，尝试从LaunchedClassLoader加载类
         if (location == StandardLocation.CLASS_PATH && kinds.contains(Kind.CLASS))
         {
-            List<JavaFileObject> result = new ArrayList<>();
-            List<JavaFileObject> launchedClasses = findClassesFromLaunchedClassLoader(packageName, recurse);
-            result.addAll(launchedClasses);
-            return result;
+            List<JavaFileObject> result          = new ArrayList<>();
+            Enumeration<URL>     resources       = Thread.currentThread().getContextClassLoader().getResources(SpringBootJavaFileManager.class.getName().replace('.','/')+".class");
+            URL                  url             = resources.nextElement();
+            JarFile              jarFile         = ((JarURLConnection) url.openConnection()).getJarFile();
+            log.info("准备开始找东西:{}",jarFile);
+            Enumeration<JarEntry> entries        = jarFile.entries();
+            while (entries.hasMoreElements())
+            {
+                JarEntry entry     = entries.nextElement();
+                if (entry.getName().endsWith(".class"))
+                {
+                    log.info("发现业务class文件:{}",entry);
+                }
+                else if(entry.getName().endsWith(".jar")){
+                    URL resource = Thread.currentThread().getContextClassLoader().getResource(entry.getName());
+                    log.info("发现一个jar，准备拆开:{}",resource);
+                    JarFile nestedJar = ((JarURLConnection) resource.openConnection()).getJarFile();
+                    Enumeration<JarEntry> entries1 = nestedJar.entries();
+                    while (entries1.hasMoreElements())
+                    {
+                        JarEntry entry1 = entries1.nextElement();
+                        if (entry1.getName().endsWith(".class"))
+                        {
+                            log.info("发现潜入lib:{}的类:{}",resource,entry1);
+                        }
+                    }
+                }
+                else{
+                    log.info("发现不识别的:{}",entry.getRealName());
+                }
+            }
+            throw new RuntimeException();
+//            List<JavaFileObject> launchedClasses = findClassesFromLaunchedClassLoader(packageName, recurse);
+//            result.addAll(launchedClasses);
+//            return result;
         }
         return super.list(location, packageName, kinds, recurse);
     }
@@ -102,7 +136,7 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         {
             String resourcePath = packageName.replace('.', '/');
             // 尝试从类加载器获取资源
-            java.net.URL packageUrl = classLoader.getResource(resourcePath);
+            URL packageUrl = classLoader.getResource(resourcePath);
             if (packageUrl != null)
             {
                 log.debug("[SpringBootJavaFileManager] 找到包资源: {} -> {}", packageName, packageUrl);
@@ -128,11 +162,13 @@ public class SpringBootJavaFileManager extends ForwardingJavaFileManager<JavaFil
         }
         return result;
     }
-private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String, List<JavaFileObject>> cached = new ConcurrentHashMap<>();
+
     /**
      * 在JAR文件中查找类
      */
-    private List<JavaFileObject> findClassesInJar(java.net.URL jarUrl, String packageName, boolean recurse) throws IOException
+    private List<JavaFileObject> findClassesInJar(URL jarUrl, String packageName, boolean recurse) throws IOException
     {
         List<JavaFileObject> result = new ArrayList<>();
         log.trace("[SpringBootJavaFileManager] 开始在JAR中查找包:{}", packageName);
@@ -147,7 +183,7 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
             String protocol = jarUrl.getProtocol();
             String urlStr   = jarUrl.toString();
             log.info("[SpringBootJavaFileManager] 检查协议: protocol={}, url={}", protocol, urlStr);
-            result= cached.computeIfAbsent(packageName, k->findClasses2(k));
+            result = cached.computeIfAbsent(packageName, k -> findClasses2(k));
         }
         catch (Exception e)
         {
@@ -155,41 +191,45 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
             log.warn("[SpringBootJavaFileManager] 异常类型: {}", e.getClass().getName());
             log.warn("[SpringBootJavaFileManager] 异常堆栈:", e);
         }
-        log.info("[SpringBootJavaFileManager] 包:{}查找完成，找到 {} 个类",packageName, result.size());
+        log.info("[SpringBootJavaFileManager] 包:{}查找完成，找到 {} 个类", packageName, result.size());
         return result;
     }
 
     @SneakyThrows
     private List<JavaFileObject> findClasses2(String packageName)
     {
-        String           resourcePath = packageName.replace('.', '/');
-        Enumeration<URL> resources    = classLoader.getResources(resourcePath);
-        List<JavaFileObject>                result    = new ArrayList<>();
+        String               resourcePath = packageName.replace('.', '/');
+        Enumeration<URL>     resources    = classLoader.getResources(resourcePath);
+        List<JavaFileObject> result       = new ArrayList<>();
         while (resources.hasMoreElements())
         {
             URL url = resources.nextElement();
             log.debug("[SpringBootJavaFileManager] 找到资源: {} -> {}", resourcePath, url);
             if (url.getProtocol().equals("jar"))
             {
-                JarFile               jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
+                JarFile jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
+                log.debug("发现jar：{}", jarFile.toString());
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements())
                 {
                     JarEntry entry     = entries.nextElement();
                     String   entryName = entry.getName();
-                    log.debug("发现entry:{}",entryName);
-                    if (entryName.startsWith(resourcePath+"/")==false)
+                    if (jarFile.toString().contains("/BOOT-INF/classes") == false)
+                    {
+                        log.debug("在jar:{}发现entry:{}", jarFile, entryName);
+                    }
+                    if (entryName.startsWith(resourcePath + "/") == false)
                     {
                         continue;
                     }
-                    String   substring = entryName.substring(resourcePath.length()+1);
+                    String substring = entryName.substring(resourcePath.length() + 1);
                     if (substring.length() > 6 && entryName.endsWith(".class"))
                     {
                         if (substring.contains("/") == false)
                         {
                             log.debug("在包:{}下找到类:{}", packageName, substring);
-                            java.net.URI   uri        = java.net.URI.create("");
-                            JavaFileObject fileObject = new NestedJarJavaFileObject(entryName.substring(0, entryName.length()-6).replace('/','.'), uri, entryName);
+                            URI   uri        = URI.create("");
+                            JavaFileObject fileObject = new NestedJarJavaFileObject(entryName.substring(0, entryName.length() - 6).replace('/', '.'), uri, entryName);
                             result.add(fileObject);
                         }
                     }
@@ -198,29 +238,15 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
             }
         }
         return result;
-//
-//        List<String> classesInPackage = ClassScanner.getClassesInPackage(packageName);
-//        log.info("在包:{}下面发现类:{}",packageName,classesInPackage.size());
-//        for (String s : classesInPackage)
-//        {
-//            String         simpleUri  = "nested:///BOOT-INF/lib/" + s;
-//            java.net.URI   uri        = java.net.URI.create(simpleUri);
-//            JavaFileObject fileObject = new NestedJarJavaFileObject(s, uri, s.replace('.','/')+".class");
-//            result.add(fileObject);
-//        }
-//        return result;
     }
-
-
-
 
     public static class ClassScanner
     {
         public static List<String> getClassesInPackage(String packageName) throws IOException, ClassNotFoundException
         {
             List<String> classes     = new ArrayList<>();
-            ClassLoader    classLoader = Thread.currentThread().getContextClassLoader();
-            String         path        = packageName.replace('.', '/');
+            ClassLoader  classLoader = Thread.currentThread().getContextClassLoader();
+            String       path        = packageName.replace('.', '/');
             // 获取包对应的资源
             Enumeration<URL> resources = classLoader.getResources(path);
             while (resources.hasMoreElements())
@@ -272,7 +298,7 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
 
         private static List<String> findClassesInJar(URL jarUrl, String packageName) throws IOException, ClassNotFoundException
         {
-            List<String>        classes       = new ArrayList<>();
+            List<String>          classes       = new ArrayList<>();
             JarURLConnection      jarConnection = (JarURLConnection) jarUrl.openConnection();
             JarFile               jarFile       = jarConnection.getJarFile();
             Enumeration<JarEntry> entries       = jarFile.entries();
@@ -288,7 +314,6 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
             }
             return classes;
         }
-
     }
 
     /**
@@ -300,7 +325,7 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
 
         MemoryOutputJavaFileObject(String name)
         {
-            super(java.net.URI.create("string:///" + name), Kind.CLASS);
+            super(URI.create("string:///" + name), Kind.CLASS);
             this.name = name;
         }
 
@@ -332,10 +357,10 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
     class NestedJarJavaFileObject extends SimpleJavaFileObject
     {
         private final String       className;
-        private final java.net.URL nestedUrl;
+        private final URL nestedUrl;
         private final String       entryName;
 
-        NestedJarJavaFileObject(String className, java.net.URI uri, String entryName)
+        NestedJarJavaFileObject(String className, URI uri, String entryName)
         {
             super(uri, Kind.CLASS);
             this.className = className;
@@ -343,9 +368,9 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
             this.entryName = entryName;
         }
 
-        NestedJarJavaFileObject(String className, java.net.URL nestedUrl, String entryName)
+        NestedJarJavaFileObject(String className, URL nestedUrl, String entryName)
         {
-            this(className, java.net.URI.create(""), entryName);
+            this(className, URI.create(""), entryName);
         }
 
         @Override
@@ -394,5 +419,5 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
     }
 
     // 添加日志支持
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SpringBootJavaFileManager.class);
+    private static final Logger log = LoggerFactory.getLogger(SpringBootJavaFileManager.class);
 }
