@@ -1,5 +1,7 @@
 package com.jfirer.baseutil.smc.compiler.jdk;
 
+import com.jfirer.baseutil.smc.compiler.MemoryInputJavaFileObject;
+
 import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
 import java.io.ByteArrayOutputStream;
@@ -53,22 +55,22 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
         return new MemoryInputJavaFileObject(name, code);
     }
 
-    public static class MemoryInputJavaFileObject extends SimpleJavaFileObject
-    {
-        final String code;
-
-        MemoryInputJavaFileObject(String name, String code)
-        {
-            super(URI.create("string:///" + name), Kind.SOURCE);
-            this.code = code;
-        }
-
-        @Override
-        public CharSequence getCharContent(boolean ignoreEncodingErrors)
-        {
-            return code;
-        }
-    }
+//    public static class MemoryInputJavaFileObject extends SimpleJavaFileObject
+//    {
+//        final String code;
+//
+//        MemoryInputJavaFileObject(String name, String code)
+//        {
+//            super(URI.create("string:///" + name), Kind.SOURCE);
+//            this.code = code;
+//        }
+//
+//        @Override
+//        public CharSequence getCharContent(boolean ignoreEncodingErrors)
+//        {
+//            return code;
+//        }
+//    }
 
     public class MemoryOutputJavaFileObject extends SimpleJavaFileObject
     {

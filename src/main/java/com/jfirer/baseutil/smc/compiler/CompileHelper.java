@@ -2,6 +2,7 @@ package com.jfirer.baseutil.smc.compiler;
 
 import com.jfirer.baseutil.smc.compiler.ecj.JDTCompiler;
 import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
+import com.jfirer.baseutil.smc.compiler.springboot.SpringBootCompiler2;
 import com.jfirer.baseutil.smc.model.ClassModel;
 
 import javax.tools.ToolProvider;
@@ -28,7 +29,7 @@ public class CompileHelper
         this.memoryClassLoader = new MemoryClassLoader(classLoader);
         if (compiler == null)
         {
-            if (SpringBootCompiler.isSpringBootEnvironment())
+            if (isSpringBootEnvironment())
             {
                 System.out.println("[CompileHelper] 检测到Spring Boot环境，使用SpringBootCompiler");
                 this.compiler = new SpringBootCompiler2(classLoader);
@@ -62,5 +63,10 @@ public class CompileHelper
         Map<String, byte[]> compiled = compiler.compile(classModel);
         memoryClassLoader.addClassBytes(compiled);
         return memoryClassLoader.loadClass(classModel.getPackageName() + "." + classModel.className());
+    }
+
+    public static  boolean isSpringBootEnvironment()
+    {
+        return Thread.currentThread().getContextClassLoader().getClass().getName().contains("springframework");
     }
 }

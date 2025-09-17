@@ -21,16 +21,19 @@ import java.util.jar.JarFile;
  * Spring Boot环境下的编译器实现。
  * 通过检查Spring Boot的loader类来判断当前是否在Spring Boot环境中，
  * 并在编译时自动设置正确的classpath。
+ * 代码的思路是可行的，解压到磁盘上的位置，并且通过编译的时候设置classpath的方式，来实现。
+ * 但是需要解决的问题就是要解压哪一些的问题。后续再完善。
  *
  * @author Lin Bin
  */
 @Slf4j
+@Deprecated
 public class SpringBootCompiler implements Compiler
 {
     private final JavaCompiler compiler;
     private final ClassLoader  classLoader;
-    private final Path tempDir;
-    private final Set<String> extractedJars = new HashSet<>();
+    private final Path         tempDir;
+    private final Set<String>  extractedJars = new HashSet<>();
 
     public SpringBootCompiler()
     {
@@ -60,17 +63,13 @@ public class SpringBootCompiler implements Compiler
         {
             // 检查Spring Boot的LaunchedURLClassLoader是否存在
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            log.info("当前的loader:{}",classLoader.getClass().getName());
+            log.info("当前的loader:{}", classLoader.getClass().getName());
             String loaderClassName = classLoader.getClass().getName();
-
             // Spring Boot 3.x 使用 LaunchedClassLoader
             // Spring Boot 2.x 使用 LaunchedURLClassLoader
-            boolean containsLaunched = loaderClassName.contains("LaunchedURLClassLoader") ||
-                                      loaderClassName.contains("LaunchedClassLoader");
-
+            boolean containsLaunched      = loaderClassName.contains("LaunchedURLClassLoader") || loaderClassName.contains("LaunchedClassLoader");
             boolean canLoadLegacyLauncher = false;
-            boolean canLoadNewLauncher = false;
-
+            boolean canLoadNewLauncher    = false;
             try
             {
                 canLoadLegacyLauncher = Class.forName("org.springframework.boot.loader.LaunchedURLClassLoader") != null;
@@ -79,7 +78,6 @@ public class SpringBootCompiler implements Compiler
             {
                 // Spring Boot 3.x 中这个类不存在，忽略异常
             }
-
             try
             {
                 canLoadNewLauncher = Class.forName("org.springframework.boot.loader.launch.LaunchedClassLoader") != null;
@@ -88,7 +86,6 @@ public class SpringBootCompiler implements Compiler
             {
                 // Spring Boot 2.x 中这个类不存在，忽略异常
             }
-
             log.info("[SpringBootCompiler] 环境检测详情:");
             log.info("  - 当前类加载器: {}", loaderClassName);
             log.info("  - 包含LaunchedURLClassLoader: {}", loaderClassName.contains("LaunchedURLClassLoader"));
@@ -96,7 +93,6 @@ public class SpringBootCompiler implements Compiler
             log.info("  - 可以加载LaunchedURLClassLoader: {}", canLoadLegacyLauncher);
             log.info("  - 可以加载LaunchedClassLoader: {}", canLoadNewLauncher);
             log.info("  - 最终结果: {}", containsLaunched || canLoadLegacyLauncher || canLoadNewLauncher);
-
             return containsLaunched || canLoadLegacyLauncher || canLoadNewLauncher;
         }
         catch (Exception e)
@@ -204,47 +200,37 @@ public class SpringBootCompiler implements Compiler
             log.info("[SpringBootCompiler] JAR已解压，跳过: {}", jarPath);
             return;
         }
-
         log.info("[SpringBootCompiler] 开始解压FatJar: {}", jarPath);
-
         try (JarFile jarFile = new JarFile(jarPath))
         {
-            Enumeration<JarEntry> entries = jarFile.entries();
-            int extractedCount = 0;
-            int skippedCount = 0;
-
+            Enumeration<JarEntry> entries        = jarFile.entries();
+            int                   extractedCount = 0;
+            int                   skippedCount   = 0;
             while (entries.hasMoreElements())
             {
-                JarEntry entry = entries.nextElement();
-                String entryName = entry.getName();
-
+                JarEntry entry     = entries.nextElement();
+                String   entryName = entry.getName();
                 // 跳过META-INF目录中的某些文件
-                if (entryName.startsWith("META-INF/") &&
-                    (entryName.endsWith(".SF") || entryName.endsWith(".DSA") || entryName.endsWith(".RSA")))
+                if (entryName.startsWith("META-INF/") && (entryName.endsWith(".SF") || entryName.endsWith(".DSA") || entryName.endsWith(".RSA")))
                 {
                     skippedCount++;
                     continue;
                 }
-
                 // 创建目标文件路径
                 Path destPath = tempDir.resolve(entryName);
-
                 // 如果是目录，创建目录
                 if (entry.isDirectory())
                 {
                     Files.createDirectories(destPath);
                     continue;
                 }
-
                 // 确保父目录存在
                 Files.createDirectories(destPath.getParent());
-
                 // 解压文件
-                try (InputStream is = jarFile.getInputStream(entry);
-                     OutputStream os = Files.newOutputStream(destPath))
+                try (InputStream is = jarFile.getInputStream(entry); OutputStream os = Files.newOutputStream(destPath))
                 {
                     byte[] buffer = new byte[8192];
-                    int bytesRead;
+                    int    bytesRead;
                     while ((bytesRead = is.read(buffer)) != -1)
                     {
                         os.write(buffer, 0, bytesRead);
@@ -252,10 +238,8 @@ public class SpringBootCompiler implements Compiler
                 }
                 extractedCount++;
             }
-
             extractedJars.add(jarPath);
-            log.info("[SpringBootCompiler] FatJar解压完成: {}, 解压文件数: {}, 跳过文件数: {}",
-                    jarPath, extractedCount, skippedCount);
+            log.info("[SpringBootCompiler] FatJar解压完成: {}, 解压文件数: {}, 跳过文件数: {}", jarPath, extractedCount, skippedCount);
         }
         catch (Exception e)
         {
@@ -269,12 +253,10 @@ public class SpringBootCompiler implements Compiler
      */
     private String buildClassPath()
     {
-        StringBuilder classPath = new StringBuilder();
-        boolean isSpringBoot = isSpringBootEnvironment();
-        
+        StringBuilder classPath    = new StringBuilder();
+        boolean       isSpringBoot = isSpringBootEnvironment();
         log.info("[SpringBootCompiler] 构建类路径:");
         log.info("  - 检测到Spring Boot环境: {}", isSpringBoot);
-        
         // 如果在Spring Boot环境中，使用Spring Boot的类路径构建逻辑
         if (isSpringBoot)
         {
@@ -287,18 +269,15 @@ public class SpringBootCompiler implements Compiler
             // 非Spring Boot环境，使用标准类路径
             buildStandardClassPath(classPath);
         }
-        
         // 如果类路径为空，添加当前目录
         if (classPath.length() == 0)
         {
             classPath.append(".");
             log.info("  - 类路径为空，添加当前目录");
         }
-        
         String result = classPath.toString();
         log.info("  - 最终类路径长度: {}", result.length());
         log.info("  - 最终类路径: {}", result);
-        
         return result;
     }
 
@@ -314,26 +293,22 @@ public class SpringBootCompiler implements Compiler
             log.info("  - 尝试方法1：FatJar解压方式");
             boolean fatJarSuccess = buildClassPathFromFatJarExtraction(classPath);
             log.info("  - 方法1结果: {}", fatJarSuccess);
-
             // 如果FatJar解压成功，直接返回
             if (fatJarSuccess)
             {
                 log.info("  - FatJar解压方式成功，使用解压后的类路径");
                 return;
             }
-
             // 方法2：从类加载器获取URLs
             log.info("  - 尝试方法2：从类加载器获取URLs");
             boolean classLoaderSuccess = buildClassPathFromClassLoader(classPath);
             log.info("  - 方法2结果: {}", classLoaderSuccess);
-
             // 如果方法2也失败，尝试方法3：从系统属性获取
             if (!classLoaderSuccess)
             {
                 log.info("  - 尝试方法3：从系统属性获取类路径");
                 String systemClassPath = System.getProperty("java.class.path");
                 log.info("  - 系统类路径长度: {}", (systemClassPath != null ? systemClassPath.length() : 0));
-
                 if (systemClassPath != null && !systemClassPath.isEmpty())
                 {
                     if (classPath.length() > 0)
@@ -365,7 +340,6 @@ public class SpringBootCompiler implements Compiler
         try
         {
             log.info("    - FatJar解压方式开始:");
-
             // 获取当前运行的JAR文件路径
             String jarPath = getCurrentRunningJarPath();
             if (jarPath == null)
@@ -373,9 +347,7 @@ public class SpringBootCompiler implements Compiler
                 log.info("    - 无法获取当前运行的JAR路径");
                 return false;
             }
-
             log.info("    - 当前运行JAR路径: {}", jarPath);
-
             // 检查是否是FatJar（通过大小或名称判断）
             File jarFile = new File(jarPath);
             if (!jarFile.exists() || !jarFile.getName().endsWith(".jar"))
@@ -383,17 +355,14 @@ public class SpringBootCompiler implements Compiler
                 log.info("    - 文件不存在或不是JAR文件");
                 return false;
             }
-
             // 解压FatJar到临时目录
             extractFatJar(jarPath);
-
             // 将临时目录添加到类路径
             if (classPath.length() > 0)
             {
                 classPath.append(File.pathSeparator);
             }
             classPath.append(tempDir.toString());
-
             // 检查BOOT-INF/classes目录是否存在，如果存在也添加到类路径
             Path bootInfClasses = tempDir.resolve("BOOT-INF").resolve("classes");
             if (Files.exists(bootInfClasses))
@@ -402,7 +371,6 @@ public class SpringBootCompiler implements Compiler
                 classPath.append(bootInfClasses.toString());
                 log.info("    - 成功添加BOOT-INF/classes目录到类路径: {}", bootInfClasses);
             }
-
             // 检查BOOT-INF/lib目录是否存在，如果存在则添加其中的所有jar文件
             Path bootInfLib = tempDir.resolve("BOOT-INF").resolve("lib");
             if (Files.exists(bootInfLib) && Files.isDirectory(bootInfLib))
@@ -428,7 +396,6 @@ public class SpringBootCompiler implements Compiler
                     log.warn("    - 处理BOOT-INF/lib目录时出现异常: {}", e.getMessage());
                 }
             }
-
             log.info("    - 成功添加临时目录到类路径: {}", tempDir);
             return true;
         }
@@ -453,7 +420,6 @@ public class SpringBootCompiler implements Compiler
                 log.info("      - 方法1成功: {}", path);
                 return path;
             }
-
             // 方法2：通过系统属性获取
             String sunCommand = System.getProperty("sun.java.command");
             if (sunCommand != null && sunCommand.endsWith(".jar"))
@@ -473,7 +439,6 @@ public class SpringBootCompiler implements Compiler
                     }
                 }
             }
-
             log.info("      - 无法获取JAR路径");
             return null;
         }
@@ -491,10 +456,9 @@ public class SpringBootCompiler implements Compiler
     {
         try
         {
-            ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
-            String loaderClassName = currentLoader.getClass().getName();
+            ClassLoader currentLoader   = Thread.currentThread().getContextClassLoader();
+            String      loaderClassName = currentLoader.getClass().getName();
             log.info("    - 当前类加载器类型: {}", loaderClassName);
-            
             if (currentLoader instanceof URLClassLoader)
             {
                 // 标准URLClassLoader处理
@@ -540,7 +504,6 @@ public class SpringBootCompiler implements Compiler
             log.info("      - 尝试通过反射获取URLs");
             URL[] urls = getURLsFromLaunchedURLClassLoader(classLoader);
             log.info("      - 获取到URL数量: {}", (urls != null ? urls.length : 0));
-
             if (urls != null)
             {
                 boolean result = addUrlsToClassPath(classPath, urls);
@@ -569,7 +532,6 @@ public class SpringBootCompiler implements Compiler
             log.info("      - 尝试通过反射获取URLs");
             URL[] urls = getURLsFromLaunchedClassLoader(classLoader);
             log.info("      - 获取到URL数量: {}", (urls != null ? urls.length : 0));
-
             if (urls != null)
             {
                 boolean result = addUrlsToClassPath(classPath, urls);
@@ -597,7 +559,7 @@ public class SpringBootCompiler implements Compiler
             // 尝试直接调用getURLs方法
             log.info("        - 尝试方法1：直接调用getURLs方法");
             Method getURLsMethod = classLoader.getClass().getMethod("getURLs");
-            URL[] urls = (URL[]) getURLsMethod.invoke(classLoader);
+            URL[]  urls          = (URL[]) getURLsMethod.invoke(classLoader);
             log.info("        - 方法1成功，获取到URL数量: {}", (urls != null ? urls.length : 0));
             return urls;
         }
@@ -610,7 +572,7 @@ public class SpringBootCompiler implements Compiler
                 log.info("        - 尝试方法2：通过ucp字段获取");
                 Field ucpField = classLoader.getClass().getDeclaredField("ucp");
                 ucpField.setAccessible(true);
-                Object ucp = ucpField.get(classLoader);
+                Object ucp           = ucpField.get(classLoader);
                 Method getURLsMethod = ucp.getClass().getDeclaredMethod("getURLs");
                 getURLsMethod.setAccessible(true);
                 URL[] urls = (URL[]) getURLsMethod.invoke(ucp);
@@ -636,7 +598,7 @@ public class SpringBootCompiler implements Compiler
             // 尝试直接调用getURLs方法
             log.info("        - 尝试方法1：直接调用getURLs方法");
             Method getURLsMethod = classLoader.getClass().getMethod("getURLs");
-            URL[] urls = (URL[]) getURLsMethod.invoke(classLoader);
+            URL[]  urls          = (URL[]) getURLsMethod.invoke(classLoader);
             log.info("        - 方法1成功，获取到URL数量: {}", (urls != null ? urls.length : 0));
             return urls;
         }
@@ -649,7 +611,7 @@ public class SpringBootCompiler implements Compiler
                 log.info("        - 尝试方法2：通过ucp字段获取");
                 Field ucpField = classLoader.getClass().getDeclaredField("ucp");
                 ucpField.setAccessible(true);
-                Object ucp = ucpField.get(classLoader);
+                Object ucp           = ucpField.get(classLoader);
                 Method getURLsMethod = ucp.getClass().getDeclaredMethod("getURLs");
                 getURLsMethod.setAccessible(true);
                 URL[] urls = (URL[]) getURLsMethod.invoke(ucp);
@@ -674,22 +636,19 @@ public class SpringBootCompiler implements Compiler
             log.info("        - URL数组为空");
             return false;
         }
-        
         log.info("        - 开始处理 {} 个URLs", urls.length);
-        Set<String> addedPaths = new HashSet<>();
-        boolean hasValidPath = false;
-        int validCount = 0;
-        int duplicateCount = 0;
-        
+        Set<String> addedPaths     = new HashSet<>();
+        boolean     hasValidPath   = false;
+        int         validCount     = 0;
+        int         duplicateCount = 0;
         for (int i = 0; i < urls.length; i++)
         {
             URL url = urls[i];
             try
             {
-                String path = url.getPath();
+                String path     = url.getPath();
                 String protocol = url.getProtocol();
                 log.info("        - URL[{}]: {}://{}", i, protocol, path);
-                
                 // 处理不同的协议
                 if ("file".equals(protocol))
                 {
@@ -759,7 +718,6 @@ public class SpringBootCompiler implements Compiler
                 // 忽略单个URL的处理异常
             }
         }
-        
         log.info("        - URL处理完成: 有效={}, 重复={}, 总计={}", validCount, duplicateCount, urls.length);
         return hasValidPath;
     }
@@ -773,7 +731,6 @@ public class SpringBootCompiler implements Compiler
         // 获取系统类路径
         String systemClassPath = System.getProperty("java.class.path");
         log.info("    - 系统类路径长度: {}", (systemClassPath != null ? systemClassPath.length() : 0));
-        
         if (systemClassPath != null && !systemClassPath.isEmpty())
         {
             classPath.append(systemClassPath);

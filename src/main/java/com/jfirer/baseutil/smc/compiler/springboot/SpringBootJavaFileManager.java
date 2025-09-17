@@ -1,5 +1,6 @@
-package com.jfirer.baseutil.smc.compiler;
+package com.jfirer.baseutil.smc.compiler.springboot;
 
+import com.jfirer.baseutil.smc.compiler.MemoryInputJavaFileObject;
 import lombok.SneakyThrows;
 
 import javax.tools.*;
@@ -288,34 +289,6 @@ private ConcurrentHashMap<String,List<JavaFileObject>> cached = new ConcurrentHa
             return classes;
         }
 
-    }
-
-
-    /**
-     * 内存输入Java文件对象
-     */
-    static class MemoryInputJavaFileObject extends SimpleJavaFileObject
-    {
-        private final String code;
-        private final String name;
-
-        MemoryInputJavaFileObject(String name, String code)
-        {
-            super(java.net.URI.create("string:///" + name), Kind.SOURCE);
-            this.name = name;
-            this.code = code;
-        }
-
-        @Override
-        public CharSequence getCharContent(boolean ignoreEncodingErrors)
-        {
-            return code;
-        }
-
-        public String inferBinaryName()
-        {
-            return name.replace(".java", "");
-        }
     }
 
     /**
