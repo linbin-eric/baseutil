@@ -2,10 +2,9 @@ package com.jfirer.baseutil.smc.compiler.springboot;
 
 import com.jfirer.baseutil.smc.compiler.MemoryInputJavaFileObject;
 import com.jfirer.baseutil.smc.compiler.jdk.MemoryJavaFileManager;
+import com.jfirer.baseutil.smc.compiler.MemoryOutputJavaFileObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
@@ -58,7 +57,7 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
     {
         if (kind == Kind.CLASS)
         {
-            return new MemoryOutputJavaFileObject(className);
+            return new MemoryOutputJavaFileObject(className, classBytes);
         }
         else
         {
@@ -77,9 +76,9 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
         {
             return ((MemoryOutputJavaFileObject) file).inferBinaryName();
         }
-        else if (file instanceof NestedJarJavaFileObject)
+        else if (file instanceof NestedClassJavaFileObject)
         {
-            return ((NestedJarJavaFileObject) file).getClassName();
+            return ((NestedClassJavaFileObject) file).getClassName();
         }
         return super.inferBinaryName(location, file);
     }
@@ -152,9 +151,9 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
                 {
                     if (substring.contains("/") == false)
                     {
-                        log.debug("在包:{}下找到类:{}", packageName, substring);
+                        log.trace("在包:{}下找到类:{}", packageName, substring);
                         URI            uri        = URI.create("");
-                        JavaFileObject fileObject = new NestedJarJavaFileObject(entryName.substring(0, entryName.length() - 6).replace('/', '.'), uri, entryName);
+                        JavaFileObject fileObject = new NestedClassJavaFileObject(entryName.substring(0, entryName.length() - 6).replace('/', '.'), entryName);
                         result.add(fileObject);
                     }
                 }
@@ -164,60 +163,18 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
     }
 
     /**
-     * 内存输出Java文件对象
-     */
-    class MemoryOutputJavaFileObject extends SimpleJavaFileObject
-    {
-        private final String name;
-
-        MemoryOutputJavaFileObject(String name)
-        {
-            super(URI.create("string:///" + name), Kind.CLASS);
-            this.name = name;
-        }
-
-        @Override
-        public OutputStream openOutputStream() throws IOException
-        {
-            return new FilterOutputStream(new ByteArrayOutputStream())
-            {
-                @Override
-                public void close() throws IOException
-                {
-                    out.close();
-                    ByteArrayOutputStream bos = (ByteArrayOutputStream) out;
-                    classBytes.put(name, bos.toByteArray());
-                    log.debug("[SpringBootJavaFileManager] 编译生成类: {}", name);
-                }
-            };
-        }
-
-        public String inferBinaryName()
-        {
-            return name.replace(".class", "");
-        }
-    }
-
-    /**
      * 嵌套JAR文件中的Java文件对象（Spring Boot 3.x nested协议）
      */
-    class NestedJarJavaFileObject extends SimpleJavaFileObject
+    public class NestedClassJavaFileObject extends SimpleJavaFileObject
     {
         private final String className;
-        private final URL    nestedUrl;
         private final String entryName;
 
-        NestedJarJavaFileObject(String className, URI uri, String entryName)
+        public NestedClassJavaFileObject(String className, String entryName)
         {
-            super(uri, Kind.CLASS);
+            super(URI.create(""), Kind.CLASS);
             this.className = className;
-            this.nestedUrl = null; // 不再需要URL，直接使用类加载器
             this.entryName = entryName;
-        }
-
-        NestedJarJavaFileObject(String className, URL nestedUrl, String entryName)
-        {
-            this(className, URI.create(""), entryName);
         }
 
         @Override
@@ -247,7 +204,7 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
         @Override
         public String toString()
         {
-            return "NestedJarJavaFileObject[" + className + "]";
+            return "NestedClassJavaFileObject[" + className + "]";
         }
 
         public String getClassName()
@@ -264,5 +221,4 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
         // 清理资源
         classBytes.clear();
     }
-
 }

@@ -31,12 +31,10 @@ public class CompileHelper
         {
             if (isSpringBootEnvironment())
             {
-                System.out.println("[CompileHelper] 检测到Spring Boot环境，使用SpringBootCompiler");
                 this.compiler = new SpringBootCompiler2(classLoader);
             }
             else if (ToolProvider.getSystemJavaCompiler() != null)
             {
-                System.out.println("[CompileHelper] 检测到标准JDK环境，使用JDKCompiler");
                 this.compiler = new JDKCompiler();
             }
             else

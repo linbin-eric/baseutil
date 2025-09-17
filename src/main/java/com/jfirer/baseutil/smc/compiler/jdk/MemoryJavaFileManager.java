@@ -1,14 +1,11 @@
 package com.jfirer.baseutil.smc.compiler.jdk;
 
 import com.jfirer.baseutil.smc.compiler.MemoryInputJavaFileObject;
+import com.jfirer.baseutil.smc.compiler.MemoryOutputJavaFileObject;
 
 import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
-import java.io.ByteArrayOutputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +39,7 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     {
         if (kind == Kind.CLASS)
         {
-            return new MemoryOutputJavaFileObject(className);
+            return new MemoryOutputJavaFileObject(className, classBytes);
         }
         else
         {
@@ -53,48 +50,5 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     public JavaFileObject makeStringSource(String name, String code)
     {
         return new MemoryInputJavaFileObject(name, code);
-    }
-
-//    public static class MemoryInputJavaFileObject extends SimpleJavaFileObject
-//    {
-//        final String code;
-//
-//        MemoryInputJavaFileObject(String name, String code)
-//        {
-//            super(URI.create("string:///" + name), Kind.SOURCE);
-//            this.code = code;
-//        }
-//
-//        @Override
-//        public CharSequence getCharContent(boolean ignoreEncodingErrors)
-//        {
-//            return code;
-//        }
-//    }
-
-    public class MemoryOutputJavaFileObject extends SimpleJavaFileObject
-    {
-        final String name;
-
-        MemoryOutputJavaFileObject(String name)
-        {
-            super(URI.create("string:///" + name), Kind.CLASS);
-            this.name = name;
-        }
-
-        @Override
-        public OutputStream openOutputStream()
-        {
-            return new FilterOutputStream(new ByteArrayOutputStream())
-            {
-                @Override
-                public void close() throws IOException
-                {
-                    out.close();
-                    ByteArrayOutputStream bos = (ByteArrayOutputStream) out;
-                    classBytes.put(name, bos.toByteArray());
-                }
-            };
-        }
     }
 }
