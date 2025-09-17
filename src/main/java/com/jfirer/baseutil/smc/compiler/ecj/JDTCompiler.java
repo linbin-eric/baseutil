@@ -1,4 +1,4 @@
-package com.jfirer.baseutil.smc.compiler;
+package com.jfirer.baseutil.smc.compiler.ecj;
 
 import com.jfirer.baseutil.smc.model.ClassModel;
 import org.eclipse.jdt.internal.compiler.*;

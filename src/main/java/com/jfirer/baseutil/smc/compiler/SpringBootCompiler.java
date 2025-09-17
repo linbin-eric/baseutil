@@ -1,5 +1,6 @@
 package com.jfirer.baseutil.smc.compiler;
 
+import com.jfirer.baseutil.smc.compiler.jdk.MemoryJavaFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,11 +13,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 /**
  * Spring Boot环境下的编译器实现。

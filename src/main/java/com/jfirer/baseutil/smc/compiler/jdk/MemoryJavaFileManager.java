@@ -1,4 +1,4 @@
-package com.jfirer.baseutil.smc.compiler;
+package com.jfirer.baseutil.smc.compiler.jdk;
 
 import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
@@ -7,7 +7,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,13 +15,12 @@ import java.util.Map;
  *
  * @author michael
  */
-class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager>
+public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager>
 {
-
     // compiled classes in bytes:
     private final Map<String, byte[]> classBytes = new HashMap<String, byte[]>();
 
-    MemoryJavaFileManager(JavaFileManager fileManager)
+    public MemoryJavaFileManager(JavaFileManager fileManager)
     {
         super(fileManager);
     }
@@ -50,14 +48,13 @@ class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager>
         }
     }
 
-    JavaFileObject makeStringSource(String name, String code)
+    public JavaFileObject makeStringSource(String name, String code)
     {
         return new MemoryInputJavaFileObject(name, code);
     }
 
-    static class MemoryInputJavaFileObject extends SimpleJavaFileObject
+    public static class MemoryInputJavaFileObject extends SimpleJavaFileObject
     {
-
         final String code;
 
         MemoryInputJavaFileObject(String name, String code)
@@ -67,13 +64,13 @@ class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager>
         }
 
         @Override
-        public CharBuffer getCharContent(boolean ignoreEncodingErrors)
+        public CharSequence getCharContent(boolean ignoreEncodingErrors)
         {
-            return CharBuffer.wrap(code);
+            return code;
         }
     }
 
-    class MemoryOutputJavaFileObject extends SimpleJavaFileObject
+    public class MemoryOutputJavaFileObject extends SimpleJavaFileObject
     {
         final String name;
 

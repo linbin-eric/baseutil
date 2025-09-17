@@ -1,5 +1,7 @@
 package com.jfirer.baseutil.smc.compiler;
 
+import com.jfirer.baseutil.smc.compiler.ecj.JDTCompiler;
+import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
 import com.jfirer.baseutil.smc.model.ClassModel;
 
 import javax.tools.ToolProvider;

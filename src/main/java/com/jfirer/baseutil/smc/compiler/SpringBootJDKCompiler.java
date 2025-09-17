@@ -1,5 +1,6 @@
 package com.jfirer.baseutil.smc.compiler;
 
+import com.jfirer.baseutil.smc.compiler.jdk.MemoryJavaFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
 
 import javax.tools.*;

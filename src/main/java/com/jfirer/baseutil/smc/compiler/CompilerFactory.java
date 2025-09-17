@@ -1,5 +1,8 @@
 package com.jfirer.baseutil.smc.compiler;
 
+import com.jfirer.baseutil.smc.compiler.ecj.JDTCompiler;
+import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
+
 /**
  * Factory for creating different compiler implementations.
  *

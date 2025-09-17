@@ -2,8 +2,8 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.compiler.Compiler;
-import com.jfirer.baseutil.smc.compiler.JDKCompiler;
-import com.jfirer.baseutil.smc.compiler.JDTCompiler;
+import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
+import com.jfirer.baseutil.smc.compiler.ecj.JDTCompiler;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import com.jfirer.baseutil.smc.model.ConstructorModel;
 import com.jfirer.baseutil.smc.model.FieldModel;

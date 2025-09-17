@@ -1,6 +1,8 @@
-package com.jfirer.baseutil.smc.compiler;
+package com.jfirer.baseutil.smc.compiler.jdk;
 
+import com.jfirer.baseutil.smc.compiler.Compiler;
 import com.jfirer.baseutil.smc.model.ClassModel;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
@@ -17,6 +19,7 @@ import java.util.Map;
  *
  * @author Lin Bin
  */
+@Slf4j
 public class JDKCompiler implements Compiler
 {
     private final JavaCompiler compiler;
