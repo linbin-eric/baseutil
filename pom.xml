@@ -20,21 +20,21 @@
     </properties>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
-                <configuration>
-                    <mainClass>com.springboot.test.SpringBootMain</mainClass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.springframework.boot</groupId>-->
+            <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+            <!--                <version>${spring-boot.version}</version>-->
+            <!--                <configuration>-->
+            <!--                    <mainClass>com.springboot.test.SpringBootMain</mainClass>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <goals>-->
+            <!--                            <goal>repackage</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -133,21 +133,22 @@
             <artifactId>spring-boot-starter</artifactId>
             <version>${spring-boot.version}</version>
             <scope>provided</scope>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.springframework.boot</groupId>-->
-<!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
+            <optional>true</optional>
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.springframework.boot</groupId>-->
+            <!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
         </dependency>
 
-<!--        &lt;!&ndash; Spring Boot Log4j2 Starter &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-log4j2</artifactId>-->
-<!--            <version>${spring-boot.version}</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <!--        &lt;!&ndash; Spring Boot Log4j2 Starter &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-log4j2</artifactId>-->
+        <!--            <version>${spring-boot.version}</version>-->
+        <!--            <scope>provided</scope>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>io.github.karlatemp</groupId>
@@ -189,7 +190,8 @@
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>ecj</artifactId>
             <version>3.40.0</version>
-            <scope>true</scope>
+            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
