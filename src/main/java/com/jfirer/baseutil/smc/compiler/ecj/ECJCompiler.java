@@ -1,24 +1,19 @@
 package com.jfirer.baseutil.smc.compiler.ecj;
 
 import com.jfirer.baseutil.IoUtil;
+import com.jfirer.baseutil.RuntimeJVM;
 import com.jfirer.baseutil.smc.compiler.Compiler;
-import com.jfirer.baseutil.smc.compiler.jdk.MemoryJavaFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jdt.internal.compiler.tool.EclipseCompiler;
 
 import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * ECJ 编译器，用来对磁盘上的源文件进行编译，需要classpath也是在磁盘上，并且只支持标准的class文件和jar文件。不支持SpringBoot的FatJar。
@@ -36,7 +31,7 @@ public class ECJCompiler implements Compiler
     public synchronized Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
         // 创建临时目录
-        Path tempDir = Files.createTempDirectory("ecj-compile");
+        Path tempDir = Files.createTempDirectory("ecj-compile-" + RuntimeJVM.selfPid());
         try
         {
             return compileWithTempFiles(classModel, tempDir, compiler, options);

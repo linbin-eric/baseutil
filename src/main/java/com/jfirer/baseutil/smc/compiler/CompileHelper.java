@@ -31,7 +31,7 @@ public class CompileHelper
         {
             if (ToolProvider.getSystemJavaCompiler() != null)
             {
-                this.compiler = new FatJarDecompressCompiler();
+                this.compiler = new JDKCompiler();
             }
             else
             {

@@ -1,9 +1,8 @@
 package com.jfirer.baseutil.smc.compiler.jdk;
 
 import com.jfirer.baseutil.IoUtil;
-import com.jfirer.baseutil.smc.compiler.CompileHelper;
+import com.jfirer.baseutil.RuntimeJVM;
 import com.jfirer.baseutil.smc.compiler.Compiler;
-import com.jfirer.baseutil.smc.compiler.springboot.SpringBootClassloaderFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,9 +25,11 @@ import java.util.jar.JarFile;
 @Slf4j
 public class FatJarDecompressCompiler implements Compiler
 {
-    protected final JavaCompiler          compiler;
-    protected       MemoryJavaFileManager manager;
+    protected final JavaCompiler compiler;
+    private         Path         tempDir;
+    private         List<String> options;
 
+    @SneakyThrows
     public FatJarDecompressCompiler()
     {
         this.compiler = ToolProvider.getSystemJavaCompiler();
@@ -37,33 +37,33 @@ public class FatJarDecompressCompiler implements Compiler
         {
             throw new IllegalStateException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK/lib目录下的tools.jar拷贝到jre/lib目录。如果是linux，将JAVA_HOME设置为jdk的");
         }
+        // 先检查临时文件夹是否存在
+        Path jdkCompileDir = Files.createTempDirectory("").getParent().resolve("jdk-compile-" + RuntimeJVM.selfPid());
+        if (Files.exists(jdkCompileDir))
+        {
+            // 如果存在，删除文件夹下的所有文件和子文件夹
+            IoUtil.deleteDir(jdkCompileDir.toFile().getAbsolutePath());
+        }
+        // 创建临时文件夹
+        tempDir = Files.createDirectory(jdkCompileDir);
+        log.info("临时环境路径是:{}", tempDir);
+        log.info("当前的jar是:{}", IoUtil.findJarPath());
+        File jarFile = new File(IoUtil.findJarPath());
+        extractFatJar(jarFile.getAbsolutePath(), tempDir);
+        StringBuilder classPath = new StringBuilder();
+        addClasspath(classPath, tempDir);
+        options = List.of(//
+                          "-cp",//
+                          classPath.toString()//
+        );
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> IoUtil.deleteDir(tempDir.toFile().getAbsolutePath())));
     }
 
     @SneakyThrows
     @Override
     public synchronized Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
-
-        log.info("当前的jar是:{}",IoUtil.findJarPath());
-        File jarFile = new File(IoUtil.findJarPath());
-        // 创建临时目录
-        Path tempDir = Files.createTempDirectory("jdk-compile");
-        try
-        {
-            extractFatJar(jarFile.getAbsolutePath(), tempDir);
-            StringBuilder classPath = new StringBuilder();
-            addClasspath(classPath, tempDir);
-            List<String> options = List.of(//
-                                           "-cp",//
-                                           classPath.toString()//
-            );
-            return compileWithTempFiles(classModel, tempDir, compiler, options);
-        }
-        finally
-        {
-            // 清理临时文件
-            IoUtil.deleteDir(tempDir.toFile().getAbsolutePath());
-        }
+        return compileWithTempFiles(classModel, tempDir, compiler, options);
     }
 
     private void extractFatJar(String jarPath, Path tempDir) throws IOException
