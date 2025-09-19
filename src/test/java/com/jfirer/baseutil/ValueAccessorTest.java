@@ -6,7 +6,6 @@ import com.jfirer.baseutil.reflect.valueaccessor.impl.LambdaAccessorImpl;
 import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.compiler.ecj.ECJCompiler;
 import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
-import com.jfirer.baseutil.smc.compiler.ecj.JDTCompiler;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,8 +55,7 @@ public class ValueAccessorTest
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
             {(Function<Field, ValueAccessor>) ValueAccessor::standard, "Standard"},
-            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompiler())), "Compile-JDK"},
-            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDTCompiler())), "Compile-JDT"},
+            {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new JDKCompiler())), "JavacCompiler"},
             {(Function<Field, ValueAccessor>) field -> ValueAccessor.compile(field, new CompileHelper(Thread.currentThread().getContextClassLoader(), new ECJCompiler())), "ECJCompiler"},
             {(Function<Field, ValueAccessor>) ValueAccessor::lambda, "Lambda"}
         });

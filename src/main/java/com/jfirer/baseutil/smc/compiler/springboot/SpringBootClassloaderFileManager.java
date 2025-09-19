@@ -18,19 +18,18 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * 支持Spring Boot LaunchedClassLoader的Java文件管理器。
- * 可以直接从fat JAR中加载类文件，无需解压到临时目录。
+ * 通过SpringBoot的loader来载入需要的依赖类，采用Javac编译器
  *
  * @author Lin Bin
  */
 @Slf4j
-public class SpringBootJavaFileManager extends MemoryJavaFileManager
+public class SpringBootClassloaderFileManager extends MemoryJavaFileManager
 {
     private final ClassLoader                                     classLoader;
     private final Map<String, byte[]>                             classBytes = new HashMap<>();
     private       ConcurrentHashMap<String, List<JavaFileObject>> cached     = new ConcurrentHashMap<>();
 
-    public SpringBootJavaFileManager(JavaFileManager fileManager, ClassLoader classLoader)
+    public SpringBootClassloaderFileManager(JavaFileManager fileManager, ClassLoader classLoader)
     {
         super(fileManager);
         this.classLoader = classLoader;
@@ -134,7 +133,7 @@ public class SpringBootJavaFileManager extends MemoryJavaFileManager
         while (resources.hasMoreElements())
         {
             URL url = resources.nextElement();
-            log.trace("[SpringBootJavaFileManager] 找到资源: {} -> {}", resourcePath, url);
+            log.trace("[SpringBootClassloaderFileManager] 找到资源: {} -> {}", resourcePath, url);
             JarFile jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
             log.trace("发现jar：{}", jarFile.toString());
             Enumeration<JarEntry> entries = jarFile.entries();

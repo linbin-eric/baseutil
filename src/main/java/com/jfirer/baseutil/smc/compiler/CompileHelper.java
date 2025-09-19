@@ -1,8 +1,8 @@
 package com.jfirer.baseutil.smc.compiler;
 
-import com.jfirer.baseutil.smc.compiler.ecj.JDTCompiler;
+import com.jfirer.baseutil.smc.compiler.ecj.ECJCompiler;
+import com.jfirer.baseutil.smc.compiler.jdk.FatJarDecompressCompiler;
 import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
-import com.jfirer.baseutil.smc.compiler.springboot.SpringBootCompiler2;
 import com.jfirer.baseutil.smc.model.ClassModel;
 
 import javax.tools.ToolProvider;
@@ -29,13 +29,9 @@ public class CompileHelper
         this.memoryClassLoader = new MemoryClassLoader(classLoader);
         if (compiler == null)
         {
-            if (isSpringBootEnvironment())
+            if (ToolProvider.getSystemJavaCompiler() != null)
             {
-                this.compiler = new SpringBootCompiler2(classLoader);
-            }
-            else if (ToolProvider.getSystemJavaCompiler() != null)
-            {
-                this.compiler = new JDKCompiler();
+                this.compiler = new FatJarDecompressCompiler();
             }
             else
             {
@@ -47,7 +43,7 @@ public class CompileHelper
                 {
                     throw new RuntimeException("当前不是JDK环境，需要启用ECJ，检查POM是否进行了引入", e);
                 }
-                this.compiler = new JDTCompiler();
+                this.compiler = new ECJCompiler();
             }
         }
         else
@@ -63,7 +59,7 @@ public class CompileHelper
         return memoryClassLoader.loadClass(classModel.getPackageName() + "." + classModel.className());
     }
 
-    public static  boolean isSpringBootEnvironment()
+    public static boolean isSpringBootEnvironment()
     {
         return Thread.currentThread().getContextClassLoader().getClass().getName().contains("springframework");
     }

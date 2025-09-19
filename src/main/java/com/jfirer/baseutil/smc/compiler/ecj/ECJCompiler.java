@@ -1,5 +1,6 @@
 package com.jfirer.baseutil.smc.compiler.ecj;
 
+import com.jfirer.baseutil.IoUtil;
 import com.jfirer.baseutil.smc.compiler.Compiler;
 import com.jfirer.baseutil.smc.compiler.jdk.MemoryJavaFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
@@ -15,142 +16,35 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * ECJ编译器实现，使用临时文件支持纯内存编译
- * ECJ编译器通过javax.tools API时需要实际文件系统支持
+ * ECJ 编译器，用来对磁盘上的源文件进行编译，需要classpath也是在磁盘上，并且只支持标准的class文件和jar文件。不支持SpringBoot的FatJar。
+ * 需要配合自带的StandardJavaFileManager。
  */
 @Slf4j
 public class ECJCompiler implements Compiler
 {
     private JavaCompiler compiler = new EclipseCompiler();
+    List<String> options = Arrays.asList("-cp", System.getProperty("java.class.path"),//
+//                                             "-d", outputDir.toString(),    // 输出目录
+                                         "-source", "17", "-target", "17", "-nowarn", "-g");
 
     @Override
-    public Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
+    public synchronized Map<String, byte[]> compile(ClassModel classModel) throws IOException, ClassNotFoundException
     {
         // 创建临时目录
         Path tempDir = Files.createTempDirectory("ecj-compile");
         try
         {
-            return compileWithTempFiles(classModel, tempDir);
+            return compileWithTempFiles(classModel, tempDir, compiler, options);
         }
         finally
         {
             // 清理临时文件
-            cleanupTempDir(tempDir);
-        }
-    }
-
-    private Map<String, byte[]> compileWithTempFiles(ClassModel classModel, Path tempDir) throws IOException
-    {
-        String source = classModel.toStringWithLineNo();
-
-        // 创建源文件目录结构
-        String packagePath = classModel.getPackageName().replace('.', '/');
-        Path packageDir = tempDir.resolve("src").resolve(packagePath);
-        Files.createDirectories(packageDir);
-
-        // 创建输出目录
-        Path outputDir = tempDir.resolve("classes");
-        Files.createDirectories(outputDir);
-
-        // 写入源文件
-        String fileName = classModel.className() + ".java";
-        Path sourceFile = packageDir.resolve(fileName);
-        Files.write(sourceFile, source.getBytes(StandardCharsets.UTF_8));
-
-        // 设置编译选项
-        String classpath = System.getProperty("java.class.path");
-        log.info("ecj编译的时候，classpath是:{}", classpath);
-        List<String> options = Arrays.asList(
-            "-cp", classpath,
-            "-d", outputDir.toString(),    // 输出目录
-            "-source", "17",
-            "-target", "17",
-            "-nowarn",
-            "-g"
-        );
-
-        // 编译
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, StandardCharsets.UTF_8);
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(sourceFile.toFile()));
-        MemoryJavaFileManager memoryJavaFileManager = new MemoryJavaFileManager(fileManager);
-        StringWriter writer = new StringWriter();
-        JavaCompiler.CompilationTask task = compiler.getTask(
-            writer,
-            memoryJavaFileManager,
-            null,
-            options,
-            null,
-            compilationUnits
-        );
-
-        Boolean result = task.call();
-        fileManager.close();
-
-        if (result == null || !result.booleanValue())
-        {
-            throw new RuntimeException("Compilation failed.The error is \r\n" + writer.toString() + "\r\nThe source is \r\n" + source);
-        }
-        Map<String, byte[]> classBytes = memoryJavaFileManager.getClassBytes();
-        Map<String, byte[]> collect    = classBytes.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().replace('/', '.'), Map.Entry::getValue));
-        return collect;
-        // 读取编译结果
-//        return readCompiledClasses(outputDir, classModel.getPackageName());
-    }
-
-    private Map<String, byte[]> readCompiledClasses(Path outputDir, String packageName) throws IOException
-    {
-        Map<String, byte[]> classBytes = new HashMap<>();
-        String packagePath = packageName.replace('.', '/');
-        Path packageDir = outputDir.resolve(packagePath);
-
-        if (Files.exists(packageDir))
-        {
-            Files.walk(packageDir)
-                .filter(path -> path.toString().endsWith(".class"))
-                .forEach(classFile -> {
-                    try
-                    {
-                        String relativePath = outputDir.relativize(classFile).toString();
-                        String className = relativePath.replace('/', '.').replace(".class", "");
-                        byte[] bytes = Files.readAllBytes(classFile);
-                        classBytes.put(className, bytes);
-                    }
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException("Failed to read compiled class file: " + classFile, e);
-                    }
-                });
-        }
-
-        return classBytes;
-    }
-
-    private void cleanupTempDir(Path tempDir)
-    {
-        try
-        {
-            Files.walk(tempDir)
-                .sorted((a, b) -> b.compareTo(a)) // 反向排序，先删除文件再删除目录
-                .forEach(path -> {
-                    try
-                    {
-                        Files.delete(path);
-                    }
-                    catch (IOException e)
-                    {
-                        // 忽略删除失败
-                    }
-                });
-        }
-        catch (IOException e)
-        {
-            // 忽略清理失败
+            IoUtil.deleteDir(tempDir.toFile().getAbsolutePath());
         }
     }
 }

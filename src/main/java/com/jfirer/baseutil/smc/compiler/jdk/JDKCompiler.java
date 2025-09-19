@@ -1,6 +1,8 @@
 package com.jfirer.baseutil.smc.compiler.jdk;
 
+import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import com.jfirer.baseutil.smc.compiler.Compiler;
+import com.jfirer.baseutil.smc.compiler.springboot.SpringBootClassloaderFileManager;
 import com.jfirer.baseutil.smc.model.ClassModel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,6 +13,7 @@ import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +35,14 @@ public class JDKCompiler implements Compiler
         {
             throw new IllegalStateException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK/lib目录下的tools.jar拷贝到jre/lib目录。如果是linux，将JAVA_HOME设置为jdk的");
         }
-        manager = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
+        if (CompileHelper.isSpringBootEnvironment())
+        {
+            manager = new SpringBootClassloaderFileManager(compiler.getStandardFileManager(null, null, null), Thread.currentThread().getContextClassLoader());
+        }
+        else
+        {
+            manager = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
+        }
     }
 
     @Override

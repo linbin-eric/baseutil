@@ -3,7 +3,10 @@ package com.jfirer.baseutil.smc.compiler.jdk;
 import com.jfirer.baseutil.smc.compiler.MemoryInputJavaFileObject;
 import com.jfirer.baseutil.smc.compiler.MemoryOutputJavaFileObject;
 
-import javax.tools.*;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,6 +30,13 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     public Map<String, byte[]> getClassBytes()
     {
         return new HashMap<String, byte[]>(this.classBytes);
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        super.close();
+        clear();
     }
 
     public void clear()
