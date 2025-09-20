@@ -37,10 +37,12 @@ public class JDKCompiler implements Compiler
         }
         if (CompileHelper.isSpringBootEnvironment())
         {
+            log.warn("采用SpringBoot的文件管理器");
             manager = new SpringBootClassloaderFileManager(compiler.getStandardFileManager(null, null, null), Thread.currentThread().getContextClassLoader());
         }
         else
         {
+            log.warn("采用内存文件管理器");
             manager = new MemoryJavaFileManager(compiler.getStandardFileManager(null, null, null));
         }
     }
