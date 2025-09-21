@@ -127,6 +127,11 @@
         </developer>
     </developers>
     <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.6</version>
+        </dependency>
         <!-- Spring Boot Starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -185,7 +190,6 @@
             <version>1.37</version>
             <scope>test</scope>
         </dependency>
-        <!-- Eclipse JDT Core for JRE-compatible compilation -->
         <dependency>
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>ecj</artifactId>

@@ -1,13 +1,12 @@
 package com.jfirer.baseutil.smc.compiler;
 
+import com.jfirer.baseutil.RuntimeJVM;
 import com.jfirer.baseutil.smc.compiler.ecj.ECJCompiler;
-import com.jfirer.baseutil.smc.compiler.jdk.FatJarDecompressCompiler;
 import com.jfirer.baseutil.smc.compiler.jdk.JDKCompiler;
 import com.jfirer.baseutil.smc.model.ClassModel;
 
 import javax.tools.ToolProvider;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 
 /**
@@ -66,20 +65,6 @@ public class CompileHelper
         // 检查类加载器是否为Spring Boot的LaunchedURLClassLoader
         boolean isSpringBootClassLoader = classLoader.getClass().getName().contains("springframework");
         // 检查是否以JAR形式运行
-        boolean isJarExecution = isRunningFromJar();
-        return isSpringBootClassLoader && isJarExecution;
-    }
-
-    private static boolean isRunningFromJar()
-    {
-        try
-        {
-            URL resource = CompileHelper.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
-            return resource != null;
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
+        return isSpringBootClassLoader && RuntimeJVM.detectRunningInJar();
     }
 }

@@ -1,6 +1,7 @@
 package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
+import com.jfirer.baseutil.smc.compiler.CompileHelper;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -102,7 +106,7 @@ public class RuntimeJVM
         {
             throw new IllegalStateException(STR.format("当前方法为 {}#{},不是启动的 main 方法。", className, methodName));
         }
-        if (detectRunningInJar(getMainClass()) == false)
+        if (detectRunningInJar() == false)
         {
             log.warn("当前在IDE中运行，不需要复制jar为copy-jar");
             return;
@@ -292,7 +296,7 @@ public class RuntimeJVM
             }
             else
             {
-                cmd.add("nohup" );
+                cmd.add("nohup");
                 cmd.add("java");
                 cmd.add("-jar");
                 cmd.add(filePath);
@@ -343,8 +347,102 @@ public class RuntimeJVM
      * @return
      */
     @SneakyThrows
-    public static boolean detectRunningInJar(Class<?> ckass)
+    public static boolean detectRunningInJar()
     {
-        return new File(ckass.getProtectionDomain().getCodeSource().getLocation().toURI()).isFile();
+        try
+        {
+            URL resource = RuntimeJVM.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
+            return resource != null;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+    }
+
+    public static File getDirOfMainClass2()
+    {
+        if (detectRunningInJar())
+        {
+            try
+            {
+                URL resource = RuntimeJVM.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
+                if (resource != null)
+                {
+                    String path = resource.getPath();
+                    // 移除文件部分，只保留jar文件路径
+                    if (path.contains("!/"))
+                    {
+                        path = path.substring(0, path.indexOf("!/"));
+                    }
+                    URI uri = new URI(path);
+                    File jarFile = new File(uri.getPath());
+                    return jarFile.getParentFile();
+                }
+            }
+            catch (URISyntaxException e)
+            {
+                ReflectUtil.throwException(e);
+            }
+        }
+        else
+        {
+            List<String> directoryPaths = new LinkedList<>();
+            ClassLoader  classLoader    = Thread.currentThread().getContextClassLoader();
+            if (classLoader instanceof URLClassLoader urlClassLoader)
+            {
+                for (URL url : urlClassLoader.getURLs())
+                {
+                    if ("file".equals(url.getProtocol()))
+                    {
+                        try
+                        {
+                            File file = new File(url.toURI());
+                            if (file.isDirectory())
+                            {
+                                directoryPaths.add(file.getAbsolutePath());
+                            }
+                        }
+                        catch (URISyntaxException e)
+                        {
+                            // 忽略无效 URI
+                        }
+                    }
+                }
+            }
+            if (directoryPaths.isEmpty())
+            {
+                String   classPath     = System.getProperty("java.class.path");
+                String   pathSeparator = System.getProperty("path.separator");
+                String[] paths         = classPath.split(pathSeparator);
+                for (String path : paths)
+                {
+                    File file = new File(path);
+                    if (file.exists())
+                    {
+                        if (file.isDirectory())
+                        {
+                            directoryPaths.add(file.getAbsolutePath());
+                        }
+                    }
+                }
+            }
+            // 步骤3: 优先返回目录路径（过滤包含 "classes" 或 "out" 的，作为 IDE 输出目录）
+            for (String dir : directoryPaths)
+            {
+                if (dir.contains("classes"))
+                {
+                    return new File(dir);
+                }
+            }
+            throw new IllegalArgumentException("无法获取项目目录");
+        }
+        // 默认返回值，防止编译错误
+        return null;
+    }
+
+    public static void main(String[] args)
+    {
+        System.out.println(getDirOfMainClass2());
     }
 }
