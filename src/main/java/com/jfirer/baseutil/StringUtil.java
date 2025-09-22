@@ -156,6 +156,18 @@ public class StringUtil
         return src == null || "".equals(src);
     }
 
+    public static boolean isAnyBlank(String... args)
+    {
+        for (String arg : args)
+        {
+            if (isBlank(arg))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * 判断给定的字符串是否为非空。如果非空返回字符串本身，如果是空的，则返回defaultValue给定的值
      *
