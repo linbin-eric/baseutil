@@ -9,8 +9,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.channels.UnsupportedAddressTypeException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -74,18 +76,38 @@ public class RuntimeJVM
         if (uri.startsWith("jar:file:"))
         {
             String jarFilePath = uri.substring(9, uri.indexOf("!/"));
+            // URL解码处理中文路径
+            try
+            {
+                jarFilePath = URLDecoder.decode(jarFilePath, "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                log.warn("URL解码失败，使用原始路径: {}", jarFilePath);
+            }
             return new File(jarFilePath);
         }
         else if (uri.startsWith("file:"))
         {
+            String filePath;
             if (uri.contains("!/"))
             {
-                return new File(uri.substring(5, uri.indexOf("!/")));
+                filePath = uri.substring(5, uri.indexOf("!/"));
             }
             else
             {
-                return new File(uri.substring(5));
+                filePath = uri.substring(5);
             }
+            // URL解码处理中文路径
+            try
+            {
+                filePath = URLDecoder.decode(filePath, "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                log.warn("URL解码失败，使用原始路径: {}", filePath);
+            }
+            return new File(filePath);
         }
         else
         {
