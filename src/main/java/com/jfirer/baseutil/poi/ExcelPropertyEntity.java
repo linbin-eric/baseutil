@@ -4,21 +4,43 @@ import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 @Data
 @Accessors(chain = true)
-public abstract class ExcelPropertyEntity
+public class ExcelPropertyEntity implements BiConsumer<Map<String, Object>, Object>
 {
-    protected ValueAccessor valueAccessor;
-    protected int           classId;
+    private   String[]             names;
+    protected ValueAccessor        valueAccessor;
+    protected int                  classId;
+    protected ExcelDataTransformer excelDataTransformer;
 
-    protected void setValue(T t, Object value)
+    @Override
+    public void accept(Map<String, Object> row, Object t)
     {
+        for (String name : names)
+        {
+            Object value = row.get(name);
+            if (value == null)
+            {
+                continue;
+            }
+            setValue(t, value);
+        }
+    }
+
+    protected void setValue(Object t, Object value)
+    {
+        if (excelDataTransformer != null)
+        {
+            excelDataTransformer.transform(valueAccessor, t, value);
+            return;
+        }
         switch (classId)
         {
             case ReflectUtil.PRIMITIVE_BYTE ->

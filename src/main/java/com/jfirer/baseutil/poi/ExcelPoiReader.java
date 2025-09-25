@@ -5,7 +5,6 @@ import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -14,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -22,38 +22,43 @@ import java.util.function.BiConsumer;
 @Data
 public class ExcelPoiReader
 {
-    private              List<Map<String, Object>>                                         dataList = new ArrayList<>();
-    private              Map<Integer, String>                                              headers  = new HashMap<>();
-    private static final ConcurrentMap<Class<?>, List<BiConsumer<Map<String, Object>, T>>> parseMap = new ConcurrentHashMap<>();
+    private              List<Map<String, Object>>                                              dataList = new ArrayList<>();
+    private              Map<Integer, String>                                                   headers  = new HashMap<>();
+    private static final ConcurrentMap<Class<?>, List<BiConsumer<Map<String, Object>, Object>>> parseMap = new ConcurrentHashMap<>();
 
     @SneakyThrows
-    public List<T> readExcel(InputStream inputStream, Class<T> type)
+    public <T> List<T> readExcel(InputStream inputStream, Class<T> type)
     {
         List<Map<String, Object>> excel = readExcel(inputStream);
-        List<BiConsumer<Map<String, Object>, T>> consumers = parseMap.computeIfAbsent(type, k -> {
-            Field[]                                  declaredFields = k.getDeclaredFields();
-            List<BiConsumer<Map<String, Object>, T>> biConsumers    = new LinkedList<>();
+        List<BiConsumer<Map<String, Object>, Object>> consumers = parseMap.computeIfAbsent(type, k -> {
+            Field[]                                       declaredFields = k.getDeclaredFields();
+            List<BiConsumer<Map<String, Object>, Object>> biConsumers    = new LinkedList<>();
             for (Field declaredField : declaredFields)
             {
-                ExcelProperty excelProperty = declaredField.getAnnotation(ExcelProperty.class);
+                ExcelPropertyEntity excelPropertyEntity = new ExcelPropertyEntity();
+                ExcelProperty       excelProperty       = declaredField.getAnnotation(ExcelProperty.class);
                 if (excelProperty == null)
                 {
-                    throw new IllegalArgumentException("字段 " + declaredField.getName() + " 未添加 @ExcelProperty 注解");
-                }
-                String[] value = excelProperty.value();
-                if (value.length == 1)
-                {
-                    biConsumers.add((BiConsumer<Map<String, Object>, T>) new ExcelSingleNamePropertyEntity().setName(excelProperty.value()[0])//
-                                                                                                            .setValueAccessor(ValueAccessor.standard(declaredField))//
-                                                                                                            .setClassId(ReflectUtil.getClassId(declaredField.getType())));
+                    excelPropertyEntity.setNames(new String[]{declaredField.getName()});
                 }
                 else
                 {
-                    biConsumers.add((BiConsumer<Map<String, Object>, T>) new ExcelMultiNamePropertyEntity().setNames(excelProperty.value())//
-                                                                                                           .setClassId(ReflectUtil.getClassId(declaredField.getType()))//
-                                                                                                           .setValueAccessor(ValueAccessor.standard(declaredField))//
-                    );
+                    excelPropertyEntity.setNames(excelProperty.value());
+                    if (excelProperty.transformer() != ExcelDataTransformer.class)
+                    {
+                        try
+                        {
+                            excelPropertyEntity.setExcelDataTransformer(excelProperty.transformer().getConstructor().newInstance());
+                        }
+                        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
+                excelPropertyEntity.setValueAccessor(ValueAccessor.standard(declaredField));
+                excelPropertyEntity.setClassId(ReflectUtil.getClassId(declaredField.getType()));
+                biConsumers.add(excelPropertyEntity);
             }
             return biConsumers;
         });

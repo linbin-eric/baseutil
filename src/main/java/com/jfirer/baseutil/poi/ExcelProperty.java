@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
 public @interface ExcelProperty
 {
     String[] value();
+
+    Class<? extends ExcelDataTransformer> transformer() default ExcelDataTransformer.class;
 }
