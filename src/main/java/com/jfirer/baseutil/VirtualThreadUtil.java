@@ -11,13 +11,13 @@ import java.util.concurrent.TimeUnit;
 public class VirtualThreadUtil
 {
     @SneakyThrows
-    public static void start(Collection<Runnable> runnables, int parallelSize)
+    public static void start(Collection<? extends Runnable> runnables, int parallelSize)
     {
         start(runnables, parallelSize, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
     @SneakyThrows
-    public static void start(Collection<Runnable> runnables, int parallelSize, long timeout, TimeUnit unit)
+    public static void start(Collection<? extends Runnable> runnables, int parallelSize, long timeout, TimeUnit unit)
     {
         CountDownLatch  latch = new CountDownLatch(parallelSize);
         Queue<Runnable> queue = new LinkedTransferQueue<>(runnables);
