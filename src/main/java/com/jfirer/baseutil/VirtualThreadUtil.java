@@ -7,20 +7,27 @@ import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class VirtualThreadUtil
 {
     @SneakyThrows
     public static void start(Collection<? extends Runnable> runnables, int parallelSize)
     {
-        start(runnables, parallelSize, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        start(runnables, parallelSize, Long.MAX_VALUE, TimeUnit.MILLISECONDS, r -> {});
     }
 
     @SneakyThrows
-    public static void start(Collection<? extends Runnable> runnables, int parallelSize, long timeout, TimeUnit unit)
+    public static <R extends Runnable> void start(Collection<R> runnables, int parallelSize, Consumer<R> consumer)
     {
-        CountDownLatch  latch = new CountDownLatch(parallelSize);
-        Queue<Runnable> queue = new LinkedTransferQueue<>(runnables);
+        start(runnables, parallelSize, Long.MAX_VALUE, TimeUnit.SECONDS, consumer);
+    }
+
+    @SneakyThrows
+    public static <R extends Runnable> void start(Collection<R> runnables, int parallelSize, long timeout, TimeUnit unit, Consumer<R> consumer)
+    {
+        CountDownLatch latch = new CountDownLatch(parallelSize);
+        Queue<R>       queue = new LinkedTransferQueue<>(runnables);
         for (int i = 0; i < parallelSize; i++)
         {
             Thread.startVirtualThread(() -> {
@@ -28,10 +35,11 @@ public class VirtualThreadUtil
                 {
                     do
                     {
-                        Runnable poll = queue.poll();
+                        R poll = queue.poll();
                         if (poll != null)
                         {
                             poll.run();
+                            consumer.accept(poll);
                         }
                         else
                         {
