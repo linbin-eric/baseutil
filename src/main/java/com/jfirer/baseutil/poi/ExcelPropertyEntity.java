@@ -35,6 +35,62 @@ public class ExcelPropertyEntity
         }
     }
 
+    public void write(Cell cell, Object instance)
+    {
+        if (cellWriter != null)
+        {
+            cellWriter.write(cell, instance, valueAccessor);
+        }
+        else
+        {
+            Object value = valueAccessor.get(instance);
+            writeValue(cell, value);
+        }
+    }
+
+    protected void writeValue(Cell cell, Object value)
+    {
+        if (value == null)
+        {
+            return; // 空值处理：留空单元格
+        }
+
+        switch (classId)
+        {
+            case ReflectUtil.PRIMITIVE_BYTE, ReflectUtil.PRIMITIVE_SHORT, ReflectUtil.PRIMITIVE_INT,
+                 ReflectUtil.PRIMITIVE_LONG, ReflectUtil.CLASS_BYTE, ReflectUtil.CLASS_SHORT,
+                 ReflectUtil.CLASS_INT, ReflectUtil.CLASS_LONG ->
+            {
+                cell.setCellValue(((Number) value).doubleValue());
+            }
+            case ReflectUtil.PRIMITIVE_FLOAT, ReflectUtil.PRIMITIVE_DOUBLE,
+                 ReflectUtil.CLASS_FLOAT, ReflectUtil.CLASS_DOUBLE ->
+            {
+                cell.setCellValue(((Number) value).doubleValue());
+            }
+            case ReflectUtil.PRIMITIVE_BOOL, ReflectUtil.CLASS_BOOL ->
+            {
+                cell.setCellValue((Boolean) value);
+            }
+            case ReflectUtil.PRIMITIVE_CHAR, ReflectUtil.CLASS_CHAR ->
+            {
+                cell.setCellValue(String.valueOf((Character) value));
+            }
+            case ReflectUtil.CLASS_STRING ->
+            {
+                cell.setCellValue((String) value);
+            }
+            case ReflectUtil.CLASS_BIGDECIMAL ->
+            {
+                cell.setCellValue(((BigDecimal) value).doubleValue());
+            }
+            case ReflectUtil.CLASS_DATE, ReflectUtil.CLASS_TIMESTAMP, ReflectUtil.CLASS_SQL_DATE ->
+            {
+                cell.setCellValue((Date) value);
+            }
+            default -> cell.setCellValue(value.toString());
+        }
+    }
 
     protected void setValue(Object t, Object value)
     {

@@ -16,6 +16,7 @@ public class ExcelEntityParser<T>
 {
     private final Constructor<T>                   constructor;
     private final Map<String, ExcelPropertyEntity> excelPropertyEntityMap;
+    private final ExcelPropertyEntity[]            orderedProperties;
 
     @SneakyThrows
     public T read(Row row, Map<Integer, String> header)
@@ -34,5 +35,15 @@ public class ExcelEntityParser<T>
             }
         }
         return instance;
+    }
+
+    public void write(Row row, T instance)
+    {
+        for (int i = 0; i < orderedProperties.length; i++)
+        {
+            Cell                cell     = row.createCell(i);
+            ExcelPropertyEntity property = orderedProperties[i];
+            property.write(cell, instance);
+        }
     }
 }

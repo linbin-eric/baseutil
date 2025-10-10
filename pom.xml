@@ -152,15 +152,6 @@
             <version>5.4.1</version>
             <optional>true</optional>
         </dependency>
-
-        <!--        &lt;!&ndash; Spring Boot Log4j2 Starter &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-log4j2</artifactId>-->
-        <!--            <version>${spring-boot.version}</version>-->
-        <!--            <scope>provided</scope>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>io.github.karlatemp</groupId>
             <artifactId>unsafe-accessor</artifactId>

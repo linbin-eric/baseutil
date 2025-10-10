@@ -25,9 +25,41 @@ public class ExcelPoiUtil
     private              List<Map<String, Object>>                  dataList = new ArrayList<>();
     private static final ConcurrentMap<Class<?>, ExcelEntityParser> parseMap = new ConcurrentHashMap<>();
 
-
-    public static  void writeExcel(OutputStream outputStream, List<?> dataList){
-
+    @SneakyThrows
+    public static void writeExcel(OutputStream outputStream, List<?> dataList)
+    {
+        // 前置检查：如果dataList为空或null，直接返回
+        if (dataList == null || dataList.isEmpty())
+        {
+            return;
+        }
+        // 获取类型信息：从第一个元素确定数据类型
+        Object            firstElement      = dataList.get(0);
+        Class<?>          type              = firstElement.getClass();
+        ExcelEntityParser excelEntityParser = parseMap.computeIfAbsent(type, ExcelPoiUtil::parse);
+        // 创建Workbook（XLS格式）
+        try (HSSFWorkbook workbook = new HSSFWorkbook())
+        {
+            // 创建Sheet
+            Sheet sheet = workbook.createSheet();
+            // 写入表头（第0行）
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < excelEntityParser.getOrderedProperties().length; i++)
+            {
+                ExcelPropertyEntity property   = (ExcelPropertyEntity) excelEntityParser.getOrderedProperties()[i];
+                Cell                headerCell = headerRow.createCell(i);
+                headerCell.setCellValue(property.getNames()[0]);
+            }
+            // 写入数据行（从第1行开始）
+            for (int rowIndex = 0; rowIndex < dataList.size(); rowIndex++)
+            {
+                Row    dataRow  = sheet.createRow(rowIndex + 1);
+                Object instance = dataList.get(rowIndex);
+                excelEntityParser.write(dataRow, instance);
+            }
+            // 输出到流
+            workbook.write(outputStream);
+        }
     }
 
     @SneakyThrows
@@ -85,7 +117,7 @@ public class ExcelPoiUtil
                 map.put(name, entity);
             }
         }
-        return new ExcelEntityParser(k.getConstructor(), map);
+        return new ExcelEntityParser(k.getConstructor(), map, entities.toArray(ExcelPropertyEntity[]::new));
     }
 
     /**
