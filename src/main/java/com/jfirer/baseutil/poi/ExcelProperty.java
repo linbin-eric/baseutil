@@ -11,5 +11,7 @@ public @interface ExcelProperty
 {
     String[] value();
 
-    Class<? extends ExcelDataTransformer> transformer() default ExcelDataTransformer.class;
+    Class<? extends CellReader> reader() default CellReader.class;
+
+    Class<? extends CellWriter> writer() default CellWriter.class;
 }

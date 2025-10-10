@@ -9,157 +9,137 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 @Data
-public class ExcelPoiReader
+public class ExcelPoiUtil
 {
-    private              List<Map<String, Object>>                                              dataList = new ArrayList<>();
-    private              Map<Integer, String>                                                   headers  = new HashMap<>();
-    private static final ConcurrentMap<Class<?>, List<BiConsumer<Map<String, Object>, Object>>> parseMap = new ConcurrentHashMap<>();
+    private              List<Map<String, Object>>                  dataList = new ArrayList<>();
+    private static final ConcurrentMap<Class<?>, ExcelEntityParser> parseMap = new ConcurrentHashMap<>();
 
-    @SneakyThrows
-    public <T> List<T> readExcel(InputStream inputStream, Class<T> type)
-    {
-        List<Map<String, Object>> excel = readExcel(inputStream);
-        List<BiConsumer<Map<String, Object>, Object>> consumers = parseMap.computeIfAbsent(type, k -> {
-            Field[]                                       declaredFields = k.getDeclaredFields();
-            List<BiConsumer<Map<String, Object>, Object>> biConsumers    = new LinkedList<>();
-            for (Field declaredField : declaredFields)
-            {
-                ExcelPropertyEntity excelPropertyEntity = new ExcelPropertyEntity();
-                ExcelProperty       excelProperty       = declaredField.getAnnotation(ExcelProperty.class);
-                if (excelProperty == null)
-                {
-                    excelPropertyEntity.setNames(new String[]{declaredField.getName()});
-                }
-                else
-                {
-                    excelPropertyEntity.setNames(excelProperty.value());
-                    if (excelProperty.transformer() != ExcelDataTransformer.class)
-                    {
-                        try
-                        {
-                            excelPropertyEntity.setExcelDataTransformer(excelProperty.transformer().getConstructor().newInstance());
-                        }
-                        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-                excelPropertyEntity.setValueAccessor(ValueAccessor.standard(declaredField));
-                excelPropertyEntity.setClassId(ReflectUtil.getClassId(declaredField.getType()));
-                biConsumers.add(excelPropertyEntity);
-            }
-            return biConsumers;
-        });
-        List<T> list = new ArrayList<>();
-        for (Map<String, Object> row : excel)
-        {
-            T t = type.getConstructor().newInstance();
-            consumers.forEach(biConsumer -> biConsumer.accept(row, t));
-            list.add(t);
-        }
-        return list;
+
+    public static  void writeExcel(OutputStream outputStream, List<?> dataList){
+
     }
 
-    /**
-     * 通过InputStream读取Excel文件
-     *
-     * @param inputStream Excel文件输入流
-     * @return 读取的数据列表
-     */
-    public List<Map<String, Object>> readExcel(InputStream inputStream)
+    @SneakyThrows
+    public static <T> List<T> readExcel(InputStream inputStream, Class<T> type)
     {
-        return readExcel(inputStream, 0);
+        ExcelEntityParser excelEntityParser = parseMap.computeIfAbsent(type, ExcelPoiUtil::parse);
+        try (Workbook workbook = createWorkbookFromStream(inputStream))
+        {
+            ExcelData excelData = processWorkbook(workbook, 0, (row, header) -> excelEntityParser.read(row, header));
+            return (List<T>) excelData.data;
+        }
+    }
+
+    @SneakyThrows
+    private static ExcelEntityParser parse(Class<?> k)
+    {
+        Field[]                   declaredFields = k.getDeclaredFields();
+        List<ExcelPropertyEntity> entities       = new LinkedList<>();
+        for (Field declaredField : declaredFields)
+        {
+            ExcelPropertyEntity excelPropertyEntity = new ExcelPropertyEntity();
+            ExcelProperty       excelProperty       = declaredField.getAnnotation(ExcelProperty.class);
+            if (excelProperty == null)
+            {
+                excelPropertyEntity.setNames(new String[]{declaredField.getName()});
+            }
+            else
+            {
+                try
+                {
+                    excelPropertyEntity.setNames(excelProperty.value());
+                    if (excelProperty.reader() != CellReader.class)
+                    {
+                        excelPropertyEntity.setCellReader(excelProperty.reader().getConstructor().newInstance());
+                    }
+                    if (excelProperty.writer() != CellWriter.class)
+                    {
+                        excelPropertyEntity.setCellWriter(excelProperty.writer().getConstructor().newInstance());
+                    }
+                }
+                catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+            excelPropertyEntity.setValueAccessor(ValueAccessor.standard(declaredField));
+            excelPropertyEntity.setClassId(ReflectUtil.getClassId(declaredField.getType()));
+            entities.add(excelPropertyEntity);
+        }
+        Map<String, ExcelPropertyEntity> map = new HashMap<>();
+        for (ExcelPropertyEntity entity : entities)
+        {
+            for (String name : entity.getNames())
+            {
+                map.put(name, entity);
+            }
+        }
+        return new ExcelEntityParser(k.getConstructor(), map);
     }
 
     /**
      * 通过InputStream读取Excel文件
      *
      * @param inputStream
-     * @param sheetIndex
-     * @return 读取的数据列表, 每行数据是一个Map, 键为表头，值为数据.值的类型有：Date、Long、Number、Boolean
+     * @param sheetIndex,第一个sheet的下标是0
+     * @return
      */
     @SneakyThrows
-    public List<Map<String, Object>> readExcel(InputStream inputStream, int sheetIndex)
+    public static ExcelData readExcel(InputStream inputStream, int sheetIndex)
     {
-        dataList.clear();
-        headers.clear();
         try (Workbook workbook = createWorkbookFromStream(inputStream))
         {
-            return processWorkbook(workbook, sheetIndex);
+            return processWorkbook(workbook, sheetIndex, (row, header) -> readDataRow(row));
         }
     }
 
-    /**
-     * 处理Workbook对象，提取数据
-     */
-    private List<Map<String, Object>> processWorkbook(Workbook workbook, int sheetIndex) throws IOException
+    private static ExcelData processWorkbook(Workbook workbook, int sheetIndex, BiFunction<Row, Map<Integer, String>, Object> parser) throws IOException
     {
         Sheet sheet = workbook.getSheetAt(sheetIndex);
         if (sheet == null)
         {
             throw new IllegalArgumentException("Sheet " + sheetIndex + " 不存在");
         }
-        Iterator<Row> rowIterator = sheet.iterator();
-        boolean       isFirstRow  = true;
-        int           rowIndex    = 0;
+        Iterator<Row>        rowIterator = sheet.iterator();
+        boolean              isFirstRow  = true;
+        Map<Integer, String> header      = null;
+        List<Object>         dataList    = new ArrayList<>();
         while (rowIterator.hasNext())
         {
             Row row = rowIterator.next();
             if (isFirstRow)
             {
                 // 读取表头
-                readHeaders(row);
+                header     = readHeaders(row);
                 isFirstRow = false;
             }
             else
             {
-                // 读取数据行
-                Map<String, Object> rowData = readDataRow(row);
-                if (!rowData.isEmpty())
-                {
-                    dataList.add(rowData);
-                }
+                dataList.add(parser.apply(row, header));
             }
-            rowIndex++;
         }
-        return dataList;
+        return new ExcelData(header, dataList);
     }
 
-    /**
-     * 根据文件扩展名创建对应的Workbook对象
-     */
-    private Workbook createWorkbook(String filePath, FileInputStream fis) throws IOException
+    public record ExcelData(Map<Integer, String> header, List<Object> data)
     {
-        if (filePath.endsWith(".xlsx"))
-        {
-            return new XSSFWorkbook(fis);
-        }
-        else if (filePath.endsWith(".xls"))
-        {
-            return new HSSFWorkbook(fis);
-        }
-        else
-        {
-            throw new IllegalArgumentException("不支持的文件格式，仅支持 .xls 和 .xlsx 文件");
-        }
     }
 
     /**
      * 根据文件头魔数判断文件类型并创建对应的Workbook对象
      */
-    private Workbook createWorkbookFromStream(InputStream inputStream) throws IOException
+    private static Workbook createWorkbookFromStream(InputStream inputStream) throws IOException
     {
         // 使用 BufferedInputStream 包装，支持 mark/reset 操作
         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
@@ -195,10 +175,13 @@ public class ExcelPoiReader
 
     /**
      * 读取表头信息
+     *
+     * @return
      */
-    private void readHeaders(Row headerRow)
+    private static Map<Integer, String> readHeaders(Row headerRow)
     {
-        Iterator<Cell> cellIterator = headerRow.cellIterator();
+        Map<Integer, String> headers      = new HashMap<>();
+        Iterator<Cell>       cellIterator = headerRow.cellIterator();
         while (cellIterator.hasNext())
         {
             Cell   cell        = cellIterator.next();
@@ -213,25 +196,22 @@ public class ExcelPoiReader
                 throw new IllegalArgumentException("第一行应该都是文字类型的值");
             }
         }
+        return headers;
     }
 
     /**
      * 读取数据行
      */
-    private Map<String, Object> readDataRow(Row row)
+    private static Map<Integer, Object> readDataRow(Row row)
     {
-        Map<String, Object> rowData      = new HashMap<>();
-        Iterator<Cell>      cellIterator = row.cellIterator();
+        Map<Integer, Object> rowData      = new HashMap<>();
+        Iterator<Cell>       cellIterator = row.cellIterator();
         while (cellIterator.hasNext())
         {
             Cell   cell        = cellIterator.next();
             int    columnIndex = cell.getColumnIndex();
             Object cellValue   = getCellValueAsString(cell);
-            String columnName  = headers.get(columnIndex);
-            if (columnName != null)
-            {
-                rowData.put(columnName, cellValue);
-            }
+            rowData.put(columnIndex, cellValue);
         }
         return rowData;
     }
@@ -239,7 +219,7 @@ public class ExcelPoiReader
     /**
      * 返回单元格的值，值的类型有：Date、Long、Number、Boolean
      */
-    private Object getCellValueAsString(Cell cell)
+    public static Object getCellValueAsString(Cell cell)
     {
         if (cell == null)
         {

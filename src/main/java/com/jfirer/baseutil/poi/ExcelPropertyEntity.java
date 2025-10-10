@@ -4,43 +4,40 @@ import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.poi.ss.usermodel.Cell;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Map;
-import java.util.function.BiConsumer;
+
+import static com.jfirer.baseutil.poi.ExcelPoiUtil.getCellValueAsString;
 
 @Data
 @Accessors(chain = true)
-public class ExcelPropertyEntity implements BiConsumer<Map<String, Object>, Object>
+public class ExcelPropertyEntity
 {
-    private   String[]             names;
-    protected ValueAccessor        valueAccessor;
-    protected int                  classId;
-    protected ExcelDataTransformer excelDataTransformer;
+    private   String[]      names;
+    protected ValueAccessor valueAccessor;
+    protected int           classId;
+    protected CellReader    cellReader;
+    protected CellWriter    cellWriter;
 
-    @Override
-    public void accept(Map<String, Object> row, Object t)
+    public void read(Cell cell, Object instance)
     {
-        for (String name : names)
+        if (cellReader != null)
         {
-            Object value = row.get(name);
-            if (value == null)
-            {
-                continue;
-            }
-            setValue(t, value);
+            cellReader.read(cell, instance, valueAccessor);
+        }
+        else
+        {
+            Object value = getCellValueAsString(cell);
+            setValue(instance, value);
         }
     }
 
+
     protected void setValue(Object t, Object value)
     {
-        if (excelDataTransformer != null)
-        {
-            excelDataTransformer.transform(valueAccessor, t, value);
-            return;
-        }
         switch (classId)
         {
             case ReflectUtil.PRIMITIVE_BYTE ->
