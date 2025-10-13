@@ -5,11 +5,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -382,6 +378,10 @@ public class RuntimeJVM
         else if (uri.startsWith("file:"))
         {
             if (uri.contains("!/"))
+            {
+                return true;
+            }
+            else if (uri.endsWith(".jar"))
             {
                 return true;
             }
