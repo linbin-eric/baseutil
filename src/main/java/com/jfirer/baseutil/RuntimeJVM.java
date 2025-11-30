@@ -346,7 +346,7 @@ public class RuntimeJVM
                 }
                 catch (Throwable e)
                 {
-                    log.debug("进程异常结束", e);
+                    log.error("进程异常结束", e);
                     if (process != null)
                     {
                         process.destroy();
