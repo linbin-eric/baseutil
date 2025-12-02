@@ -4,9 +4,9 @@
         xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jfirer</groupId>
+    <groupId>xin.nb1</groupId>
     <artifactId>baseutil</artifactId>
-    <version>1.1.12-SNAPSHOT</version>
+    <version>1.0</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
@@ -16,7 +16,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <spring-boot.version>3.2.0</spring-boot.version>
     </properties>
     <build>
         <plugins>
@@ -34,7 +33,7 @@
             <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
             <!--                <version>${spring-boot.version}</version>-->
             <!--                <configuration>-->
-            <!--                    <mainClass>com.springboot.test.SpringBootMain</mainClass>-->
+            <!--                    <mainClass>com.springboot.xin.nb1.baseutil.smc.compiler.test.SpringBootMain</mainClass>-->
             <!--                </configuration>-->
             <!--                <executions>-->
             <!--                    <execution>-->
@@ -139,20 +138,6 @@
             <version>2.0.6</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Spring Boot Starter -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>${spring-boot.version}</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-            <!--            <exclusions>-->
-            <!--                <exclusion>-->
-            <!--                    <groupId>org.springframework.boot</groupId>-->
-            <!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
-            <!--                </exclusion>-->
-            <!--            </exclusions>-->
-        </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
@@ -200,6 +185,18 @@
             <version>3.40.0</version>
             <optional>true</optional>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>3.2.0</version>
+            <scope>test</scope>
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.springframework.boot</groupId>-->
+            <!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
         </dependency>
     </dependencies>
 </project>

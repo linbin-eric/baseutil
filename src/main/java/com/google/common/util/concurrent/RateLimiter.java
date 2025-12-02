@@ -15,7 +15,7 @@ package com.google.common.util.concurrent;/*
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.SmoothRateLimiter.SmoothBursty;
 import com.google.common.util.concurrent.SmoothRateLimiter.SmoothWarmingUp;
-import com.jfirer.baseutil.STR;
+import xin.nb1.baseutil.STR;
 
 import java.time.Duration;
 import java.util.Locale;
