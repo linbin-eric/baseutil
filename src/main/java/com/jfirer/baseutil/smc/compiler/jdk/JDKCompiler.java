@@ -13,7 +13,6 @@ import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,7 +34,7 @@ public class JDKCompiler implements Compiler
         {
             throw new IllegalStateException("当前处于JRE环境无法获得JavaCompiler实例。如果是在windows，可以将JDK/lib目录下的tools.jar拷贝到jre/lib目录。如果是linux，将JAVA_HOME设置为jdk的");
         }
-        if (CompileHelper.isSpringBootEnvironment())
+        if (System.getProperty("JDKCompiler.springboot","false").equalsIgnoreCase("true") || CompileHelper.isSpringBootEnvironment())
         {
             log.warn("采用SpringBoot的文件管理器");
             manager = new SpringBootClassloaderFileManager(compiler.getStandardFileManager(null, null, null), Thread.currentThread().getContextClassLoader());

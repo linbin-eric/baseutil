@@ -2,11 +2,8 @@ package com.jfirer.baseutil;
 
 import com.jfirer.baseutil.reflect.ReflectUtil;
 import com.jfirer.baseutil.reflect.valueaccessor.ValueAccessor;
-import com.jfirer.baseutil.reflect.valueaccessor.impl.UnsafeValueAccessorImpl;
-import com.jfirer.baseutil.time.Timewatch;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,7 +12,6 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -263,18 +259,5 @@ public class CsvUtil
                 list.add(line.substring(readBegin, end + 1));
             }
         }
-    }
-
-    public static void main(String[] args) throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException
-    {
-        class Data
-        {
-            String A01;
-        }
-        Timewatch timewatch = new Timewatch();
-        timewatch.start();
-        List<Data> read = CsvUtil.read(IoUtil.getReader(new FileInputStream("/Users/linbin/Downloads/HQMS202301-10.csv"), StandardCharsets.UTF_8), Data.class, Data::new);
-        timewatch.end();
-        System.out.println(timewatch.getTotal());
     }
 }
