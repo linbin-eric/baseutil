@@ -16,7 +16,7 @@ package org.jctools.util;
 import java.util.function.LongBinaryOperator;
 import java.util.function.LongUnaryOperator;
 
-import static xin.nb1.baseutil.reflect.ReflectUtil.UNSAFE;
+import static cc.jfire.baseutil.reflect.ReflectUtil.UNSAFE;
 
 abstract class PaddedAtomicLongL1Pad extends Number implements java.io.Serializable
 {

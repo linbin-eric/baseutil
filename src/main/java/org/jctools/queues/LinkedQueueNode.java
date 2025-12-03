@@ -13,7 +13,7 @@
  */
 package org.jctools.queues;
 
-import static xin.nb1.baseutil.reflect.ReflectUtil.UNSAFE;
+import static cc.jfire.baseutil.reflect.ReflectUtil.UNSAFE;
 
 public final class LinkedQueueNode<E>
 {

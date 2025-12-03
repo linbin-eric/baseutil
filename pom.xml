@@ -4,7 +4,7 @@
         xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>xin.nb1</groupId>
+    <groupId>cc.jfire</groupId>
     <artifactId>baseutil</artifactId>
     <version>1.0</version>
     <name>baseutil</name>
@@ -33,7 +33,7 @@
             <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
             <!--                <version>${spring-boot.version}</version>-->
             <!--                <configuration>-->
-            <!--                    <mainClass>com.springboot.xin.nb1.baseutil.smc.compiler.test.SpringBootMain</mainClass>-->
+            <!--                    <mainClass>com.springboot.test.compiler.smc.cc.jfire.baseutil.SpringBootMain</mainClass>-->
             <!--                </configuration>-->
             <!--                <executions>-->
             <!--                    <execution>-->
