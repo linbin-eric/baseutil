@@ -150,7 +150,7 @@ Baseutil 是一个强大的 Java 基础工具库，专为 Java 21+ 环境设计�
 
 ```xml
 <dependency>
-    <groupId>xin.nb1</groupId>
+    <groupId>cc.jfire</groupId>
     <artifactId>baseutil</artifactId>
     <version>1.0</version>
 </dependency>
