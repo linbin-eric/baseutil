@@ -7,11 +7,11 @@ import java.util.Date;
 
 public class DateUtil
 {
-    private static final DateTimeFormatter FORMATTER                  = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final DateTimeFormatter ONLY_DATE_FORMATTER        = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER        = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final DateTimeFormatter COMPACT_DATE_FORMATTER     = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private static final DateTimeFormatter COMPACT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    public static final DateTimeFormatter FORMATTER                  = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter ONLY_DATE_FORMATTER        = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter DATE_TIME_FORMATTER        = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter COMPACT_DATE_FORMATTER     = DateTimeFormatter.ofPattern("yyyyMMdd");
+    public static final DateTimeFormatter COMPACT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     public static String dateToString(Date date)
     {
@@ -104,7 +104,7 @@ public class DateUtil
             return null;
         }
         LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime beginOfDay = localDateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime beginOfDay    = localDateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
         return Date.from(beginOfDay.atZone(ZoneId.systemDefault()).toInstant());
     }
 
@@ -121,7 +121,7 @@ public class DateUtil
             return null;
         }
         LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime endOfDay = localDateTime.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        LocalDateTime endOfDay      = localDateTime.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
         return Date.from(endOfDay.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

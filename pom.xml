@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cc.jfire</groupId>
     <artifactId>baseutil</artifactId>
-    <version>1.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>baseutil</name>
     <description>
         common api used by jfireFramework
@@ -19,30 +19,6 @@
     </properties>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.9.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                </configuration>
-            </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.springframework.boot</groupId>-->
-            <!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
-            <!--                <version>${spring-boot.version}</version>-->
-            <!--                <configuration>-->
-            <!--                    <mainClass>com.springboot.test.compiler.smc.cc.jfire.baseutil.SpringBootMain</mainClass>-->
-            <!--                </configuration>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <goals>-->
-            <!--                            <goal>repackage</goal>-->
-            <!--                        </goals>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -103,7 +79,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- 这一行解决“pinentry 弹窗”问题，必加！ -->
+                    <!-- 这一行解决"pinentry 弹窗"问题，必加！ -->
                     <gpgArguments>
                         <arg>--pinentry-mode</arg>
                         <arg>loopback</arg>
@@ -111,9 +87,7 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
-
     <licenses>
         <license>
             <name>GNU Affero General Public License v3.0</name>
@@ -199,4 +173,28 @@
             <!--            </exclusions>-->
         </dependency>
     </dependencies>
+    <profiles>
+        <!-- 正式发布到中央仓库：需要 -Drelease 参数 -->
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.9.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
