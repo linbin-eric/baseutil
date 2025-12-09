@@ -1,12 +1,12 @@
 package cc.jfire.baseutil.poi;
 
+import cc.jfire.baseutil.reflect.ReflectUtil;
+import cc.jfire.baseutil.reflect.valueaccessor.ValueAccessor;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import cc.jfire.baseutil.reflect.ReflectUtil;
-import cc.jfire.baseutil.reflect.valueaccessor.ValueAccessor;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -62,13 +62,18 @@ public class ExcelPoiUtil
         }
     }
 
-    @SneakyThrows
     public static <T> List<T> readExcel(InputStream inputStream, Class<T> type)
+    {
+        return readExcel(inputStream, type, 0);
+    }
+
+    @SneakyThrows
+    public static <T> List<T> readExcel(InputStream inputStream, Class<T> type, int sheetIndex)
     {
         ExcelEntityParser excelEntityParser = parseMap.computeIfAbsent(type, ExcelPoiUtil::parse);
         try (Workbook workbook = createWorkbookFromStream(inputStream))
         {
-            ExcelData excelData = processWorkbook(workbook, 0, (row, header) -> excelEntityParser.read(row, header));
+            ExcelData excelData = processWorkbook(workbook, sheetIndex, (row, header) -> excelEntityParser.read(row, header));
             return (List<T>) excelData.data;
         }
     }
