@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    hibernate:
+      update: false
+      date:  "#儿童 #动画"
+  datasource:
+    hikari:
+      username: root # 测试是否获取信息
+      password:

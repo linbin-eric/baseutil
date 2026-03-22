@@ -230,7 +230,7 @@ public class YamlReader
                 level++;
             }
             YmlElement parent = getParent(level);
-            line = line.contains("#") ? line.substring(0, line.indexOf("#")).trim() : line.trim();
+            line = pureLine(line).trim();
             if (line.startsWith("-"))
             {
                 line = line.substring(1).trim();
@@ -245,7 +245,7 @@ public class YamlReader
                         parent = placeHolder.toListYmlElement();
                         elements.set(parent.getIndex(), parent);
                     }
-                    ((ListYmlElement) parent).getValue().add(line);
+                    ((ListYmlElement) parent).getValue().add(getLineValue(line));
                 }
                 else
                 {
@@ -312,6 +312,7 @@ public class YamlReader
         String     name  = line.substring(0, i);
         String     value = line.substring(i + 1).trim();
         YmlElement element;
+        value = getLineValue(value);
         if (StringUtil.isBlank(value))
         {
             element = new PlaceHolder(elements.size(), name, level);
@@ -360,5 +361,70 @@ public class YamlReader
             list.add(content.substring(pre, index));
         }
         return list;
+    }
+
+    /**
+     * 当前行的有效内容。也就是第一个不被''或者""包围的#，该符号后面的都是注释
+     *
+     * @param line
+     * @return
+     */
+    private String pureLine(String line)
+    {
+        int singleQuotes = 1;
+        int doubleQuotes = 2;
+        int state        = 0;
+        for (int i = 0; i < line.length(); i++)
+        {
+            char c = line.charAt(i);
+            if (c == '"')
+            {
+                if (state == 0)
+                {
+                    state = doubleQuotes;
+                    continue;
+                }
+                else if (state == doubleQuotes)
+                {
+                    state = 0;
+                    continue;
+                }
+                else
+                {
+                    throw new IllegalArgumentException("有错误的 yml，当前错误内容：" + line);
+                }
+            }
+            else if (c == '\'')
+            {
+                if (state == 0)
+                {
+                    state = singleQuotes;
+                    continue;
+                }
+                else if (state == singleQuotes)
+                {
+                    state = 0;
+                    continue;
+                }
+                else
+                {
+                    throw new IllegalArgumentException("有错误的 yml，当前错误内容：" + line);
+                }
+            }
+            else if (c == '#' && state == 0)
+            {
+                return line.substring(0, i);
+            }
+        }
+        return line;
+    }
+
+    private String getLineValue(String line)
+    {
+        if (line.startsWith("\"") || line.startsWith("'"))
+        {
+            return line.substring(1, line.length() - 1);
+        }
+        return line;
     }
 }
