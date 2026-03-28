@@ -66,7 +66,7 @@ public class RuntimeJVM
      * @return
      */
     @SneakyThrows
-    public static File getDirOfMainClass()
+    public static File getFileOfMainClass()
     {
         String uri = getMainClass().getProtectionDomain().getCodeSource().getLocation().toURI().toString();
         if (uri.startsWith("jar:file:"))
@@ -399,6 +399,6 @@ public class RuntimeJVM
     public static void main(String[] args)
     {
         registerMainClass();
-        System.out.println(getDirOfMainClass());
+        System.out.println(getFileOfMainClass());
     }
 }
