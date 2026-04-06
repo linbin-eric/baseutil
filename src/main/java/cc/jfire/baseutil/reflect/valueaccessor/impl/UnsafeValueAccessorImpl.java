@@ -1,8 +1,9 @@
 package cc.jfire.baseutil.reflect.valueaccessor.impl;
 
-import io.github.karlatemp.unsafeaccessor.Unsafe;
+import cc.jfire.baseutil.STR;
 import cc.jfire.baseutil.reflect.ReflectUtil;
 import cc.jfire.baseutil.reflect.valueaccessor.ValueAccessor;
+import io.github.karlatemp.unsafeaccessor.Unsafe;
 
 import java.lang.reflect.Field;
 
@@ -14,8 +15,15 @@ public class UnsafeValueAccessorImpl implements ValueAccessor
 
     public UnsafeValueAccessorImpl(Field field)
     {
-        offset  = unsafe.objectFieldOffset(field);
-        classId = ReflectUtil.getClassId(field.getType());
+        try
+        {
+            offset  = unsafe.objectFieldOffset(field);
+            classId = ReflectUtil.getClassId(field.getType());
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException(STR.format("当前准备对字段:{}.{}创建UnsafeValueAccessorImpl，出现异常", field.getDeclaringClass().getName(), field.getName()), e);
+        }
     }
 
     @Override
