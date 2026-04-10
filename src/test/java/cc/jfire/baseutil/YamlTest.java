@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 public class YamlTest
@@ -22,11 +23,11 @@ public class YamlTest
             System.out.println(each.getKey());
         }
         YamlReader.YmlElement ymlElement = elementsWithFullPath.get("spring.jpa.hibernate");
-        Assert.assertEquals("false", ((YamlReader.StringYmlElement) ((YamlReader.MapYmlElement) ymlElement).getValue().get("update")).getValue());
-        Assert.assertEquals("false", ((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.jpa.hibernate.update")).getValue());
-        Assert.assertEquals("#儿童 #动画", ((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.jpa.hibernate.date")).getValue());
-        Assert.assertEquals("root", ((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.datasource.hikari.username")).getValue());
-        Assert.assertNull(((YamlReader.StringYmlElement) elementsWithFullPath.get("spring.datasource.hikari.password")).getValue());
+        Assert.assertEquals("false", ((YamlReader.NameStringNode) ((YamlReader.MapYmlElement) ymlElement).getMap().get("update").getValue()).getLocalValue());
+        Assert.assertEquals("false", ((YamlReader.NameStringNode) elementsWithFullPath.get("spring.jpa.hibernate.update")).getLocalValue());
+        Assert.assertEquals("#儿童 #动画", ((YamlReader.NameStringNode) elementsWithFullPath.get("spring.jpa.hibernate.date")).getLocalValue());
+        Assert.assertEquals("root", ((YamlReader.NameStringNode) elementsWithFullPath.get("spring.datasource.hikari.username")).getLocalValue());
+        Assert.assertNull(((YamlReader.NameStringNode) elementsWithFullPath.get("spring.datasource.hikari.password")).getLocalValue());
         Map<String, Object> mapWithFullPath = reader.getMapWithFullPath();
         Map<String, Object> map             = (Map<String, Object>) mapWithFullPath.get("spring.jpa.hibernate");
         Assert.assertEquals("false", map.get("update"));
@@ -36,5 +37,8 @@ public class YamlTest
         Map<String,Object> o = (Map<String, Object>) mapWithFullPath.get("spring.datasource");
         Map<String,Object>             o1 = (Map<String, Object>) o.get("hikari");
         Assert.assertEquals("root", o1.get("username"));
+        List<Map<String,Object>> o2 = (List<Map<String, Object>>) mapWithFullPath.get("spring.list");
+        Assert.assertEquals("a", o2.get(0).get("name"));
+        Assert.assertEquals("2", o2.get(1).get("age"));
     }
 }

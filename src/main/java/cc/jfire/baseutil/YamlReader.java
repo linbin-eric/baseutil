@@ -1,11 +1,10 @@
 package cc.jfire.baseutil;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.swing.text.AsyncBoxView;
 import java.util.*;
 
 public class YamlReader
@@ -22,7 +21,14 @@ public class YamlReader
         Map<String, YmlElement> map = new HashMap<>();
         for (YmlElement element : elements)
         {
-            map.put(parsePath(element), element);
+            if (element instanceof SequenceNode sequenceNode)
+            {
+                ;
+            }
+            else
+            {
+                map.put(parsePath(element), element);
+            }
         }
         return map;
     }
@@ -33,13 +39,20 @@ public class YamlReader
         YmlElement    node = element;
         while (node != null)
         {
-            if (path.isEmpty())
+            if (node instanceof PlaceHolder placeHolder)
             {
-                path.append(node.getName());
+                node = placeHolder.getValue();
             }
-            else
+            if (StringUtil.isNotBlank(node.getName()))
             {
-                path.insert(0, node.getName() + ".");
+                if (path.isEmpty())
+                {
+                    path.append(node.getName());
+                }
+                else
+                {
+                    path.insert(0, node.getName() + ".");
+                }
             }
             node = node.getParent();
         }
@@ -51,20 +64,17 @@ public class YamlReader
         Map<String, Object> map = new HashMap<>();
         for (YmlElement element : elements)
         {
-            if (element instanceof StringYmlElement stringYmlElement)
+            if (element instanceof PlaceHolder placeHolder)
             {
-                if (stringYmlElement.getValue() != null)
-                {
-                    map.put(parsePath(element), stringYmlElement.getValue());
-                }
+                element = placeHolder.getValue();
             }
-            else if (element instanceof ListYmlElement listYmlElement)
+            if (element instanceof SequenceNode)
             {
-                map.put(parsePath(element), listYmlElement.getValue());
+                ;
             }
-            else if (element instanceof MapYmlElement mapYmlElement)
+            else
             {
-                map.put(parsePath(element), mapYmlElement.toOrdinaryMap());
+                map.put(parsePath(element), element.getOrdinary());
             }
         }
         return map;
@@ -75,32 +85,17 @@ public class YamlReader
         Map<String, Object> map = new HashMap<>();
         for (YmlElement element : elements)
         {
-            if (element instanceof StringYmlElement stringYmlElement)
+            if (element instanceof PlaceHolder placeHolder)
             {
-                if (stringYmlElement.getValue() != null && element.getParent() == null)
-                {
-                    map.put(element.getName(), stringYmlElement.getValue());
-                }
+                element = placeHolder.getValue();
             }
-            else if (element instanceof ListYmlElement listYmlElement)
+            if (element instanceof NameStringNode || element instanceof ListYmlElement || element instanceof MapYmlElement)
             {
-                if (element.getParent() == null)
-                {
-                    map.put(element.getName(), listYmlElement.getValue());
-                }
-            }
-            else if (element instanceof MapYmlElement mapYmlElement)
-            {
-                if (element.getParent() == null)
-                {
-                    map.put(element.getName(), mapYmlElement.toOrdinaryMap());
-                }
+                map.put(element.getName(), element.getOrdinary());
             }
         }
         return map;
     }
-
-
 
     /**
      * yml 元素应该有如下的可能：
@@ -109,69 +104,124 @@ public class YamlReader
      * 3 - v     类型，有值。该节点是一个字符串节点，同时，是父节点的列表元素值之一。该节点的名称是在列表元素中的顺序。
      * 4 - k: v  类型.该类型较为特殊，代表该节点是一个 map 类型的节点，kv 是该节点的属性对。同时该节点是上级列表节点的一个元素。该节点的名称是在列表元素中的顺序。
      */
-    @Data
     @Accessors(chain = true)
     public abstract static class YmlElement
     {
+        @Getter
         protected final int        index;
+        @Getter
         protected final int        level;
+        @Getter
+        @Setter
         protected       String     name;
+        @Getter
+        protected       YmlElement value;
         /**
          * 1、字符串
          * 2. {@code Map<String, YmlElement>}
          * 3. {@code List<String>}
          */
         protected       int        type;
+        @Getter
+        @Setter
         protected       YmlElement parent;
+        protected       Object     ordinary;
 
-        public abstract YmlValue getValue();
+        public YmlElement(int index, int level)
+        {
+            this.index = index;
+            this.level = level;
+        }
+
+        public abstract Object getOrdinary();
     }
 
-    public static class PlaceHolder extends YmlElement
+    public static class NoNameStringNode extends YmlElement
     {
-        public PlaceHolder(int index, String name, int level)
+        @Getter
+        private final String localValue;
+
+        public NoNameStringNode(int index, int level, String value)
         {
             super(index, level);
-            this.name = name;
-        }
-
-        public ListYmlElement toListYmlElement()
-        {
-            return (ListYmlElement) new ListYmlElement(index, level).setParent(parent).setName(name);
-        }
-
-        public MapYmlElement toMapYmlElement()
-        {
-            return (MapYmlElement) new MapYmlElement(index, name, level).setParent(parent);
-        }
-
-        public NamedStringYmlElement toEmptyStringYmlElement()
-        {
-            return (NamedStringYmlElement) new NamedStringYmlElement(index, level, name).setParent(parent);
+            localValue = value;
+            this.value = this;
         }
 
         @Override
-        public YmlValue getValue()
+        public String getName()
         {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    @Accessors(chain = true)
-    public static class StringYmlElement extends YmlElement
-    {
-        private final String value;
-
-        public StringYmlElement(int index, int level, String value)
-        {
-            super(index, level);
-            this.value = value;
+            return null;
         }
 
         @Override
-        public YmlValue getValue()
+        public Object getOrdinary()
         {
-            return new StringYmlValue(value);
+            return localValue;
+        }
+    }
+
+    public static class NameStringNode extends YmlElement
+    {
+        @Getter
+        private final String localValue;
+
+        public NameStringNode(int index, int level, String name, String value)
+        {
+            super(index, level);
+            this.name  = name;
+            localValue = value;
+            this.value = this;
+        }
+
+        @Override
+        public Object getOrdinary()
+        {
+            return localValue;
+        }
+    }
+
+    public static class SequenceNode extends YmlElement
+    {
+        public SequenceNode(int index, int level, int sequence)
+        {
+            super(index, level);
+            this.name = "[" + sequence + "]";
+        }
+
+        public MapYmlElement getMapValue()
+        {
+            if (value == null)
+            {
+                value = new MapYmlElement(index, level, name);
+            }
+            return (MapYmlElement) value;
+        }
+
+        public ListYmlElement getListValue()
+        {
+            if (value == null)
+            {
+                value = new ListYmlElement(index, level, name);
+            }
+            return (ListYmlElement) value;
+        }
+
+        public YmlElement setStringValue(NoNameStringNode noNameStringNode)
+        {
+            this.value = noNameStringNode;
+            return this.value;
+        }
+
+        public NoNameStringNode getStringValue()
+        {
+            return (NoNameStringNode) value;
+        }
+
+        @Override
+        public Object getOrdinary()
+        {
+            return value.getOrdinary();
         }
     }
 
@@ -180,19 +230,43 @@ public class YamlReader
     @Accessors(chain = true)
     public static class ListYmlElement extends YmlElement
     {
-        protected List<YmlElement> value = new ArrayList<>();
+        private ArrayList<SequenceNode> list = new ArrayList<>();
 
-        public ListYmlElement(int index, int level)
+        public ListYmlElement(int index, int level, String name)
         {
             super(index, level);
             this.type = 3;
+            this.name = name;
+            value     = this;
         }
 
-        public void add(YmlElement element)
+        public void addNewOne(SequenceNode node)
         {
-            element.setParent(this);
-            element.setName("[" + value.size() + "]");
-            value.add(element);
+            list.add(node);
+        }
+
+        @Override
+        public Object getOrdinary()
+        {
+            if (ordinary == null)
+            {
+                List<Object> tmp = new ArrayList<>();
+                ordinary = tmp;
+                for (SequenceNode sequenceNode : list)
+                {
+                    YmlElement value;
+                    if (sequenceNode.value instanceof PlaceHolder placeHolder)
+                    {
+                        value = placeHolder.getValue();
+                    }
+                    else
+                    {
+                        value = sequenceNode.value;
+                    }
+                    tmp.add(value.getOrdinary());
+                }
+            }
+            return ordinary;
         }
     }
 
@@ -201,54 +275,100 @@ public class YamlReader
     @Getter
     public static class MapYmlElement extends YmlElement
     {
-        protected Map<String, YmlElement> value = new HashMap<>();
-        private   Map<String, Object>     ordinary;
+        protected Map<String, YmlElement> map = new HashMap<>();
 
-        public MapYmlElement(int index, int level)
+        public MapYmlElement(int index, int level, String name)
         {
             super(index, level);
             this.type = 2;
+            this.name = name;
+            value     = this;
         }
 
         public void put(String name, YmlElement element)
         {
-            value.put(name, element);
+            map.put(name, element);
         }
 
-        public Map<String, Object> toOrdinaryMap()
+        @Override
+        public Object getOrdinary()
         {
-            if (ordinary != null)
+            if (ordinary == null)
             {
-                return ordinary;
-            }
-            ordinary = new HashMap<>();
-            for (Map.Entry<String, YmlElement> each : value.entrySet())
-            {
-                if (each.getValue() instanceof StringYmlElement ymlElement)
+                Map<String, Object> tmp = new HashMap<>();
+                ordinary = tmp;
+                for (Map.Entry<String, YmlElement> entry : map.entrySet())
                 {
-                    if (ymlElement.getValue() != null)
+                    YmlElement value;
+                    if (entry.getValue() instanceof PlaceHolder placeHolder)
                     {
-                        ordinary.put(each.getKey(), ymlElement.getValue());
+                        value = placeHolder.getValue();
                     }
-                }
-                else if (each.getValue() instanceof ListYmlElement ymlElement)
-                {
-                    ordinary.put(each.getKey(), ymlElement.getValue());
-                }
-                else
-                {
-                    ordinary.put(each.getKey(), ((MapYmlElement) each.getValue()).toOrdinaryMap());
+                    else
+                    {
+                        value = entry.getValue();
+                    }
+                    tmp.put(entry.getKey(), value.getOrdinary());
                 }
             }
             return ordinary;
         }
     }
 
+    public static class PlaceHolder extends YmlElement
+    {
+        private YmlElement resolved;
+
+        public PlaceHolder(int index, String name, int level)
+        {
+            super(index, level);
+            this.name = name;
+        }
+
+        public ListYmlElement resolveToList()
+        {
+            if (resolved == null)
+            {
+                resolved = new ListYmlElement(index, level, name).setParent(parent);
+            }
+            return (ListYmlElement) resolved;
+        }
+
+        public MapYmlElement resolveToMap()
+        {
+            if (resolved == null)
+            {
+                resolved = new MapYmlElement(index, level, name).setParent(parent);
+            }
+            return (MapYmlElement) resolved;
+        }
+
+        @Override
+        public YmlElement getValue()
+        {
+            return resolved;
+        }
+
+        public YmlElement toEmptyStringYmlElement()
+        {
+            resolved = new NameStringNode(index, level, name, null).setParent(parent);
+            return resolved;
+        }
+
+        @Override
+        public Object getOrdinary()
+        {
+            return resolved.getOrdinary();
+        }
+    }
+
     public void read(String content)
     {
-        List<String> lines = lines(content);
+        List<String> lines  = lines(content);
+        int          lineNo = 0;
         for (String line : lines)
         {
+            lineNo++;
             if (line.trim().startsWith("#") || line.trim().isEmpty())
             {
                 continue;
@@ -260,79 +380,106 @@ public class YamlReader
             }
             YmlElement parent = getParent(level);
             line = pureLine(line).trim();
-            if (line.startsWith("-"))
+            while (true)
             {
-                line = line.substring(1).trim();
-                if (parent == null)
+                if (line.startsWith("-"))
                 {
-                    throw new IllegalStateException("节点内容:" + line + "是字符串列表节点，需要有上级节点，当前格式不吻合");
-                }
-                if (parent instanceof PlaceHolder || parent instanceof ListYmlElement)
-                {
-                    if (parent instanceof PlaceHolder placeHolder)
+                    if (parent == null)
                     {
-                        parent = placeHolder.toListYmlElement();
-                        elements.set(parent.getIndex(), parent);
+                        throw new IllegalStateException("节点内容:" + line + "是列表节点，需要有上级节点，当前格式不吻合");
                     }
-                    YmlElement element;
-                    if (line.contains(":"))
+                    if (parent instanceof PlaceHolder || parent instanceof ListYmlElement || parent instanceof SequenceNode)
                     {
-                        element = new MapYmlElement(elements.size(), level);
-                        YmlElement childElement = parseElement(line, level + 1);
-                        ((MapYmlElement)element).put(childElement.getName(), childElement);
+                        ListYmlElement listYmlElement;
+                        switch (parent)
+                        {
+                            case ListYmlElement list ->
+                            {
+                                listYmlElement = list;
+                            }
+                            case PlaceHolder placeHolder ->
+                            {
+                                listYmlElement = placeHolder.resolveToList();
+                            }
+                            case SequenceNode sequenceNode ->
+                            {
+                                listYmlElement = sequenceNode.getListValue();
+                            }
+                            default -> throw new IllegalStateException("Unexpected value: " + parent);
+                        }
+                        SequenceNode sequenceNode = new SequenceNode(elements.size(), level, listYmlElement.getList().size());
+                        sequenceNode.setParent(parent);
+                        listYmlElement.addNewOne(sequenceNode);
+                        elements.add(sequenceNode);
                     }
                     else
                     {
-                        element = new StringYmlElement(elements.size(), level, getLineValue(line));
-                        elements.add(element);
+                        throw new IllegalStateException("节点内容:" + line + "是字符串列表节点，上级节点的类型不是 List，不吻合");
                     }
-                    ((ListYmlElement) parent).add(element);
+                    //去掉'- '的内容，同时级别+1
+                    line   = line.substring(2);
+                    level += 2;
+                    parent = getParent(level);
                 }
                 else
                 {
-                    throw new IllegalStateException("节点内容:" + line + "是字符串列表节点，上级节点的类型不是 List，不吻合");
+                    break;
                 }
             }
-            else if (line.contains(":"))
+            YmlElement element = parseElement(line, level);
+            elements.add(element);
+            if (parent == null)
             {
-                YmlElement element = parseElement(line, level);
-                elements.add(element);
-                if (parent == null)
-                {
-                    continue;
-                }
-                if (parent instanceof MapYmlElement mapYmlElement)
-                {
-                    element.setParent(parent);
-                }
-                else if (parent instanceof PlaceHolder placeHolder)
-                {
-                    parent = placeHolder.toMapYmlElement();
-                    elements.set(parent.getIndex(), parent);
-                    element.setParent(parent);
-                }
-                else
-                {
-                    throw new IllegalStateException("节点内容:" + line + "的上节节点的类型不是 Map，不吻合");
-                }
+                continue;
             }
-            else
+            element.setParent(parent);
+            switch (parent)
             {
-                throw new IllegalArgumentException("无法识别的格式:" + line);
+                case MapYmlElement mapYmlElement ->
+                {
+                    mapYmlElement.put(element.getName(), element);
+                }
+                case PlaceHolder placeHolder ->
+                {
+                    MapYmlElement mapYmlElement = placeHolder.resolveToMap();
+                    mapYmlElement.put(element.getName(), element);
+                }
+                case SequenceNode sequenceNode ->
+                {
+                    switch (element)
+                    {
+                        case NoNameStringNode noNameStringNode ->
+                        {
+                            sequenceNode.setStringValue(noNameStringNode);
+                        }
+                        case PlaceHolder placeHolder ->
+                        {
+                            sequenceNode.getMapValue().put(placeHolder.getName(), placeHolder);
+                        }
+                        case NameStringNode nameStringNode ->
+                        {
+                            sequenceNode.getMapValue().put(nameStringNode.getName(), nameStringNode);
+                        }
+                        default -> throw new IllegalStateException("Unexpected value: " + element);
+                    }
+                }
+                default -> throw new IllegalStateException("lineNo:" + lineNo + "\nline:" + line + "\nUnexpected value: " + parent);
             }
         }
         elements.forEach(element -> {
-            if (element instanceof PlaceHolder placeHolder)
+            if (element instanceof PlaceHolder placeHolder && placeHolder.getValue() == null)
             {
-                elements.set(placeHolder.getIndex(), placeHolder.toEmptyStringYmlElement());
+                placeHolder.toEmptyStringYmlElement();
             }
         });
-        elements.forEach(element -> {
-            if (element.getParent() instanceof MapYmlElement ymlElement)
+        for (int i = 0; i < elements.size(); i++)
+        {
+            YmlElement ymlElement = elements.get(i);
+            if (ymlElement instanceof PlaceHolder placeHolder)
             {
-                ymlElement.getValue().put(element.getName(), element);
+                elements.set(i, placeHolder.getValue());
             }
-        });
+        }
     }
 
     private YmlElement getParent(int level)
@@ -349,7 +496,11 @@ public class YamlReader
 
     private YmlElement parseElement(String line, int level)
     {
-        int        i     = line.indexOf(":");
+        int i = line.indexOf(":");
+        if (i == -1)
+        {
+            return new NoNameStringNode(elements.size(), level, getLineValue(line));
+        }
         String     name  = line.substring(0, i);
         String     value = line.substring(i + 1).trim();
         YmlElement element;
@@ -360,7 +511,7 @@ public class YamlReader
         }
         else
         {
-            element = new StringYmlElement(elements.size(), level, value).setName(name);
+            element = new NameStringNode(elements.size(), level, name, value);
         }
         return element;
     }
