@@ -7,3 +7,8 @@ spring:
     hikari:
       username: root # 测试是否获取信息
       password:
+  list:
+    - name: a
+      age:  1
+    - name: b
+      age: 2

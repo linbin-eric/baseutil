@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+import javax.swing.text.AsyncBoxView;
 import java.util.*;
 
 public class YamlReader
@@ -99,13 +100,22 @@ public class YamlReader
         return map;
     }
 
+
+
+    /**
+     * yml 元素应该有如下的可能：
+     * 1 k:  v   类型，此时有名称k，有值。这是一个 kv类型的节点，该节点是上级 map 类型节点的一个 kv 值。
+     * 2 k:      类型，此时有名称k，解析到这一行的是不能确定类型，可能是一个空值字符串，也可以可能是一个列表，也可以可能一个map
+     * 3 - v     类型，有值。该节点是一个字符串节点，同时，是父节点的列表元素值之一。该节点的名称是在列表元素中的顺序。
+     * 4 - k: v  类型.该类型较为特殊，代表该节点是一个 map 类型的节点，kv 是该节点的属性对。同时该节点是上级列表节点的一个元素。该节点的名称是在列表元素中的顺序。
+     */
     @Data
     @Accessors(chain = true)
     public abstract static class YmlElement
     {
         protected final int        index;
-        protected final String     name;
         protected final int        level;
+        protected       String     name;
         /**
          * 1、字符串
          * 2. {@code Map<String, YmlElement>}
@@ -113,18 +123,21 @@ public class YamlReader
          */
         protected       int        type;
         protected       YmlElement parent;
+
+        public abstract YmlValue getValue();
     }
 
     public static class PlaceHolder extends YmlElement
     {
         public PlaceHolder(int index, String name, int level)
         {
-            super(index, name, level);
+            super(index, level);
+            this.name = name;
         }
 
         public ListYmlElement toListYmlElement()
         {
-            return (ListYmlElement) new ListYmlElement(index, name, level).setParent(parent);
+            return (ListYmlElement) new ListYmlElement(index, level).setParent(parent).setName(name);
         }
 
         public MapYmlElement toMapYmlElement()
@@ -132,24 +145,33 @@ public class YamlReader
             return (MapYmlElement) new MapYmlElement(index, name, level).setParent(parent);
         }
 
-        public StringYmlElement toEmptyStringYmlElement()
+        public NamedStringYmlElement toEmptyStringYmlElement()
         {
-            return (StringYmlElement) new StringYmlElement(index, name, level, null).setParent(parent);
+            return (NamedStringYmlElement) new NamedStringYmlElement(index, level, name).setParent(parent);
+        }
+
+        @Override
+        public YmlValue getValue()
+        {
+            throw new UnsupportedOperationException();
         }
     }
 
-    @EqualsAndHashCode(callSuper = true)
     @Accessors(chain = true)
-    @Getter
     public static class StringYmlElement extends YmlElement
     {
-        protected final String value;
+        private final String value;
 
-        public StringYmlElement(int index, String name, int level, String value)
+        public StringYmlElement(int index, int level, String value)
         {
-            super(index, name, level);
+            super(index, level);
             this.value = value;
-            this.type  = 1;
+        }
+
+        @Override
+        public YmlValue getValue()
+        {
+            return new StringYmlValue(value);
         }
     }
 
@@ -158,12 +180,19 @@ public class YamlReader
     @Accessors(chain = true)
     public static class ListYmlElement extends YmlElement
     {
-        protected List<String> value = new ArrayList<>();
+        protected List<YmlElement> value = new ArrayList<>();
 
-        public ListYmlElement(int index, String name, int level)
+        public ListYmlElement(int index, int level)
         {
-            super(index, name, level);
+            super(index, level);
             this.type = 3;
+        }
+
+        public void add(YmlElement element)
+        {
+            element.setParent(this);
+            element.setName("[" + value.size() + "]");
+            value.add(element);
         }
     }
 
@@ -175,10 +204,15 @@ public class YamlReader
         protected Map<String, YmlElement> value = new HashMap<>();
         private   Map<String, Object>     ordinary;
 
-        public MapYmlElement(int index, String name, int level)
+        public MapYmlElement(int index, int level)
         {
-            super(index, name, level);
+            super(index, level);
             this.type = 2;
+        }
+
+        public void put(String name, YmlElement element)
+        {
+            value.put(name, element);
         }
 
         public Map<String, Object> toOrdinaryMap()
@@ -210,11 +244,6 @@ public class YamlReader
         }
     }
 
-    /**
-     * 1、使用#开头的内容，后续一整行全部为注释
-     * 2、只有K: 的情况，后续可以有两种情况。一种是缩进，那就带着是K这个对象的属性；一种是更少的缩进，那就代表这个K:是一个空字符串值
-     * 3、如果是- 的情况，则不允许下级嵌套。即，自身的父级必须不是该类型。
-     */
     public void read(String content)
     {
         List<String> lines = lines(content);
@@ -245,7 +274,19 @@ public class YamlReader
                         parent = placeHolder.toListYmlElement();
                         elements.set(parent.getIndex(), parent);
                     }
-                    ((ListYmlElement) parent).getValue().add(getLineValue(line));
+                    YmlElement element;
+                    if (line.contains(":"))
+                    {
+                        element = new MapYmlElement(elements.size(), level);
+                        YmlElement childElement = parseElement(line, level + 1);
+                        ((MapYmlElement)element).put(childElement.getName(), childElement);
+                    }
+                    else
+                    {
+                        element = new StringYmlElement(elements.size(), level, getLineValue(line));
+                        elements.add(element);
+                    }
+                    ((ListYmlElement) parent).add(element);
                 }
                 else
                 {
@@ -319,7 +360,7 @@ public class YamlReader
         }
         else
         {
-            element = new StringYmlElement(elements.size(), name, level, value);
+            element = new StringYmlElement(elements.size(), level, value).setName(name);
         }
         return element;
     }
