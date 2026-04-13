@@ -12,3 +12,7 @@ spring:
       age:  1
     - name: b
       age: 2
+  chunk:  |
+    这是一个行
+    "包含这一行
+  tt: a

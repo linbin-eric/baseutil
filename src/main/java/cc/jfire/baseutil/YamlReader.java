@@ -89,7 +89,7 @@ public class YamlReader
             {
                 element = placeHolder.getValue();
             }
-            if (element instanceof NameStringNode || element instanceof ListYmlElement || element instanceof MapYmlElement)
+            if (element instanceof OnelineNameNode || element instanceof ListYmlElement || element instanceof MapYmlElement)
             {
                 map.put(element.getName(), element.getOrdinary());
             }
@@ -161,12 +161,12 @@ public class YamlReader
         }
     }
 
-    public static class NameStringNode extends YmlElement
+    public static class OnelineNameNode extends YmlElement
     {
         @Getter
         private final String localValue;
 
-        public NameStringNode(int index, int level, String name, String value)
+        public OnelineNameNode(int index, int level, String name, String value)
         {
             super(index, level);
             this.name  = name;
@@ -315,6 +315,35 @@ public class YamlReader
         }
     }
 
+    public static class ChunkNameNode extends YmlElement
+    {
+        private StringBuilder chunkedValue = new StringBuilder();
+
+        public ChunkNameNode(int index, int level, String name)
+        {
+            super(index, level);
+            this.name = name;
+        }
+
+        public void appendLine(String line)
+        {
+            if (chunkedValue.length() == 0)
+            {
+                chunkedValue.append(line);
+            }
+            else
+            {
+                chunkedValue.append("\n").append(line);
+            }
+        }
+
+        @Override
+        public Object getOrdinary()
+        {
+            return chunkedValue.toString();
+        }
+    }
+
     public static class PlaceHolder extends YmlElement
     {
         private YmlElement resolved;
@@ -351,7 +380,7 @@ public class YamlReader
 
         public YmlElement toEmptyStringYmlElement()
         {
-            resolved = new NameStringNode(index, level, name, null).setParent(parent);
+            resolved = new OnelineNameNode(index, level, name, null).setParent(parent);
             return resolved;
         }
 
@@ -364,8 +393,9 @@ public class YamlReader
 
     public void read(String content)
     {
-        List<String> lines  = lines(content);
-        int          lineNo = 0;
+        List<String> lines     = lines(content);
+        int          lineNo    = 0;
+        boolean      chunkMode = false;
         for (String line : lines)
         {
             lineNo++;
@@ -379,7 +409,26 @@ public class YamlReader
                 level++;
             }
             YmlElement parent = getParent(level);
-            line = pureLine(line).trim();
+            if (chunkMode)
+            {
+                if (parent instanceof ChunkNameNode)
+                {
+                    ;
+                }
+                else
+                {
+                    chunkMode = false;
+                }
+            }
+            if (chunkMode)
+            {
+                ((ChunkNameNode) parent).appendLine(line.substring(level));
+                continue;
+            }
+            else
+            {
+                line = pureLine(line).trim();
+            }
             while (true)
             {
                 if (line.startsWith("-"))
@@ -428,6 +477,10 @@ public class YamlReader
             }
             YmlElement element = parseElement(line, level);
             elements.add(element);
+            if (element instanceof ChunkNameNode)
+            {
+                chunkMode = true;
+            }
             if (parent == null)
             {
                 continue;
@@ -435,10 +488,7 @@ public class YamlReader
             element.setParent(parent);
             switch (parent)
             {
-                case MapYmlElement mapYmlElement ->
-                {
-                    mapYmlElement.put(element.getName(), element);
-                }
+                case MapYmlElement mapYmlElement -> mapYmlElement.put(element.getName(), element);
                 case PlaceHolder placeHolder ->
                 {
                     MapYmlElement mapYmlElement = placeHolder.resolveToMap();
@@ -448,18 +498,9 @@ public class YamlReader
                 {
                     switch (element)
                     {
-                        case NoNameStringNode noNameStringNode ->
-                        {
-                            sequenceNode.setStringValue(noNameStringNode);
-                        }
-                        case PlaceHolder placeHolder ->
-                        {
-                            sequenceNode.getMapValue().put(placeHolder.getName(), placeHolder);
-                        }
-                        case NameStringNode nameStringNode ->
-                        {
-                            sequenceNode.getMapValue().put(nameStringNode.getName(), nameStringNode);
-                        }
+                        case NoNameStringNode noNameStringNode -> sequenceNode.setStringValue(noNameStringNode);
+                        case PlaceHolder placeHolder -> sequenceNode.getMapValue().put(placeHolder.getName(), placeHolder);
+                        case OnelineNameNode nameStringNode -> sequenceNode.getMapValue().put(nameStringNode.getName(), nameStringNode);
                         default -> throw new IllegalStateException("Unexpected value: " + element);
                     }
                 }
@@ -509,9 +550,13 @@ public class YamlReader
         {
             element = new PlaceHolder(elements.size(), name, level);
         }
+        else if (value.trim().equals("|"))
+        {
+            element = new ChunkNameNode(elements.size(), level, name);
+        }
         else
         {
-            element = new NameStringNode(elements.size(), level, name, value);
+            element = new OnelineNameNode(elements.size(), level, name, value);
         }
         return element;
     }

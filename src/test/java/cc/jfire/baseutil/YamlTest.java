@@ -23,14 +23,17 @@ public class YamlTest
             System.out.println(each.getKey());
         }
         YamlReader.YmlElement ymlElement = elementsWithFullPath.get("spring.jpa.hibernate");
-        Assert.assertEquals("false", ((YamlReader.NameStringNode) ((YamlReader.MapYmlElement) ymlElement).getMap().get("update").getValue()).getLocalValue());
-        Assert.assertEquals("false", ((YamlReader.NameStringNode) elementsWithFullPath.get("spring.jpa.hibernate.update")).getLocalValue());
-        Assert.assertEquals("#儿童 #动画", ((YamlReader.NameStringNode) elementsWithFullPath.get("spring.jpa.hibernate.date")).getLocalValue());
-        Assert.assertEquals("root", ((YamlReader.NameStringNode) elementsWithFullPath.get("spring.datasource.hikari.username")).getLocalValue());
-        Assert.assertNull(((YamlReader.NameStringNode) elementsWithFullPath.get("spring.datasource.hikari.password")).getLocalValue());
+        Assert.assertEquals("false", ((YamlReader.OnelineNameNode) ((YamlReader.MapYmlElement) ymlElement).getMap().get("update").getValue()).getLocalValue());
+        Assert.assertEquals("false", ((YamlReader.OnelineNameNode) elementsWithFullPath.get("spring.jpa.hibernate.update")).getLocalValue());
+        Assert.assertEquals("#儿童 #动画", ((YamlReader.OnelineNameNode) elementsWithFullPath.get("spring.jpa.hibernate.date")).getLocalValue());
+        Assert.assertEquals("root", ((YamlReader.OnelineNameNode) elementsWithFullPath.get("spring.datasource.hikari.username")).getLocalValue());
+        Assert.assertNull(((YamlReader.OnelineNameNode) elementsWithFullPath.get("spring.datasource.hikari.password")).getLocalValue());
         Map<String, Object> mapWithFullPath = reader.getMapWithFullPath();
         Map<String, Object> map             = (Map<String, Object>) mapWithFullPath.get("spring.jpa.hibernate");
         Assert.assertEquals("false", map.get("update"));
+        Assert.assertEquals("""
+                                    这是一个行
+                                    "包含这一行""",mapWithFullPath.get("spring.chunk"));
         Assert.assertEquals("false", mapWithFullPath.get("spring.jpa.hibernate.update"));
         Assert.assertEquals("root", mapWithFullPath.get("spring.datasource.hikari.username"));
         Assert.assertNull(mapWithFullPath.get("spring.datasource.hikari.password"));
