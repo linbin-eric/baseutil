@@ -545,18 +545,21 @@ public class YamlReader
         String     name  = line.substring(0, i);
         String     value = line.substring(i + 1).trim();
         YmlElement element;
-        value = getLineValue(value);
         if (StringUtil.isBlank(value))
         {
             element = new PlaceHolder(elements.size(), name, level);
         }
-        else if (value.trim().equals("|"))
-        {
-            element = new ChunkNameNode(elements.size(), level, name);
-        }
         else
         {
-            element = new OnelineNameNode(elements.size(), level, name, value);
+            value = getLineValue(value);
+            if (value.trim().equals("|"))
+            {
+                element = new ChunkNameNode(elements.size(), level, name);
+            }
+            else
+            {
+                element = new OnelineNameNode(elements.size(), level, name, value);
+            }
         }
         return element;
     }
