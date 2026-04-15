@@ -85,6 +85,10 @@ public class YamlReader
         Map<String, Object> map = new HashMap<>();
         for (YmlElement element : elements)
         {
+            if (element.getParent() != null)
+            {
+                continue;
+            }
             if (element instanceof PlaceHolder placeHolder)
             {
                 element = placeHolder.getValue();
