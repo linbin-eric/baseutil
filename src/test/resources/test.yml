@@ -16,3 +16,6 @@ spring:
     这是一个行
     "包含这一行
   tt: a
+
+nexline:
+  test:  1

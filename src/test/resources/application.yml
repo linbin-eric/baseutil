@@ -1,0 +1,126 @@
+server:
+  # HTTP/WebSocket 监听端口
+  port: 8765
+  # 静态 Token(base64 编码 32 字节);留空则首次启动自动生成并回写
+  token: "RkFk8yoS1DHCjQ9fH_X7QUtn5gIjpa07NMfgnsrrjBE"
+  # 文本历史保留条数,超出按 FIFO 裁剪
+  textHistoryLimit: 10000
+  # 离线文本输入待发送队列上限,超出按 FIFO 丢弃最早项
+  textPendingLimit: 200
+  # 心跳间隔秒
+  heartbeatSeconds: 30
+  # 心跳超时秒(超过则判定 Agent 断线)
+  heartbeatTimeoutSeconds: 60
+  # WebSocket 单物理帧阈值(字节);超过的逻辑消息由 fragmentation 拆多帧
+  wsMaxFrameBytes: 8388608
+
+agent:
+  # 服务端 WebSocket 地址,如 ws://127.0.0.1:8765/ws/agent
+  server: "ws://127.0.0.1:8765/ws/agent"
+  # 握手 Token(明文,在 Agent 本地);与服务端 server.token 相同
+  token: "RkFk8yoS1DHCjQ9fH_X7QUtn5gIjpa07NMfgnsrrjBE"
+  # 可选:tmux 重建后的逻辑会话名(pane_id 变化时仍可关联到同一 sessionId)
+  sessionName: ""
+  # CLI 类型,必须匹配下方 types 下的一个键
+  type: ""
+  # tmux 目标(session:window.pane 或 %N);空则读取环境变量 TMUX_PANE
+  target: ""
+  # pane 存在性探测周期(秒)
+  paneCheckIntervalSeconds: 2
+  # WebSocket 单物理帧阈值(字节),与服务端保持一致
+  wsMaxFrameBytes: 8388608
+  reconnect:
+    initialDelaySeconds: 5
+    maxDelaySeconds: 60
+    maxAttempts: 10
+    # 断线期间 turn 内存缓冲上限,超过按 FIFO 丢最早
+    bufferTurnLimit: 200
+  snapshot:
+    # Web 终端首屏快照回溯历史行数;<0 表示抓取 tmux 当前保留的全部历史,0 表示仅当前可见屏幕
+    historyLines: -1
+    # 调试用:把每次首屏快照原始字节和元信息落盘,留空表示关闭
+    dumpFile: ""
+  # 调试用:把每个实时 CHUNK 的原始字节和元信息落盘,留空表示关闭
+  chunkDumpFile: ""
+  # 调试用:把 codex 的 capture-pane 切分判断、裁剪前后文本和最终结果落盘,留空表示关闭
+  transcriptDumpFile: ""
+  turn:
+    # TurnPoller 轮询 tmux capture-pane 的周期(毫秒)
+    pollIntervalMs: 500
+    # 每次 capture-pane 回溯的历史行数(受 tmux history-limit 限制)
+    capturePaneHistoryLines: 5000
+  types:
+    claude:
+      # claude 提示符正则(仅兼容老版本字节流识别,已废弃,保留不使用)
+      prompt: "\\n[>❯]\\s*$"
+      # BUSY 特征:tail 出现这些关键词则视为仍在生成;都不命中即 IDLE
+      busyPatterns:
+        - "(?i)Working\\s*\\("
+        - "(?i)esc to interrupt"
+      # UI 装饰行:在 emit turn 时从 delta 末尾剔除(框线/placeholder/状态栏)
+      idlePatterns:
+        - "^[\\s│┃|╭╰╯╮├┤─━═║╔╚╝╗┌┐└┘_>]*$"
+        - "^\\s*[›>❯]\\s*Use\\s+/skills\\s+to\\s+list\\s+available\\s+skills\\s*$"
+        - "^[\\s│┃|]*[›>❯].*$"
+        - "Context\\s+\\d+%"
+        - "Fast\\s+(on|off)"
+        - "^\\s*gpt-[^\\n]*\\bContext\\s+\\d+%.*$"
+        - "^\\s*Press enter to continue\\s*$"
+        - "^\\s*(model|directory|provider|approval\\s+policy|sandbox|cwd):.*$"
+        - "^\\s*[│|].*\\b(model|directory|provider|approval\\s+policy|sandbox|cwd):.*$"
+        - "^\\s*Tip:\\s*Use\\s+/init\\s+to\\s+create\\s+an\\s+AGENTS\\.md.*$"
+        - "^\\s*[⚠▲△!\\s]*Under-development\\s+features\\s+enabled:.*$"
+        - "behave unpredictably"
+        - "suppress_unstable_features_warning"
+        - "^\\s*/status\\s*$"
+        - "OpenAI\\s+Codex\\s*\\(v[^)]*\\)"
+        - "chatgpt\\.com/codex/settings/usage"
+        - "rate limits and credits"
+        - "\\bPermissions:\\s*"
+        - "\\bAgents\\.md:\\s*"
+        - "\\bAccount:\\s*"
+        - "\\bCollaboration\\s+mode:\\s*"
+        - "\\bSession:\\s*"
+        - "\\bContext\\s+window:\\s*"
+        - "\\bAuto-?compact:\\s*"
+        - "\\bWeekly\\s+limit:\\s*"
+        - "\\b\\d+h\\s+limit:\\s*"
+        - "GPT-[A-Za-z0-9.-]+\\s+limit:"
+        - "\\bModel:\\s*gpt-"
+        - "\\b\\d+%\\s+left\\s*\\(resets"
+    codex:
+      # codex 提示符正则(仅兼容老版本字节流识别,已废弃,保留不使用)
+      prompt: "\\n[>❯]\\s*$"
+      busyPatterns:
+        - "(?i)Working\\s*\\("
+        - "(?i)esc to interrupt"
+      idlePatterns:
+        - "^[\\s│┃|╭╰╯╮├┤─━═║╔╚╝╗┌┐└┘_>]*$"
+        - "^\\s*[›>❯]\\s*Use\\s+/skills\\s+to\\s+list\\s+available\\s+skills\\s*$"
+        - "^[\\s│┃|]*[›>❯].*$"
+        - "Context\\s+\\d+%"
+        - "Fast\\s+(on|off)"
+        - "^\\s*gpt-[^\\n]*\\bContext\\s+\\d+%.*$"
+        - "^\\s*Press enter to continue\\s*$"
+        - "^\\s*(model|directory|provider|approval\\s+policy|sandbox|cwd):.*$"
+        - "^\\s*[│|].*\\b(model|directory|provider|approval\\s+policy|sandbox|cwd):.*$"
+        - "^\\s*Tip:\\s*Use\\s+/init\\s+to\\s+create\\s+an\\s+AGENTS\\.md.*$"
+        - "^\\s*[⚠▲△!\\s]*Under-development\\s+features\\s+enabled:.*$"
+        - "behave unpredictably"
+        - "suppress_unstable_features_warning"
+        - "^\\s*/status\\s*$"
+        - "OpenAI\\s+Codex\\s*\\(v[^)]*\\)"
+        - "chatgpt\\.com/codex/settings/usage"
+        - "rate limits and credits"
+        - "\\bPermissions:\\s*"
+        - "\\bAgents\\.md:\\s*"
+        - "\\bAccount:\\s*"
+        - "\\bCollaboration\\s+mode:\\s*"
+        - "\\bSession:\\s*"
+        - "\\bContext\\s+window:\\s*"
+        - "\\bAuto-?compact:\\s*"
+        - "\\bWeekly\\s+limit:\\s*"
+        - "\\b\\d+h\\s+limit:\\s*"
+        - "GPT-[A-Za-z0-9.-]+\\s+limit:"
+        - "\\bModel:\\s*gpt-"
+        - "\\b\\d+%\\s+left\\s*\\(resets"

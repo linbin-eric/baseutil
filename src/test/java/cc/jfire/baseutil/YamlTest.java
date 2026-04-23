@@ -44,4 +44,12 @@ public class YamlTest
         Assert.assertEquals("a", o2.get(0).get("name"));
         Assert.assertEquals("2", o2.get(1).get("age"));
     }
+
+    @Test
+    public void test2() throws IOException
+    {
+        InputStream         resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.yml");
+        byte[]              bytes            = IoUtil.readAllBytes(resourceAsStream);
+        new YamlReader(new String(bytes, StandardCharsets.UTF_8));
+    }
 }

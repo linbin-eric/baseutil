@@ -541,7 +541,7 @@ public class YamlReader
 
     private YmlElement parseElement(String line, int level)
     {
-        int i = line.indexOf(":");
+        int i = nameIndex(line);
         if (i == -1)
         {
             return new NoNameStringNode(elements.size(), level, getLineValue(line));
@@ -566,6 +566,57 @@ public class YamlReader
             }
         }
         return element;
+    }
+
+    private int nameIndex(String value)
+    {
+        int length       = value.length();
+        int singleQuotes = 1;
+        int doubleQuotes = 2;
+        int state        = 0;
+        for (int i = 0; i < length; i++)
+        {
+            char c = value.charAt(i);
+            if (c == '"')
+            {
+                if (state == 0)
+                {
+                    state = doubleQuotes;
+                    continue;
+                }
+                else if (state == doubleQuotes)
+                {
+                    state = 0;
+                    continue;
+                }
+                else
+                {
+                    throw new IllegalArgumentException("有错误的 yml，当前错误内容：" + value);
+                }
+            }
+            else if (c == '\'')
+            {
+                if (state == 0)
+                {
+                    state = singleQuotes;
+                    continue;
+                }
+                else if (state == singleQuotes)
+                {
+                    state = 0;
+                    continue;
+                }
+                else
+                {
+                    throw new IllegalArgumentException("有错误的 yml，当前错误内容：" + value);
+                }
+            }
+            else if (c == ':' && state == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private List<String> lines(String content)
@@ -667,7 +718,21 @@ public class YamlReader
     {
         if (line.startsWith("\"") || line.startsWith("'"))
         {
-            return line.substring(1, line.length() - 1);
+            if ((line.endsWith("\"") || line.endsWith("'")) && line.length() == 2)
+            {
+                return "";
+            }
+            else
+            {
+                try
+                {
+                    return line.substring(1, line.length() - 1);
+                }
+                catch (Throwable e)
+                {
+                    e.printStackTrace();
+                }
+            }
         }
         return line;
     }
