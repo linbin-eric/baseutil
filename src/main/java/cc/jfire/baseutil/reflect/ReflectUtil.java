@@ -4,8 +4,7 @@ import io.github.karlatemp.unsafeaccessor.Unsafe;
 import lombok.SneakyThrows;
 
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -409,5 +408,46 @@ public final class ReflectUtil
     public static Method getMethodWithoutCheck(Class<?> clazz, String methodName, Class<?>... parameterTypes)
     {
         return clazz.getDeclaredMethod(methodName, parameterTypes);
+    }
+
+    /**
+     * 将任意 Type 转换为原始 Class (擦除泛型)
+     */
+    public static Class<?> getRawClass(Type type)
+    {
+        if (type instanceof Class<?>)
+        {
+            // 普通类型或原始数组，直接强转
+            return (Class<?>) type;
+        }
+        else if (type instanceof ParameterizedType)
+        {
+            // 带泛型的类型，如 List<String> -> 返回 List.class
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return (Class<?>) parameterizedType.getRawType();
+        }
+        else if (type instanceof GenericArrayType)
+        {
+            // 泛型数组，如 List<String>[] 或 T[]
+            GenericArrayType genericArrayType = (GenericArrayType) type;
+            Type             componentType    = genericArrayType.getGenericComponentType();
+            // 递归获取组件的原始类型
+            Class<?> componentClass = getRawClass(componentType);
+            // 核心技巧：创建一个长度为0的临时数组，以此来获取这种数组的 Class 对象
+            return Array.newInstance(componentClass, 0).getClass();
+        }
+        else if (type instanceof TypeVariable)
+        {
+            // 类型变量，如 T -> 擦除为最左侧的边界或 Object
+            Type[] bounds = ((TypeVariable<?>) type).getBounds();
+            return bounds.length > 0 ? getRawClass(bounds[0]) : Object.class;
+        }
+        else if (type instanceof WildcardType)
+        {
+            // 通配符，如 ? extends Number -> 擦除为 Number
+            Type[] upperBounds = ((WildcardType) type).getUpperBounds();
+            return upperBounds.length > 0 ? getRawClass(upperBounds[0]) : Object.class;
+        }
+        return Object.class;
     }
 }

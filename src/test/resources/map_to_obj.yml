@@ -1,0 +1,143 @@
+scalarConfig:
+  primitiveByte: 7
+  primitiveInt: 42
+  primitiveShort: 12
+  primitiveLong: 1234567890123
+  primitiveFloat: 3.5
+  primitiveDouble: 7.25
+  primitiveChar: Z
+  primitiveBool: true
+  boxedByte: 8
+  boxedInt: 43
+  boxedShort: 13
+  boxedLong: 1234567890124
+  boxedFloat: 4.5
+  boxedDouble: 8.25
+  boxedChar: Y
+  boxedBool: false
+  name: demo
+  amount: 12345.67
+  status: ENABLED
+  child:
+    code: c-1
+    level: 5
+  primitiveBytes:
+    - 1
+    - 2
+    - 3
+  primitiveInts:
+    - 10
+    - 20
+    - 30
+  primitiveShorts:
+    - 4
+    - 5
+  primitiveLongs:
+    - 100
+    - 200
+  primitiveFloats:
+    - 1.5
+    - 2.5
+  primitiveDoubles:
+    - 6.5
+    - 7.5
+  primitiveChars:
+    - a
+    - b
+    - c
+  primitiveBools:
+    - true
+    - false
+    - true
+  names:
+    - alpha
+    - beta
+  statuses:
+    - ENABLED
+    - DISABLED
+  children:
+    - code: c-2
+      level: 6
+    - code: c-3
+      level: 7
+
+collectionConfig:
+  numbers:
+    - 11
+    - 12
+    - 13
+  labels:
+    - north
+    - south
+  amounts:
+    - 1.50
+    - 2.75
+  statuses:
+    - ENABLED
+    - DISABLED
+  children:
+    - code: cc-1
+      level: 11
+    - code: cc-2
+      level: 12
+  wrappedChild:
+    value:
+      code: wrap-1
+      level: 21
+    values:
+      - code: wrap-2
+        level: 22
+      - code: wrap-3
+        level: 23
+    named:
+      first:
+        code: wrap-4
+        level: 24
+      second:
+        code: wrap-5
+        level: 25
+  scoreMap:
+    math: 95
+    english: 88
+  childMap:
+    left:
+      code: map-1
+      level: 31
+    right:
+      code: map-2
+      level: 32
+  groupedNumbers:
+    odd:
+      - 1
+      - 3
+      - 5
+    even:
+      - 2
+      - 4
+  nestedScoreMap:
+    first:
+      a: 10
+      b: 20
+    second:
+      c: 30
+  numberEntries:
+    - first: 1
+      second: 2
+    - third: 3
+
+genericContainer:
+  value:
+    code: generic-1
+    level: 41
+  values:
+    - code: generic-2
+      level: 42
+    - code: generic-3
+      level: 43
+  named:
+    first:
+      code: generic-4
+      level: 44
+    second:
+      code: generic-5
+      level: 45
