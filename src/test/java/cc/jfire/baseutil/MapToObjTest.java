@@ -58,6 +58,31 @@ public class MapToObjTest
     }
 
     @Test
+    public void testPrimitiveNullAndEmptyValuesKeepDefaultValue() throws Exception
+    {
+        Map<String, Object> map = new HashMap<>();
+        map.put("primitiveByte", null);
+        map.put("primitiveInt", "");
+        map.put("primitiveShort", null);
+        map.put("primitiveLong", "");
+        map.put("primitiveFloat", null);
+        map.put("primitiveDouble", "");
+        map.put("primitiveChar", null);
+        map.put("primitiveBool", "");
+
+        PrimitiveDefaultConfig config = (PrimitiveDefaultConfig) MapToObj.toObj(PrimitiveDefaultConfig.class, map);
+
+        Assert.assertEquals(0, config.getPrimitiveByte());
+        Assert.assertEquals(0, config.getPrimitiveInt());
+        Assert.assertEquals(0, config.getPrimitiveShort());
+        Assert.assertEquals(0L, config.getPrimitiveLong());
+        Assert.assertEquals(0.0f, config.getPrimitiveFloat(), 0.0001f);
+        Assert.assertEquals(0.0d, config.getPrimitiveDouble(), 0.0001d);
+        Assert.assertEquals('\0', config.getPrimitiveChar());
+        Assert.assertFalse(config.isPrimitiveBool());
+    }
+
+    @Test
     public void testCollectionAndMapConversionFromYaml() throws Exception
     {
         CollectionMapConfig config = readObj("collectionConfig", CollectionMapConfig.class);
@@ -173,6 +198,19 @@ public class MapToObjTest
         private String[]    names;
         private Status[]    statuses;
         private Child[]     children;
+    }
+
+    @Data
+    public static class PrimitiveDefaultConfig
+    {
+        private byte    primitiveByte;
+        private int     primitiveInt;
+        private short   primitiveShort;
+        private long    primitiveLong;
+        private float   primitiveFloat;
+        private double  primitiveDouble;
+        private char    primitiveChar;
+        private boolean primitiveBool;
     }
 
     @Data

@@ -273,14 +273,70 @@ public class MapToObj
             {
                 switch (ReflectUtil.getClassId(ckass))
                 {
-                    case ReflectUtil.PRIMITIVE_BYTE -> valueAccessor.set(instance, Byte.parseByte(((String) map.get(each.getName()))));
-                    case ReflectUtil.PRIMITIVE_INT -> valueAccessor.set(instance, Integer.parseInt(((String) map.get(each.getName()))));
-                    case ReflectUtil.PRIMITIVE_SHORT -> valueAccessor.set(instance, Short.parseShort(((String) map.get(each.getName()))));
-                    case ReflectUtil.PRIMITIVE_LONG -> valueAccessor.set(instance, Long.parseLong(((String) map.get(each.getName()))));
-                    case ReflectUtil.PRIMITIVE_FLOAT -> valueAccessor.set(instance, Float.parseFloat(((String) map.get(each.getName()))));
-                    case ReflectUtil.PRIMITIVE_DOUBLE -> valueAccessor.set(instance, Double.parseDouble(((String) map.get(each.getName()))));
-                    case ReflectUtil.PRIMITIVE_CHAR -> valueAccessor.set(instance, ((String) map.get(each.getName())).charAt(0));
-                    case ReflectUtil.PRIMITIVE_BOOL -> valueAccessor.set(instance, Boolean.parseBoolean(((String) map.get(each.getName()))));
+                    case ReflectUtil.PRIMITIVE_BYTE ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Byte.parseByte(s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_INT ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Integer.parseInt(s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_SHORT ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Short.parseShort(s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_LONG ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Long.parseLong(s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_FLOAT ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Float.parseFloat(s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_DOUBLE ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Double.parseDouble(s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_CHAR ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, s.charAt(0));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_BOOL ->
+                    {
+                        String s = (String) map.get(each.getName());
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.set(instance, Boolean.parseBoolean(s));
+                        }
+                    }
                     case ReflectUtil.CLASS_INT -> valueAccessor.setReference(instance, Integer.valueOf(((String) map.get(each.getName()))));
                     case ReflectUtil.CLASS_SHORT -> valueAccessor.setReference(instance, Short.valueOf(((String) map.get(each.getName()))));
                     case ReflectUtil.CLASS_LONG -> valueAccessor.setReference(instance, Long.valueOf(((String) map.get(each.getName()))));
