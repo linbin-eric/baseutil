@@ -4,6 +4,7 @@ import cc.jfire.baseutil.reflect.ReflectUtil;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,7 +91,7 @@ public class IoUtil
 
     public static String readFile(String path, boolean isFile)
     {
-        return readFile(path, isFile);
+        return readFile(path, isFile, StandardCharsets.UTF_8);
     }
 
     /**
