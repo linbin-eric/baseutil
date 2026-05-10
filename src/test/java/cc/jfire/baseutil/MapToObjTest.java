@@ -1,5 +1,7 @@
 package cc.jfire.baseutil;
 
+import cc.jfire.baseutil.yaml.MapToObj;
+import cc.jfire.baseutil.yaml.YamlReader;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
@@ -80,6 +82,93 @@ public class MapToObjTest
         Assert.assertEquals(0.0d, config.getPrimitiveDouble(), 0.0001d);
         Assert.assertEquals('\0', config.getPrimitiveChar());
         Assert.assertFalse(config.isPrimitiveBool());
+    }
+
+    @Test
+    public void testReferenceNullAndMissingValuesKeepDefaultValue() throws Exception
+    {
+        Map<String, Object> map = new HashMap<>();
+        map.put("boxedByte", null);
+        map.put("boxedInt", null);
+        map.put("boxedShort", null);
+        map.put("boxedLong", null);
+        map.put("boxedFloat", null);
+        map.put("boxedDouble", null);
+        map.put("boxedChar", null);
+        map.put("boxedBool", null);
+        map.put("name", null);
+        map.put("amount", null);
+        map.put("status", null);
+        map.put("primitiveInts", null);
+        map.put("names", null);
+        map.put("numbers", null);
+        map.put("labels", null);
+        map.put("scoreMap", null);
+        map.put("child", null);
+
+        ReferenceDefaultConfig config = (ReferenceDefaultConfig) MapToObj.toObj(ReferenceDefaultConfig.class, map);
+
+        Assert.assertEquals(Byte.valueOf((byte) 1), config.getBoxedByte());
+        Assert.assertEquals(Integer.valueOf(2), config.getBoxedInt());
+        Assert.assertEquals(Short.valueOf((short) 3), config.getBoxedShort());
+        Assert.assertEquals(Long.valueOf(4L), config.getBoxedLong());
+        Assert.assertEquals(Float.valueOf(5.5f), config.getBoxedFloat());
+        Assert.assertEquals(Double.valueOf(6.5d), config.getBoxedDouble());
+        Assert.assertEquals(Character.valueOf('D'), config.getBoxedChar());
+        Assert.assertEquals(Boolean.TRUE, config.getBoxedBool());
+        Assert.assertEquals("default", config.getName());
+        Assert.assertEquals(new BigDecimal("12.34"), config.getAmount());
+        Assert.assertEquals(Status.DISABLED, config.getStatus());
+        Assert.assertArrayEquals(new int[] { 3, 4 }, config.getPrimitiveInts());
+        Assert.assertArrayEquals(new String[] { "origin" }, config.getNames());
+        Assert.assertEquals(Arrays.asList(5, 6), config.getNumbers());
+        Assert.assertEquals(new HashSet<>(Arrays.asList("local")), config.getLabels());
+        Assert.assertEquals(Integer.valueOf(100), config.getScoreMap().get("math"));
+        Assert.assertEquals("default-child", config.getChild().getCode());
+        Assert.assertEquals(9, config.getChild().getLevel());
+        Assert.assertEquals(Integer.valueOf(99), config.getMissingBoxedInt());
+    }
+
+    @Test
+    public void testReferenceEmptyValuesKeepDefaultValue() throws Exception
+    {
+        Map<String, Object> map = new HashMap<>();
+        map.put("boxedByte", "");
+        map.put("boxedInt", "");
+        map.put("boxedShort", "");
+        map.put("boxedLong", "");
+        map.put("boxedFloat", "");
+        map.put("boxedDouble", "");
+        map.put("boxedChar", "");
+        map.put("boxedBool", "");
+        map.put("amount", "");
+        map.put("status", "");
+        map.put("primitiveInts", "");
+        map.put("names", "");
+        map.put("numbers", "");
+        map.put("labels", "");
+        map.put("scoreMap", "");
+        map.put("child", "");
+
+        ReferenceDefaultConfig config = (ReferenceDefaultConfig) MapToObj.toObj(ReferenceDefaultConfig.class, map);
+
+        Assert.assertEquals(Byte.valueOf((byte) 1), config.getBoxedByte());
+        Assert.assertEquals(Integer.valueOf(2), config.getBoxedInt());
+        Assert.assertEquals(Short.valueOf((short) 3), config.getBoxedShort());
+        Assert.assertEquals(Long.valueOf(4L), config.getBoxedLong());
+        Assert.assertEquals(Float.valueOf(5.5f), config.getBoxedFloat());
+        Assert.assertEquals(Double.valueOf(6.5d), config.getBoxedDouble());
+        Assert.assertEquals(Character.valueOf('D'), config.getBoxedChar());
+        Assert.assertEquals(Boolean.TRUE, config.getBoxedBool());
+        Assert.assertEquals(new BigDecimal("12.34"), config.getAmount());
+        Assert.assertEquals(Status.DISABLED, config.getStatus());
+        Assert.assertArrayEquals(new int[] { 3, 4 }, config.getPrimitiveInts());
+        Assert.assertArrayEquals(new String[] { "origin" }, config.getNames());
+        Assert.assertEquals(Arrays.asList(5, 6), config.getNumbers());
+        Assert.assertEquals(new HashSet<>(Arrays.asList("local")), config.getLabels());
+        Assert.assertEquals(Integer.valueOf(100), config.getScoreMap().get("math"));
+        Assert.assertEquals("default-child", config.getChild().getCode());
+        Assert.assertEquals(9, config.getChild().getLevel());
     }
 
     @Test
@@ -214,6 +303,29 @@ public class MapToObjTest
     }
 
     @Data
+    public static class ReferenceDefaultConfig
+    {
+        private Byte                 boxedByte       = 1;
+        private Integer              boxedInt        = 2;
+        private Short                boxedShort      = 3;
+        private Long                 boxedLong       = 4L;
+        private Float                boxedFloat      = 5.5f;
+        private Double               boxedDouble     = 6.5d;
+        private Character            boxedChar       = 'D';
+        private Boolean              boxedBool       = true;
+        private String               name            = "default";
+        private BigDecimal           amount          = new BigDecimal("12.34");
+        private Status               status          = Status.DISABLED;
+        private int[]                primitiveInts   = new int[] { 3, 4 };
+        private String[]             names           = new String[] { "origin" };
+        private List<Integer>        numbers         = Arrays.asList(5, 6);
+        private Set<String>          labels          = new HashSet<>(Arrays.asList("local"));
+        private Map<String, Integer> scoreMap        = new HashMap<>(Collections.singletonMap("math", 100));
+        private Child                child           = child("default-child", 9);
+        private Integer              missingBoxedInt = 99;
+    }
+
+    @Data
     public static class CollectionMapConfig
     {
         private List<Integer>              numbers;
@@ -240,5 +352,13 @@ public class MapToObjTest
     public static class GenericTypeHolder
     {
         private GenericContainer<Child> genericContainer;
+    }
+
+    private static Child child(String code, int level)
+    {
+        Child child = new Child();
+        child.setCode(code);
+        child.setLevel(level);
+        return child;
     }
 }

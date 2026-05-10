@@ -1,5 +1,6 @@
-package cc.jfire.baseutil;
+package cc.jfire.baseutil.yaml;
 
+import cc.jfire.baseutil.StringUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

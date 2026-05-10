@@ -1,5 +1,6 @@
 package cc.jfire.baseutil;
 
+import cc.jfire.baseutil.yaml.YamlReader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,8 +16,8 @@ public class YamlTest
     public void test() throws IOException
     {
         InputStream         resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("test.yml");
-        byte[]              bytes            = IoUtil.readAllBytes(resourceAsStream);
-        YamlReader reader = new YamlReader(new String(bytes, StandardCharsets.UTF_8));
+        byte[]                             bytes                = IoUtil.readAllBytes(resourceAsStream);
+        YamlReader                         reader               = new YamlReader(new String(bytes, StandardCharsets.UTF_8));
         Map<String, YamlReader.YmlElement> elementsWithFullPath = reader.getElementsWithFullPath();
         for (Map.Entry<String, YamlReader.YmlElement> each : elementsWithFullPath.entrySet())
         {

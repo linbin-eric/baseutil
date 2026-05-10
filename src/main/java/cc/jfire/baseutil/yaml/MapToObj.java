@@ -1,5 +1,6 @@
-package cc.jfire.baseutil;
+package cc.jfire.baseutil.yaml;
 
+import cc.jfire.baseutil.StringUtil;
 import cc.jfire.baseutil.reflect.ReflectUtil;
 import cc.jfire.baseutil.reflect.valueaccessor.ValueAccessor;
 
@@ -259,8 +260,17 @@ public class MapToObj
             // 非泛型类型，直接使用
             rawClass = clazz;
         }
-        Object  instance = rawClass.getConstructor().newInstance();
-        Field[] fields   = ReflectUtil.findPojoBeanSetFields(rawClass);
+        Object                         instance = rawClass.getConstructor().newInstance();
+        YamlRename.YamlRenameProcessor classLevelYamlRenameProcessor;
+        if (rawClass.isAnnotationPresent(YamlRename.class) && ((YamlRename) rawClass.getAnnotation(YamlRename.class)).processor() != YamlRename.YamlRenameProcessor.class)
+        {
+            classLevelYamlRenameProcessor = ((YamlRename) rawClass.getAnnotation(YamlRename.class)).processor().getConstructor().newInstance();
+        }
+        else
+        {
+            classLevelYamlRenameProcessor = YamlRename.YamlRenameProcessor.DEFAULT;
+        }
+        Field[] fields = ReflectUtil.findPojoBeanSetFields(rawClass);
         for (Field each : fields)
         {
             Type          fieldGenericType = each.getGenericType();
@@ -269,13 +279,23 @@ public class MapToObj
             {
                 fieldGenericType = parseFieldArgumentType(typeVariable, typeParameters, typeArguments);
             }
+            String fieldName  = getName(each, classLevelYamlRenameProcessor);
+            Object fieldValue = map.get(fieldName);
+            if (fieldValue == null)
+            {
+                continue;
+            }
+            if (fieldValue instanceof String s && StringUtil.isBlank(s) && fieldGenericType != String.class)
+            {
+                continue;
+            }
             if (fieldGenericType instanceof Class<?> ckass)
             {
                 switch (ReflectUtil.getClassId(ckass))
                 {
                     case ReflectUtil.PRIMITIVE_BYTE ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Byte.parseByte(s));
@@ -283,7 +303,7 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_INT ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Integer.parseInt(s));
@@ -291,7 +311,7 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_SHORT ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Short.parseShort(s));
@@ -299,7 +319,7 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_LONG ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Long.parseLong(s));
@@ -307,7 +327,7 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_FLOAT ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Float.parseFloat(s));
@@ -315,7 +335,7 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_DOUBLE ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Double.parseDouble(s));
@@ -323,7 +343,7 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_CHAR ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, s.charAt(0));
@@ -331,57 +351,127 @@ public class MapToObj
                     }
                     case ReflectUtil.PRIMITIVE_BOOL ->
                     {
-                        String s = (String) map.get(each.getName());
+                        String s = (String) fieldValue;
                         if (StringUtil.isNotBlank(s))
                         {
                             valueAccessor.set(instance, Boolean.parseBoolean(s));
                         }
                     }
-                    case ReflectUtil.CLASS_INT -> valueAccessor.setReference(instance, Integer.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_SHORT -> valueAccessor.setReference(instance, Short.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_LONG -> valueAccessor.setReference(instance, Long.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_FLOAT -> valueAccessor.setReference(instance, Float.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_DOUBLE -> valueAccessor.setReference(instance, Double.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_BYTE -> valueAccessor.setReference(instance, Byte.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_CHAR -> valueAccessor.setReference(instance, ((String) map.get(each.getName())).charAt(0));
-                    case ReflectUtil.CLASS_BOOL -> valueAccessor.setReference(instance, Boolean.valueOf(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_STRING -> valueAccessor.setReference(instance, (String) map.get(each.getName()));
-                    case ReflectUtil.CLASS_BIGDECIMAL -> valueAccessor.setReference(instance, new BigDecimal(((String) map.get(each.getName()))));
-                    case ReflectUtil.CLASS_ENUM -> valueAccessor.setReference(instance, Enum.valueOf((Class<? extends Enum>) ckass, (String) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_BOOLEAN_ARRAY -> valueAccessor.setReference(instance, toArray(boolean.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_INT_ARRAY -> valueAccessor.setReference(instance, toArray(int.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_SHORT_ARRAY -> valueAccessor.setReference(instance, toArray(short.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_LONG_ARRAY -> valueAccessor.setReference(instance, toArray(long.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_FLOAT_ARRAY -> valueAccessor.setReference(instance, toArray(float.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_DOUBLE_ARRAY -> valueAccessor.setReference(instance, toArray(double.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_CHAR_ARRAY -> valueAccessor.setReference(instance, toArray(char.class, (List) map.get(each.getName())));
-                    case ReflectUtil.PRIMITIVE_BYTE_ARRAY -> valueAccessor.setReference(instance, toArray(byte.class, (List) map.get(each.getName())));
+                    case ReflectUtil.CLASS_INT ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Integer.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_SHORT ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Short.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_LONG ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Long.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_FLOAT ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Float.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_DOUBLE ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Double.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_BYTE ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Byte.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_CHAR ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, s.charAt(0));
+                        }
+                    }
+                    case ReflectUtil.CLASS_BOOL ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Boolean.valueOf(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_STRING -> valueAccessor.setReference(instance, (String) fieldValue);
+                    case ReflectUtil.CLASS_BIGDECIMAL ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, new BigDecimal(s));
+                        }
+                    }
+                    case ReflectUtil.CLASS_ENUM ->
+                    {
+                        String s = (String) fieldValue;
+                        if (StringUtil.isNotBlank(s))
+                        {
+                            valueAccessor.setReference(instance, Enum.valueOf((Class<? extends Enum>) ckass, s));
+                        }
+                    }
+                    case ReflectUtil.PRIMITIVE_BOOLEAN_ARRAY -> valueAccessor.setReference(instance, toArray(boolean.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_INT_ARRAY -> valueAccessor.setReference(instance, toArray(int.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_SHORT_ARRAY -> valueAccessor.setReference(instance, toArray(short.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_LONG_ARRAY -> valueAccessor.setReference(instance, toArray(long.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_FLOAT_ARRAY -> valueAccessor.setReference(instance, toArray(float.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_DOUBLE_ARRAY -> valueAccessor.setReference(instance, toArray(double.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_CHAR_ARRAY -> valueAccessor.setReference(instance, toArray(char.class, (List) fieldValue));
+                    case ReflectUtil.PRIMITIVE_BYTE_ARRAY -> valueAccessor.setReference(instance, toArray(byte.class, (List) fieldValue));
                     default ->
                     {
                         if (ckass.isArray())
                         {
-                            valueAccessor.setReference(instance, toArray(ckass.getComponentType(), (List) map.get(each.getName())));
+                            valueAccessor.setReference(instance, toArray(ckass.getComponentType(), (List) fieldValue));
                         }
                         else
                         {
                             if (List.class.isAssignableFrom(ckass))
                             {
-                                List list = (List) map.get(each.getName());
+                                List list = (List) fieldValue;
                                 valueAccessor.setReference(instance, list);
                             }
                             else if (Set.class.isAssignableFrom(ckass))
                             {
-                                List list = (List) map.get(each.getName());
+                                List list = (List) fieldValue;
                                 valueAccessor.setReference(instance, new HashSet(list));
                             }
                             else if (Map.class.isAssignableFrom(ckass))
                             {
-                                Map o = (Map) map.get(each.getName());
+                                Map o = (Map) fieldValue;
                                 valueAccessor.setReference(instance, o);
                             }
                             else
                             {
-                                valueAccessor.setReference(instance, toObj(fieldGenericType, (Map<String, Object>) map.get(each.getName())));
+                                valueAccessor.setReference(instance, toObj(fieldGenericType, (Map<String, Object>) fieldValue));
                             }
                         }
                     }
@@ -392,23 +482,44 @@ public class MapToObj
                 Type rawType = parameterizedType.getRawType();
                 if (Collection.class.isAssignableFrom((Class<?>) rawType))
                 {
-                    valueAccessor.setReference(instance, fromCollection(parameterizedType.getActualTypeArguments()[0], (List) map.get(each.getName()), Set.class.isAssignableFrom((Class<?>) rawType), typeParameters, typeArguments));
+                    valueAccessor.setReference(instance, fromCollection(parameterizedType.getActualTypeArguments()[0], (List) fieldValue, Set.class.isAssignableFrom((Class<?>) rawType), typeParameters, typeArguments));
                 }
                 else if (Map.class.isAssignableFrom((Class<?>) rawType))
                 {
-                    valueAccessor.setReference(instance, toMap(parameterizedType.getActualTypeArguments()[1], (Map<String, Object>) map.get(each.getName()), typeParameters, typeArguments));
+                    valueAccessor.setReference(instance, toMap(parameterizedType.getActualTypeArguments()[1], (Map<String, Object>) fieldValue, typeParameters, typeArguments));
                 }
                 else
                 {
-                    valueAccessor.setReference(instance, toObj(fieldGenericType, (Map<String, Object>) map.get(each.getName())));
+                    valueAccessor.setReference(instance, toObj(fieldGenericType, (Map<String, Object>) fieldValue));
                 }
             }
             else if (fieldGenericType instanceof GenericArrayType genericArrayType)
             {
-                valueAccessor.setReference(instance, toArray(fieldGenericType, (List) map.get(each.getName())));
+                valueAccessor.setReference(instance, toArray(fieldGenericType, (List) fieldValue));
             }
         }
         return instance;
+    }
+
+    private static String getName(Field field, YamlRename.YamlRenameProcessor classLevelYamlRenameProcessor) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException
+    {
+        if (field.isAnnotationPresent(YamlRename.class))
+        {
+            YamlRename annotation = field.getAnnotation(YamlRename.class);
+            if (StringUtil.isNotBlank(annotation.value()))
+            {
+                return annotation.value();
+            }
+            else
+            {
+                YamlRename.YamlRenameProcessor yamlRenameProcessor = annotation.processor().getConstructor().newInstance();
+                return yamlRenameProcessor.rename(field);
+            }
+        }
+        else
+        {
+            return classLevelYamlRenameProcessor.rename(field);
+        }
     }
 
     /**
