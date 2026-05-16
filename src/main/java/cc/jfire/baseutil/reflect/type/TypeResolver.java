@@ -1,7 +1,10 @@
-package cc.jfire.baseutil.reflect;
+package cc.jfire.baseutil.reflect.type;
+
+import org.apache.poi.hssf.record.FnGroupCountRecord;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,10 +17,11 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class TypeResolver
 {
-    public static ConcurrentMap<TypeVariable<?>, Type> resolveTypeArguments(Type sourceType)
+    private final Map<TypeVariable<?>, Type> store = new HashMap<>();
+
+    public TypeResolver(Type source)
     {
-        ConcurrentMap<TypeVariable<?>, Type> resolved = new ConcurrentHashMap<>();
-        Type                                 current  = sourceType;
+        Type current = source;
         while (current != null)
         {
             Class<?> currentClass;
@@ -28,7 +32,7 @@ public class TypeResolver
                 Type[]            args = pt.getActualTypeArguments();
                 for (int i = 0; i < vars.length; i++)
                 {
-                    resolved.put(vars[i], args[i]);
+                    store.put(vars[i], args[i]);
                 }
             }
             else if (current instanceof Class<?> clazz)
@@ -45,50 +49,34 @@ public class TypeResolver
             }
             current = currentClass.getGenericSuperclass();
         }
-        return resolved;
     }
 
-    public static Type resolveType(Type type, Map<TypeVariable<?>, Type> resolved)
+    public Type resolveType(Type type)
     {
         if (type instanceof TypeVariable<?> tv)
         {
-            Type target = resolved.get(tv);
+            Type target = store.get(tv);
             if (target == null)
             {
                 return tv;
             }
             // 注意这里继续递归,因为出来的还有可能仍然是TypeVariable，通过递归的方式，最终明确掉。
-            return resolveType(target, resolved);
+            return resolveType(target);
         }
         if (type instanceof ParameterizedType pt)
         {
-            Type[]  args         = pt.getActualTypeArguments();
-            Type[]  resolvedArgs = new Type[args.length];
-            boolean changed      = false;
+            Type[] args         = pt.getActualTypeArguments();
+            Type[] resolvedArgs = new Type[args.length];
             for (int i = 0; i < args.length; i++)
             {
-                resolvedArgs[i] = resolveType(args[i], resolved);
-                if (resolvedArgs[i] != args[i])
-                {
-                    changed = true;
-                }
+                resolvedArgs[i] = resolveType(args[i]);
             }
-            Type ownerType         = pt.getOwnerType();
-            Type resolvedOwnerType = ownerType == null ? null : resolveType(ownerType, resolved);
-            if (resolvedOwnerType != ownerType)
-            {
-                changed = true;
-            }
-            if (changed == false)
-            {
-                return pt;
-            }
-            return new ParameterizedTypeImpl(resolvedOwnerType, pt.getRawType(), resolvedArgs);
+            return new ParameterizedTypeImpl(pt.getOwnerType(), pt.getRawType(), resolvedArgs);
         }
         else if (type instanceof GenericArrayType gat)
         {
             Type genericComponentType = gat.getGenericComponentType();
-            Type componentType        = resolveType(genericComponentType, resolved);
+            Type componentType        = resolveType(genericComponentType);
             if (componentType == genericComponentType)
             {
                 return gat;
@@ -219,5 +207,26 @@ public class TypeResolver
         {
             return genericComponentType.getTypeName() + "[]";
         }
+    }
+
+    public static void main(String[] args) throws NoSuchFieldException
+    {
+        ConcurrentMap<TypeVariable<?>, Type> map  = resolveTypeArguments(A.class);
+        Field                                c    = C.class.getDeclaredField("c");
+        Type                                 type = resolveType(c.getGenericType(), map);
+        System.out.println(type);
+    }
+
+    public static abstract class C<E>
+    {
+        protected E c;
+    }
+
+    public abstract static class B<E> extends C<E>
+    {
+    }
+
+    public static class A extends B<String>
+    {
     }
 }
