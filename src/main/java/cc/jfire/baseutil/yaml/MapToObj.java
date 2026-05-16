@@ -262,7 +262,8 @@ public class MapToObj
         }
         Object                         instance = rawClass.getConstructor().newInstance();
         YamlRename.YamlRenameProcessor classLevelYamlRenameProcessor;
-        if (rawClass.isAnnotationPresent(YamlRename.class) && ((YamlRename) rawClass.getAnnotation(YamlRename.class)).processor() != YamlRename.YamlRenameProcessor.class)
+        if (rawClass.isAnnotationPresent(YamlRename.class)//
+            && ((YamlRename) rawClass.getAnnotation(YamlRename.class)).processor() != YamlRename.YamlRenameProcessor.class)
         {
             classLevelYamlRenameProcessor = ((YamlRename) rawClass.getAnnotation(YamlRename.class)).processor().getConstructor().newInstance();
         }
