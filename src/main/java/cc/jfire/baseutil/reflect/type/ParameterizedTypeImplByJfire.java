@@ -5,13 +5,13 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Objects;
 
-class ParameterizedTypeImpl implements ParameterizedType
+public class ParameterizedTypeImplByJfire implements ParameterizedType
 {
     private final Type   ownerType;
     private final Type   rawType;
     private final Type[] actualTypeArguments;
 
-    ParameterizedTypeImpl(Type ownerType, Type rawType, Type[] actualTypeArguments)
+    public ParameterizedTypeImplByJfire(Type ownerType, Type rawType, Type[] actualTypeArguments)
     {
         this.ownerType           = ownerType;
         this.rawType             = rawType;

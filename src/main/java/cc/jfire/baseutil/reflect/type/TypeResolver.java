@@ -78,7 +78,7 @@ public class TypeResolver
             {
                 resolvedArgs[i] = resolveType(args[i]);
             }
-            return new ParameterizedTypeImpl(pt.getOwnerType(), pt.getRawType(), resolvedArgs);
+            return new ParameterizedTypeImplByJfire(pt.getOwnerType(), pt.getRawType(), resolvedArgs);
         }
         else if (type instanceof GenericArrayType gat)
         {
@@ -92,7 +92,7 @@ public class TypeResolver
             {
                 return Array.newInstance(componentClass, 0).getClass();
             }
-            return new GenericArrayTypeImpl(componentType);
+            return new GenericArrayTypeImplByJfire(componentType);
         }
         else if (type instanceof WildcardType wildcardType)
         {

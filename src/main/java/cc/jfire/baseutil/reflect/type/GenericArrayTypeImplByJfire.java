@@ -3,11 +3,11 @@ package cc.jfire.baseutil.reflect.type;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 
-class GenericArrayTypeImpl implements GenericArrayType
+public class GenericArrayTypeImplByJfire implements GenericArrayType
 {
     private final Type genericComponentType;
 
-    GenericArrayTypeImpl(Type genericComponentType)
+    public GenericArrayTypeImplByJfire(Type genericComponentType)
     {
         this.genericComponentType = genericComponentType;
     }
