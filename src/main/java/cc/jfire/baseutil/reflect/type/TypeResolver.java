@@ -1,14 +1,8 @@
 package cc.jfire.baseutil.reflect.type;
 
-import org.apache.poi.hssf.record.FnGroupCountRecord;
-
 import java.lang.reflect.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * 这个类的核心目标是从一个明确的子类或者类型出发，不断向上解析整个链路的泛型信息。注意，只解析类继承路径上的泛型信息。
@@ -19,7 +13,7 @@ public class TypeResolver
 {
     private final Map<TypeVariable<?>, Type> store = new HashMap<>();
 
-    public TypeResolver(Type source)
+    private void _init(Type source)
     {
         Type current = source;
         while (current != null)
@@ -33,6 +27,14 @@ public class TypeResolver
                 for (int i = 0; i < vars.length; i++)
                 {
                     store.put(vars[i], args[i]);
+                }
+                for (Field declaredField : currentClass.getDeclaredFields())
+                {
+                    Type genericType = declaredField.getGenericType();
+                    if (genericType instanceof ParameterizedType)
+                    {
+                        _init(genericType);
+                    }
                 }
             }
             else if (current instanceof Class<?> clazz)
@@ -49,6 +51,11 @@ public class TypeResolver
             }
             current = currentClass.getGenericSuperclass();
         }
+    }
+
+    public TypeResolver(Type source)
+    {
+        _init(source);
     }
 
     public Type resolveType(Type type)
@@ -99,7 +106,7 @@ public class TypeResolver
             {
                 return Object.class;
             }
-            return resolveType(upperBounds[0], resolved);
+            return resolveType(upperBounds[0]);
         }
         else if (type instanceof Class<?>)
         {
@@ -109,124 +116,5 @@ public class TypeResolver
         {
             throw new IllegalArgumentException();
         }
-    }
-
-    static class ParameterizedTypeImpl implements ParameterizedType
-    {
-        private final Type   ownerType;
-        private final Type   rawType;
-        private final Type[] actualTypeArguments;
-
-        ParameterizedTypeImpl(Type ownerType, Type rawType, Type[] actualTypeArguments)
-        {
-            this.ownerType           = ownerType;
-            this.rawType             = rawType;
-            this.actualTypeArguments = actualTypeArguments.clone();
-        }
-
-        @Override
-        public Type[] getActualTypeArguments()
-        {
-            return actualTypeArguments.clone();
-        }
-
-        @Override
-        public Type getRawType()
-        {
-            return rawType;
-        }
-
-        @Override
-        public Type getOwnerType()
-        {
-            return ownerType;
-        }
-
-        @Override
-        public boolean equals(Object other)
-        {
-            return other instanceof ParameterizedType that && Objects.equals(ownerType, that.getOwnerType()) && Objects.equals(rawType, that.getRawType()) && Arrays.equals(actualTypeArguments, that.getActualTypeArguments());
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return Arrays.hashCode(actualTypeArguments) ^ Objects.hashCode(ownerType) ^ Objects.hashCode(rawType);
-        }
-
-        @Override
-        public String toString()
-        {
-            StringBuilder builder = new StringBuilder(rawType.getTypeName());
-            if (actualTypeArguments.length != 0)
-            {
-                builder.append("<");
-                for (int i = 0; i < actualTypeArguments.length; i++)
-                {
-                    if (i != 0)
-                    {
-                        builder.append(", ");
-                    }
-                    builder.append(actualTypeArguments[i].getTypeName());
-                }
-                builder.append(">");
-            }
-            return builder.toString();
-        }
-    }
-
-    static class GenericArrayTypeImpl implements GenericArrayType
-    {
-        private final Type genericComponentType;
-
-        GenericArrayTypeImpl(Type genericComponentType)
-        {
-            this.genericComponentType = genericComponentType;
-        }
-
-        @Override
-        public Type getGenericComponentType()
-        {
-            return genericComponentType;
-        }
-
-        @Override
-        public boolean equals(Object other)
-        {
-            return other instanceof GenericArrayType that && genericComponentType.equals(that.getGenericComponentType());
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return genericComponentType.hashCode();
-        }
-
-        @Override
-        public String toString()
-        {
-            return genericComponentType.getTypeName() + "[]";
-        }
-    }
-
-    public static void main(String[] args) throws NoSuchFieldException
-    {
-        ConcurrentMap<TypeVariable<?>, Type> map  = resolveTypeArguments(A.class);
-        Field                                c    = C.class.getDeclaredField("c");
-        Type                                 type = resolveType(c.getGenericType(), map);
-        System.out.println(type);
-    }
-
-    public static abstract class C<E>
-    {
-        protected E c;
-    }
-
-    public abstract static class B<E> extends C<E>
-    {
-    }
-
-    public static class A extends B<String>
-    {
     }
 }
