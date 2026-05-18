@@ -9,7 +9,7 @@ import java.util.Map;
  * 通过方法：resolveTypeArguments 建立类型变量到类型的定义
  * 通过方法：resolveType 将定义的类型，特别是参数类型，将里面的实际参数明确出来。
  */
-public class TypeResolver
+public class ParameterizedTypeResolver
 {
     private final Map<TypeVariable<?>, Type> store = new HashMap<>();
 
@@ -31,11 +31,16 @@ public class TypeResolver
                 for (Field declaredField : currentClass.getDeclaredFields())
                 {
                     Type genericType = declaredField.getGenericType();
-                    if (genericType instanceof ParameterizedType)
+                    if (genericType instanceof ParameterizedType || genericType instanceof GenericArrayType)
                     {
                         _init(genericType);
                     }
                 }
+            }
+            else if (current instanceof GenericArrayType gat)
+            {
+                _init(gat.getGenericComponentType());
+                return;
             }
             else if (current instanceof Class<?> clazz)
             {
@@ -53,7 +58,7 @@ public class TypeResolver
         }
     }
 
-    public TypeResolver(Type source)
+    public ParameterizedTypeResolver(Type source)
     {
         _init(source);
     }
